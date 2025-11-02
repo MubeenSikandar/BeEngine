@@ -1,0 +1,32 @@
+[
+  {
+    "label": "Configure CMake",
+    "command": "cmake -S . -B build",
+    "tags": ["build"]
+  },
+  {
+    "label": "Build Project",
+    "command": "cmake --build build",
+    "tags": ["build"]
+  },
+  {
+    "label": "Build and Run",
+    "command": "cmake --build build && ./build/bin/Sandbox",
+    "tags": ["build", "run"]
+  },
+  {
+    "label": "Clean Build",
+    "command": "rm -rf build",
+    "tags": ["build"]
+  },
+  {
+    "label": "Rebuild",
+    "command": "rm -rf build && cmake -S . -B build && cmake --build build",
+    "tags": ["build"]
+  },
+  {
+    "label": "Run Sandbox",
+    "command": "./build/bin/Sandbox",
+    "tags": ["run"]
+  }
+]

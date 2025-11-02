@@ -1,0 +1,23 @@
+# Build directories
+build/
+bin/
+out/
+
+# IDE
+.vscode/
+.vs/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compiled files
+*.o
+*.obj
+*.dll
+*.dylib
+*.so
+*.exe
+*.app
