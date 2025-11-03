@@ -1,6 +1,6 @@
 # GameEngine - Minimal Setup
 
-Bare minimum cross-platform game engine setup with **latest technology standards**.
+Cross-Platform game engine setup with **latest technology standards**.
 
 ## 🚀 Technology Stack
 
