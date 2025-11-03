@@ -2,7 +2,5 @@
 #include <iostream>
 
 namespace BeEngine {
-    void print() {
-        std::cout << "Hello from BeEngine!" << std::endl;
-    }
-}
+void print() { std::cout << "Hello from BeEngine!\n"; }
+} // namespace BeEngine
