@@ -12,7 +12,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # BeEngine - Shared Library (DLL/dylib/so)
 add_library(BeEngine SHARED
-    BeEngine/test.cpp
+    BeEngine/src/Application.cpp
 )
 
 target_include_directories(BeEngine PUBLIC
@@ -48,7 +48,7 @@ endif()
 
 # Sandbox - Executable
 add_executable(Sandbox
-    Sandbox/main.cpp
+    Sandbox/SandBoxApp.cpp
 )
 
 target_link_libraries(Sandbox PRIVATE BeEngine)
