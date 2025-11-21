@@ -2,6 +2,7 @@
 build/
 bin/
 out/
+logs/
 
 # IDE
 .vscode/
@@ -21,3 +22,4 @@ Thumbs.db
 *.so
 *.exe
 *.app
+.clangd
