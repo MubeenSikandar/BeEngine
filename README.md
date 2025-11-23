@@ -57,7 +57,7 @@ BeEngine is a lightweight game engine built with modern C++ standards, featuring
 - **Release**: Optimized with debug info, reduced logging
 - **Distribution**: Maximum optimization, minimal logging, LTO enabled
 
-## � Buqilding the Engine
+## � Building the Engine
 
 ### Quick Build (macOS/Linux)
 
