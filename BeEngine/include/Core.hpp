@@ -48,7 +48,7 @@
 
 // Debug Build Detection
 #if defined(_DEBUG) || defined(DEBUG) || (!defined(NDEBUG))
-#define BE_DEBUG
+#define BE_DEBUG 1
 #define BE_BUILD_TYPE ("Debug")
 #else
 #define BE_RELEASE
@@ -324,6 +324,12 @@ constexpr size_t BE_ARRAY_SIZE(const std::array<T, N> & /* arr */) {
 
 // UNIQUE NAME GENERATOR
 #define BE_UNIQUE_NAME(base) BE_CONCAT(base, __LINE__)
+
+// BIT OPERATION
+#define BIT(x) (1 << (x))
+
+// NO DISCARD
+#define NODISCARD [[nodiscard]]
 
 // PLATFORM-SPECIFIC INCLUDES
 #ifdef BE_PLATFORM_WINDOWS
