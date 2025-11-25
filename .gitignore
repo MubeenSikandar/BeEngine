@@ -3,6 +3,7 @@ build/
 bin/
 out/
 logs/
+compile_commands.json
 
 # IDE
 .vscode/

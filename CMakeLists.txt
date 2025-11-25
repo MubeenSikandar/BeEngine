@@ -52,6 +52,7 @@ endforeach()
 # DEPENDENCIES
 # ============================================
 add_subdirectory(BeEngine/vendor/spdlog)
+add_subdirectory(BeEngine/vendor/GLFW)
 
 # ============================================
 # BeEngine - Shared Library (DLL/dylib/so)
@@ -66,6 +67,7 @@ add_library(BeEngine SHARED
 target_include_directories(BeEngine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/BeEngine/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/BeEngine/vendor/GLFW/include
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/BeEngine/src
 )
@@ -73,6 +75,7 @@ target_include_directories(BeEngine
 target_link_libraries(BeEngine
     PUBLIC
         spdlog::spdlog
+        glfw
 )
 
 # Define BE_BUILD_DLL when building the library
