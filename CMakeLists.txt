@@ -62,6 +62,7 @@ add_library(BeEngine SHARED
     BeEngine/src/Log.cpp
     BeEngine/src/Event.cpp
     BeEngine/src/EventQueue.cpp
+    BeEngine/src/Window.cpp
 )
 
 target_include_directories(BeEngine

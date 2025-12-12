@@ -99,6 +99,22 @@ void Log::init(const LogConfig &config) {
           "BeEngine", coreSinks.begin(), coreSinks.end());
     }
 
+    // Customize colors after creating loggers
+    auto console_sink =
+        std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(
+            s_CoreLogger->sinks()[0] // Assuming first sink is console
+        );
+
+    if (console_sink) {
+      // Set custom colors for each level
+      console_sink->set_color(spdlog::level::trace, "\033[37m"); // White
+      console_sink->set_color(spdlog::level::info, "\033[32m");  // Green
+      console_sink->set_color(spdlog::level::warn, "\033[33m");  // Yellow
+      console_sink->set_color(spdlog::level::err, "\033[31m");   // Red
+      console_sink->set_color(spdlog::level::critical,
+                              "\033[1;35m"); // Bold Magenta
+    }
+
     s_CoreLogger->set_level(config.minLevel);
     s_CoreLogger->set_pattern(config.pattern);
     spdlog::register_logger(s_CoreLogger);
@@ -116,6 +132,20 @@ void Log::init(const LogConfig &config) {
     s_ClientLogger->set_level(config.minLevel);
     s_ClientLogger->set_pattern(config.pattern);
     spdlog::register_logger(s_ClientLogger);
+
+    // Do the same for client logger
+    auto client_console_sink =
+        std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(
+            s_ClientLogger->sinks()[0]);
+
+    if (client_console_sink) {
+      client_console_sink->set_color(spdlog::level::trace, "\033[37m");
+      client_console_sink->set_color(spdlog::level::info,
+                                     "\033[36m"); // Cyan for client
+      client_console_sink->set_color(spdlog::level::warn, "\033[33m");
+      client_console_sink->set_color(spdlog::level::err, "\033[31m");
+      client_console_sink->set_color(spdlog::level::critical, "\033[1;35m");
+    }
 
     // Create Category Logger
     const std::vector<LogCategory> categories = {LogCategory::Core,

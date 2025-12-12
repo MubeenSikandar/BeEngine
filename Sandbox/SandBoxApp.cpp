@@ -53,11 +53,20 @@ private:
           auto &updateEvent = static_cast<BeEngine::AppUpdateEvent &>(e);
           m_AccumulatedTime += updateEvent.GetDeltaTime();
 
+          // Log FPS Evey Second
           if (m_AccumulatedTime >= 1.0f) {
             BE_INFO("FPS: ~{:.1f}", m_TickCount / m_AccumulatedTime);
-            m_AccumulatedTime = 0.0f;
+            m_AccumulatedTime = 0.0F;
             m_TickCount = 0;
           }
+
+          m_TotalTime += updateEvent.GetDeltaTime();
+          if (!m_HasRequestedClose && m_TotalTime >= 5.0f) {
+            BE_INFO("Test duration complete (5s), closing...");
+            GetEventQueue().QueueEvent<BeEngine::WindowCloseEvent>();
+            m_HasRequestedClose = true;
+          }
+
           return false;
         });
 
@@ -116,7 +125,9 @@ private:
   }
 
   uint64_t m_TickCount = 0;
-  float m_AccumulatedTime = 0.0f;
+  float m_AccumulatedTime = 0.0F;
+  float m_TotalTime = 0.0F;
+  bool m_HasRequestedClose{false};
 };
 
 BeEngine::Application *BeEngine::CreateApplication() { return new Sandbox(); }

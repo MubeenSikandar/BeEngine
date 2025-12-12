@@ -1,9 +1,9 @@
 // src/Application.cpp
 #include "Application.hpp"
 #include "Events/ApplicationEvent.hpp"
-#include "Events/KeyEvent.hpp"
-#include "Events/MouseEvent.hpp"
+#include "Events/Event.hpp"
 #include "Logs/Log.hpp"
+#include "Window.hpp"
 #include <chrono>
 #include <thread>
 
@@ -13,22 +13,32 @@ namespace BeEngine {
 Application::Application()
     : m_EventQueue(Config{.maxQueue = 1000,
                           .dropOnOverflow = true,
-                          .enableLogging = true,
+                          .enableLogging = false,
                           .enableProfiling =
                               true}) // Construct EventQueue here, not in body!
 {
   BE_CORE_INFO("Application constructor called");
 
-  // Subscribe to window close events
-  m_EventQueue.Subscribe(
-      EventType::WindowClose,
-      [this](Event &e) {
-        BE_CORE_INFO("Window close event received");
-        m_Running = false;
-        return true; // Event handled
-      },
-      10 // High priority
-  );
+  // Create Window
+  m_Window = Window::Create(WindowProps("BeEngine", Width{1280}, Height{720}));
+
+  // Wire window events to event queue
+  m_Window->SetEventCallback([this](Event &e) {
+    EventDispatcher dispatcher(e);
+
+    // Handle Window Close Event
+    dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent &) {
+      BE_CORE_INFO("Window Close Requested");
+      m_Running = false;
+      return true;
+    });
+
+    if (!e.IsHandled) {
+      OnEvent(e);
+    }
+  });
+
+  BE_CORE_INFO("Window created and event system initialized!");
 }
 
 Application::~Application() {
@@ -49,13 +59,10 @@ Application::~Application() {
 void Application::Run() {
   BE_CORE_INFO("Application started");
 
-  uint64_t frameNumber = 0;
+  while (m_Running && !m_Window->shouldClose()) {
 
-  TestEvents();
-
-  while (m_Running) {
-    frameNumber++;
-
+    // ✅ Update window (poll events + swap buffers)
+    m_Window->OnUpdate();
     // Process all pending events (max 5ms per frame)
     ProcessEvents();
 
@@ -69,38 +76,9 @@ void Application::Run() {
 
     // Simulate some work (remove in real engine)
     std::this_thread::sleep_for(std::chrono::milliseconds(16));
-
-    // Example: Exit after 300 frames for testing
-    if (frameNumber >= 300) {
-      BE_CORE_INFO("Test complete, exiting...");
-      m_EventQueue.QueueEvent<WindowCloseEvent>();
-    }
   }
 
   BE_CORE_INFO("Application loop ended");
-}
-
-void Application::TestEvents() {
-  BE_CORE_INFO("Testing event system...");
-
-  // Test window resize event
-  m_EventQueue.QueueEvent<WindowResizeEvent>(
-      WindowResizeEvent::WindowSize{1920, 1080});
-
-  // Test key events
-  m_EventQueue.QueueEvent<KeyPressedEvent>(KeyCode::A, false);
-  m_EventQueue.QueueEvent<KeyPressedEvent>(KeyCode::Escape, false);
-  m_EventQueue.QueueEvent<KeyReleasedEvent>(KeyCode::A);
-
-  // Test mouse events
-  m_EventQueue.QueueEvent<MouseMovedEvent>(100.0F, 200.0F, 5.0F, 10.0F);
-  m_EventQueue.QueueEvent<MouseButtonPressedEvent>(MouseButton::Left);
-  m_EventQueue.QueueEvent<MouseScrolledEvent>(0.0F, 1.0F);
-
-  // Process these test events immediately
-  m_EventQueue.ProcessEvents();
-
-  BE_CORE_INFO("Event system test complete");
 }
 
 void Application::ProcessEvents() {

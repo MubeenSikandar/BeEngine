@@ -4,6 +4,7 @@
 #include "Core.hpp"
 #include "Events/Event.hpp"
 #include "Events/EventQueue.hpp"
+#include "Window.hpp"
 
 namespace BeEngine {
 
@@ -20,6 +21,7 @@ public:
 
   // Get the event queue
   EventQueue &GetEventQueue() { return m_EventQueue; }
+  Window &GetWindow() { return *m_Window; }
 
   // Prevent copying
   Application(const Application &) = delete;
@@ -28,6 +30,7 @@ public:
 protected:
   bool m_Running = true;
   EventQueue m_EventQueue;
+  std::unique_ptr<Window> m_Window;
 
 private:
   void ProcessEvents();
