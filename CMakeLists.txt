@@ -65,6 +65,8 @@ add_library(BeEngine SHARED
     BeEngine/src/Window.cpp
 )
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 target_include_directories(BeEngine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/BeEngine/include
