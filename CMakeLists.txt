@@ -4,6 +4,9 @@ project(GameEngine VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+
 # ============================================
 # C++ STANDARD
 # ============================================
@@ -64,8 +67,6 @@ add_library(BeEngine SHARED
     BeEngine/src/EventQueue.cpp
     BeEngine/src/Window.cpp
 )
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(BeEngine
     PUBLIC
