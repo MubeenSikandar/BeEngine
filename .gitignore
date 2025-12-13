@@ -2,8 +2,12 @@
 build/
 bin/
 out/
-logs/
 compile_commands.json
+
+# Runtime log files (generated at runtime)
+*.log
+runtime_logs/
+app_logs/
 
 # IDE
 .vscode/

@@ -11,11 +11,12 @@ namespace BeEngine {
 
 // Initialize m_EventQueue in member initializer list
 Application::Application()
-    : m_EventQueue(Config{.maxQueue = 1000,
-                          .dropOnOverflow = true,
-                          .enableLogging = false,
-                          .enableProfiling =
-                              true}) // Construct EventQueue here, not in body!
+    : m_EventQueue(Config{
+          .maxQueue = 1000,
+          .dropOnOverflow = true,
+          .enableProfiling = true,
+          .enableLogging = false,
+      }) // Construct EventQueue here, not in body!
 {
   BE_CORE_INFO("Application constructor called");
 

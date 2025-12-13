@@ -14,7 +14,7 @@
 #define BE_PLATFORM_APPLE
 #include <TargetConditionals.h>
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-#define BE_PLABE_PLATFORM_IOS
+#define BE_PLATFORM_IOS
 #elif TARGET_OS_MAC
 #define BE_PLATFROM_MACOS
 #endif
@@ -25,7 +25,7 @@
 #elif defined(__unix__)
 #define BE_PLATFORM_UNIX
 #else
-#error "Unknown Platform! Add Platform Support!
+#error "Unknown Platform! Add Platform Support!"
 #endif
 
 // Compiler Detection

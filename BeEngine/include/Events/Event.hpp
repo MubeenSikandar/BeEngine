@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Core.hpp"
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -135,7 +136,7 @@ protected:
   Event()
       : m_Priority(EventPriority::Normal),
         m_Timestamp(std::chrono::steady_clock::now()),
-        m_EventID(s_NextEventID++) {}
+        m_EventID(s_NextEventID.fetch_add(1, std::memory_order_relaxed)) {}
 
 private:
   EventPriority m_Priority{};
