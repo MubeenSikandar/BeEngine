@@ -1,5 +1,7 @@
 #pragma once
 
+#include <csignal>
+
 // PLATFORM DETECTION
 
 // Operating System Detection

@@ -66,6 +66,8 @@ add_library(BeEngine SHARED
     BeEngine/src/Event.cpp
     BeEngine/src/EventQueue.cpp
     BeEngine/src/Window.cpp
+    BeEngine/src/Layer.cpp
+    BeEngine/src/LayerStack.cpp
 )
 
 target_include_directories(BeEngine
