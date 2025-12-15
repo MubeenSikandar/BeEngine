@@ -43,6 +43,23 @@ BeEngine is a lightweight game engine built with modern C++ standards, featuring
 - **Privacy mode** with redaction patterns
 - **Build-specific configurations** (Debug, Release, Distribution)
 
+### Window System
+
+- **GLFW-based windowing** with cross-platform support
+- **Event-driven input handling** (keyboard, mouse, window events)
+- **Configurable window properties** (size, title, VSync)
+- **Native window handle access** for advanced integration
+- **Automatic event callback setup** with the event system
+
+### Layer System
+
+- **Hierarchical layer management** with LayerStack
+- **Overlay support** for UI and debug tools
+- **Forward update order** (layers first, overlays last)
+- **Reverse event order** (overlays first, layers last)
+- **Per-layer enable/disable** functionality
+- **Timestep-based updates** for frame-rate independence
+
 ### Platform Abstraction
 
 - **Cross-platform macros** for DLL export/import
@@ -57,7 +74,55 @@ BeEngine is a lightweight game engine built with modern C++ standards, featuring
 - **Release**: Optimized with debug info, reduced logging
 - **Distribution**: Maximum optimization, minimal logging, LTO enabled
 
-## � Building the Engine
+## 📁 Project Structure
+
+```
+BeEngine/
+├── BeEngine/                    # Engine library
+│   ├── include/
+│   │   ├── Application.hpp      # Main application class
+│   │   ├── Core.hpp            # Platform detection & macros
+│   │   ├── EntryPoint.hpp      # Application entry point
+│   │   ├── KeyCodes.hpp        # Keyboard input codes
+│   │   ├── MouseCodes.hpp      # Mouse input codes
+│   │   ├── Timestep.hpp        # Frame timing utilities
+│   │   ├── Window.hpp          # GLFW window abstraction
+│   │   ├── Events/             # Event system
+│   │   │   ├── Event.hpp       # Base event class
+│   │   │   ├── EventQueue.hpp  # Priority-based event queue
+│   │   │   ├── ApplicationEvent.hpp
+│   │   │   ├── KeyEvent.hpp
+│   │   │   └── MouseEvent.hpp
+│   │   ├── Layers/             # Layer system
+│   │   │   ├── Layer.hpp       # Base layer class
+│   │   │   └── LayerStack.hpp  # Layer management
+│   │   └── Logs/               # Logging system
+│   │       ├── Log.hpp         # Logger interface
+│   │       └── LogConfig.hpp   # Configuration
+│   ├── src/                    # Implementation files
+│   │   ├── Application.cpp
+│   │   ├── Event.cpp
+│   │   ├── EventQueue.cpp
+│   │   ├── Layer.cpp
+│   │   ├── LayerStack.cpp
+│   │   ├── Log.cpp
+│   │   └── Window.cpp
+│   └── vendor/                 # Third-party dependencies
+│       ├── spdlog/            # Logging library (submodule)
+│       └── GLFW/              # Window/input library (submodule)
+├── Sandbox/                    # Example application
+│   └── SandBoxApp.cpp         # Demo client
+├── .vscode/                   # VS Code configuration
+├── .zed/                      # Zed editor configuration
+├── build/                     # Build output directory
+├── logs/                      # Runtime log files
+├── CMakeLists.txt             # Build configuration
+├── build.sh                   # Unix build script
+├── build.bat                  # Windows build script
+└── .gitmodules               # Git submodule configuration
+```
+
+## 🔧 Building the Engine
 
 ### Quick Build (macOS/Linux)
 
@@ -111,32 +176,90 @@ cmake --build build --target clean-logs
 cmake --build build --target rebuild
 ```
 
+## 📦 Output Structure
+
+```
+build/
+├── bin/
+│   ├── Debug/          # Debug builds
+│   │   ├── BeEngine.dll/dylib/so
+│   │   ├── Sandbox
+│   │   └── logs/       # Runtime logs
+│   └── Release/        # Release builds
+│       ├── BeEngine.dll/dylib/so
+│       ├── Sandbox
+│       └── logs/
+└── lib/                # Static libraries
+    ├── libglfw3.a
+    └── libspdlogd.a
+```
+
+### Platform-Specific Output
+
+| Platform    | Library             | Executable    |
+| ----------- | ------------------- | ------------- |
+| **Windows** | `BeEngine.dll`      | `Sandbox.exe` |
+| **macOS**   | `libBeEngine.dylib` | `Sandbox`     |
+| **Linux**   | `libBeEngine.so`    | `Sandbox`     |
+
 ## 💻 Creating a Client Application
 
 ```cpp
 #include "Application.hpp"
 #include "EntryPoint.hpp"
 #include "Events/ApplicationEvent.hpp"
+#include "Layers/Layer.hpp"
 #include "Logs/Log.hpp"
+
+// Custom game layer
+class GameLayer : public BeEngine::Layer {
+public:
+    GameLayer() : Layer("GameLayer") {}
+
+    void onAttach() override {
+        BE_INFO("Game layer attached!");
+    }
+
+    void onUpdate(BeEngine::Timestep ts) override {
+        // Update game logic here
+        // Use ts.GetSeconds() for frame-rate independent updates
+    }
+
+    void OnEvent(BeEngine::Event& event) override {
+        BeEngine::EventDispatcher dispatcher(event);
+        dispatcher.Dispatch<BeEngine::KeyPressedEvent>(
+            [](BeEngine::KeyPressedEvent& e) {
+                BE_INFO("Key pressed: {}", BeEngine::ToString(e.GetKeyCode()));
+                return false; // Don't consume the event
+            }
+        );
+    }
+};
 
 class MyGame : public BeEngine::Application {
 public:
     MyGame() {
         BE_INFO("MyGame Started!");
 
-        // Subscribe to events
+        // Push your game layer
+        PushLayer(std::make_shared<GameLayer>());
+
+        // Subscribe to global events
         GetEventQueue().Subscribe(
             BeEngine::EventType::KeyPressed,
             [](BeEngine::Event& e) {
                 auto& keyEvent = static_cast<BeEngine::KeyPressedEvent&>(e);
-                BE_INFO("Key pressed: {}", BeEngine::ToString(keyEvent.GetKeyCode()));
+                if (keyEvent.GetKeyCode() == BeEngine::KeyCode::Escape) {
+                    BE_WARN("Escape pressed - shutting down");
+                    return true; // Consume the event
+                }
                 return false;
             }
         );
     }
 
     void OnEvent(BeEngine::Event& event) override {
-        // Handle events
+        // Handle application-level events
     }
 };
 
@@ -153,9 +276,31 @@ BeEngine::Application* BeEngine::CreateApplication() {
 The base application class provides:
 
 - Main game loop with event processing
+- Window creation and management
+- Layer stack management
 - Event queue management
 - Configurable frame rate
 - Automatic cleanup
+
+### Window System
+
+GLFW-based window abstraction featuring:
+
+- Cross-platform window creation
+- Event callback integration
+- VSync control
+- Window property management
+- Native handle access for advanced use
+
+### Layer System
+
+Hierarchical layer management with:
+
+- **LayerStack**: Manages layer lifecycle and execution order
+- **Layer**: Base class for game logic, UI, debug tools
+- **Forward updates**: Layers update in push order
+- **Reverse events**: Overlays receive events first
+- **Timestep integration**: Frame-rate independent updates
 
 ### Event Queue
 
@@ -209,6 +354,23 @@ BE_LOG_CATEGORY(LogCategory::Events, info, "Event logged");
 - Automatic compile commands generation
 - Full IntelliSense support
 
+## � Deqpendencies
+
+BeEngine uses the following third-party libraries as git submodules:
+
+- **[spdlog](https://github.com/gabime/spdlog)**: Fast C++ logging library
+- **[GLFW](https://github.com/glfw/glfw)**: Cross-platform window and input handling
+
+### Cloning with Submodules
+
+```bash
+# Clone with submodules
+git clone --recursive https://github.com/your-repo/BeEngine.git
+
+# Or if already cloned, initialize submodules
+git submodule update --init --recursive
+```
+
 ## 📋 Requirements
 
 ### macOS
@@ -241,11 +403,54 @@ BE_LOG_CATEGORY(LogCategory::Events, info, "Event logged");
 - Atomic operations
 - Chrono library for timing
 
+## � PLogging System
+
+BeEngine features a comprehensive logging system built on spdlog:
+
+### Features
+
+- **Dual-logger architecture**: Separate Core and Client loggers
+- **Multiple sinks**: Console, file, and rotating file output
+- **Async logging**: Non-blocking I/O for performance
+- **Category-based logging**: Organize logs by system (Core, Events, etc.)
+- **Privacy mode**: Automatic redaction of sensitive data
+- **Build-specific configs**: Different verbosity for Debug/Release/Distribution
+
+### Log Files
+
+Runtime logs are automatically created in the `logs/` directory:
+
+- `BeEngine_YYYYMMDD_HHMMSS.log`: Core engine logs
+- `App_YYYYMMDD_HHMMSS.log`: Client application logs
+
+### Usage Examples
+
+```cpp
+// Engine logging (use in BeEngine code)
+BE_CORE_TRACE("Detailed debug information");
+BE_CORE_INFO("General information");
+BE_CORE_WARN("Warning message");
+BE_CORE_ERROR("Error occurred");
+BE_CORE_CRITICAL("Critical failure");
+
+// Client logging (use in your application)
+BE_TRACE("Application trace");
+BE_INFO("Application info");
+BE_WARN("Application warning");
+BE_ERROR("Application error");
+BE_CRITICAL("Application critical");
+
+// Category-based logging
+BE_LOG_CATEGORY(LogCategory::Events, info, "Event processed: {}", event.ToString());
+```
+
 ## 📊 Performance Considerations
 
 - **Async logging** minimizes I/O impact on frame time
 - **Event time budgeting** prevents event processing from blocking rendering
 - **Priority queues** ensure critical events are processed first
+- **Layer system** allows efficient update and event handling order
+- **Timestep-based updates** provide frame-rate independent game logic
 - **Compile-time optimizations** with LTO in Distribution builds
 - **Platform-specific optimizations** (SIMD, cache alignment)
 
