@@ -403,7 +403,7 @@ git submodule update --init --recursive
 - Atomic operations
 - Chrono library for timing
 
-## � PLogging System
+## � Logging System
 
 BeEngine features a comprehensive logging system built on spdlog:
 
