@@ -74,9 +74,6 @@ void Application::Run() {
     Timestep timestep{time - m_LastFrameTime};
     m_LastFrameTime = time;
 
-    // Update window (poll events + swap buffers)
-    m_Window->OnUpdate();
-
     // Process events from queue
     ProcessEvents();
 
