@@ -4,3 +4,9 @@
 [submodule "BeEngine/vendor/GLFW"]
 	path = BeEngine/vendor/GLFW
 	url = https://github.com/glfw/glfw.git
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/MubeenSikandar/imgui.git
+[submodule "BeEngine/vendor/GLM"]
+	path = BeEngine/vendor/GLM
+	url = https://github.com/g-truc/glm.git

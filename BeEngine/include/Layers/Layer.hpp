@@ -50,7 +50,7 @@ public:
    * Use this to initialize resources, load assets, set up systems, etc.
    * This is called AFTER construction but BEFORE first update.
    */
-  virtual void onAttach() {};
+  virtual void OnAttach() {};
 
   /**
    * @brief Called when layer is popped from the stack
@@ -58,7 +58,7 @@ public:
    * Use this to clean up resources, save state, etc.
    * This is called BEFORE destruction.
    */
-  virtual void onDetach() {};
+  virtual void OnDetach() {};
 
   // ===== Update Methods =====
 
@@ -72,7 +72,7 @@ public:
    * Example:
    *   position += velocity * ts.GetSeconds();
    */
-  virtual void onUpdate(Timestep ts) {};
+  virtual void OnUpdate(Timestep ts) {};
 
   /**
    * @brief Called every frame for fixed-timestep physics
@@ -81,9 +81,23 @@ public:
    * Use this for physics updates that need a fixed timestep.
    * Called multiple times per frame if framerate is high.
    */
-  virtual void onFixedUpdate(Timestep ts) {};
+  virtual void OnFixedUpdate(Timestep ts) {};
 
   // ===== Rendering Methods =====
+
+  virtual void OnRender() {}
+
+  /**
+   * @brief Called every frame for ImGui rendering
+   *
+   * Use this to render debug UI, tools, editors, etc.
+   * Only called if ImGui is enabled in the application.
+   *
+   * Example:
+   *   ImGui::Begin("Debug");
+   *   ImGui::Text("FPS: %.1f", ts.GetFPS());
+   *   ImGui::End();
+   */
 
   /**
    * @brief Called every frame for ImGui rendering

@@ -1,14 +1,7 @@
 // include/Application.hpp
 #pragma once
 
-#include "Core.hpp"
-#include "Events/ApplicationEvent.hpp"
-#include "Events/Event.hpp"
-#include "Events/EventQueue.hpp"
-#include "Layers/Layer.hpp"
-#include "Layers/LayerStack.hpp"
-#include "Timestep.hpp"
-#include "Window.hpp"
+#include "PCH/BeEnginePCH.hpp"
 #include <memory>
 
 namespace BeEngine {

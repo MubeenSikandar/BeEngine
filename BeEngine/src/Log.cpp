@@ -1,19 +1,6 @@
 // Log.cpp
-#include "../include/Logs/Log.hpp"
-#include "../include/Logs/LogConfig.hpp"
-#include "spdlog/async.h"
-#include "spdlog/async_logger.h"
-#include "spdlog/common.h"
-#include "spdlog/logger.h"
-#include "spdlog/sinks/basic_file_sink.h"
-#include "spdlog/sinks/rotating_file_sink.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/spdlog.h"
-#include <iomanip>
-#include <iostream>
-#include <memory>
-#include <mutex>
-#include <vector>
+#include "PCH/BeEnginePCH.hpp"
+
 
 namespace BeEngine {
 

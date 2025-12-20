@@ -1,13 +1,4 @@
-#include "Window.hpp"
-#include "Events/ApplicationEvent.hpp"
-#include "Events/KeyEvent.hpp"
-#include "Events/MouseEvent.hpp"
-#include "GLFW/glfw3.h"
-#include "KeyCodes.hpp"
-#include "Logs/Log.hpp"
-#include <cstdint>
-#include <memory>
-#include <sys/types.h>
+#include "PCH/BeEnginePCH.hpp"
 
 namespace BeEngine {
 
@@ -60,6 +51,17 @@ void Window::Init(const WindowProps &props) {
   glfwSetErrorCallback(GLFWErrorCallback);
   BE_CORE_INFO("GLFW initialized successfully!");
 
+  // Set OpenGL version BEFORE creating window
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1); // macOS max
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
   // Create window
   m_Window = glfwCreateWindow(static_cast<int>(props.width.value),
                               static_cast<int>(props.height.value),
@@ -75,6 +77,22 @@ void Window::Init(const WindowProps &props) {
 
   // Make OpenGL context current (needed for OpenGL calls)
   glfwMakeContextCurrent(m_Window);
+
+  int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+  if (status == 0) {
+    BE_CORE_CRITICAL("Failed to initialize GLAD!");
+    return;
+  }
+
+  // Log OpenGL info
+  BE_CORE_INFO("OpenGL Info:");
+  BE_CORE_INFO("  Vendor: {}", (const char *)glGetString(GL_VENDOR));
+  BE_CORE_INFO("  Renderer: {}", (const char *)glGetString(GL_RENDERER));
+  BE_CORE_INFO("  Version: {}", (const char *)glGetString(GL_VERSION));
+  BE_CORE_INFO("  GLSL Version: {}",
+               (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+  BE_CORE_ASSERT(status, "Failed to intialize GLAD");
 
   // Store our WindowData in GLFW's user pointer (for callbacks)
   glfwSetWindowUserPointer(m_Window, &m_Data);

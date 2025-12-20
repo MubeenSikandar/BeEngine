@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(GameEngine VERSION 0.1.0 LANGUAGES CXX)
+project(GameEngine VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -56,6 +56,9 @@ endforeach()
 # ============================================
 add_subdirectory(BeEngine/vendor/spdlog)
 add_subdirectory(BeEngine/vendor/GLFW)
+add_subdirectory(BeEngine/vendor/Glad)
+add_subdirectory(BeEngine/vendor/GLM)
+add_subdirectory(BeEngine/vendor/imgui)
 
 # ============================================
 # BeEngine - Shared Library (DLL/dylib/so)
@@ -63,11 +66,13 @@ add_subdirectory(BeEngine/vendor/GLFW)
 add_library(BeEngine SHARED
     BeEngine/src/Application.cpp
     BeEngine/src/Log.cpp
-    BeEngine/src/Event.cpp
-    BeEngine/src/EventQueue.cpp
+    BeEngine/src/Events/Event.cpp
+    BeEngine/src/Events/EventQueue.cpp
     BeEngine/src/Window.cpp
-    BeEngine/src/Layer.cpp
-    BeEngine/src/LayerStack.cpp
+    BeEngine/src/Layers/Layer.cpp
+    BeEngine/src/Layers/LayerStack.cpp
+    BeEngine/src/Renderer/OpenGLRendererAPI.cpp
+    BeEngine/src/Renderer/Renderer.cpp
 )
 
 target_include_directories(BeEngine
@@ -82,7 +87,11 @@ target_link_libraries(BeEngine
     PUBLIC
         spdlog::spdlog
         glfw
+        glad
+        glm
+        imgui
 )
+
 
 # Define BE_BUILD_DLL when building the library
 target_compile_definitions(BeEngine PRIVATE BE_BUILD_DLL)

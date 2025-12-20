@@ -7,16 +7,24 @@
 #include "../BeEngine/include/KeyCodes.hpp"
 #include "../BeEngine/include/Logs/Log.hpp"
 #include "../BeEngine/include/MouseCodes.hpp"
+#include "src/TriangleLayer.hpp"
 
 class Sandbox : public BeEngine::Application {
 public:
   Sandbox() {
-    BE_INFO("===========================================");
-    BE_INFO("   Sandbox Application Started");
-    BE_INFO("===========================================");
+    BE_INFO("╔════════════════════════════════════════╗");
+    BE_INFO("║     BeEngine OpenGL Sandbox App       ║");
+    BE_INFO("╚════════════════════════════════════════╝");
+
+    // Push your layers
+    PushLayer(std::make_shared<TriangleLayer>());
+
+    BE_INFO("Sandbox Application created!");
+    BE_INFO("Controls:");
+    BE_INFO("  SPACE - Change triangle color");
+    BE_INFO("  ESC   - Exit application");
 
     SetupEventListeners();
-    TestEventSystem();
   }
 
   ~Sandbox() override {

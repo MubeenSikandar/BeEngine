@@ -1,11 +1,5 @@
 // src/Application.cpp
 #include "Application.hpp"
-#include "Core.hpp"
-#include "Events/ApplicationEvent.hpp"
-#include "Events/Event.hpp"
-#include "Logs/Log.hpp"
-#include "Timestep.hpp"
-#include "Window.hpp"
 
 namespace BeEngine {
 
@@ -25,6 +19,13 @@ Application::Application()
   BE_CORE_INFO("Creating Application...");
 
   m_Window = Window::Create(WindowProps("BeEngine", Width{1280}, Height{720}));
+
+  // Initialize renderer (AFTER window creation!)
+  RendererAPI::SetAPI(RenderAPI::OpenGL);
+  Renderer::Init();
+
+  // Set initial viewport
+  Renderer::SetViewport(0, 0, 1280, 720);
 
   m_Window->SetEventCallback([this](Event &e) {
     EventDispatcher dispatcher(e);
@@ -49,6 +50,9 @@ Application::Application()
 
 Application::~Application() {
   BE_CORE_INFO("Cleaning Up application...");
+
+  // Shutdown renderer
+  Renderer::Shutdown();
 
   auto stats = m_EventQueue.GetStats();
   BE_CORE_INFO("Event Statistics:");
@@ -80,6 +84,23 @@ void Application::Run() {
     if (!m_Minimized) {
       UpdateLayers(timestep);
     }
+
+    if (!m_Minimized) {
+      Renderer::BeginFrame();
+      Renderer::Clear(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
+
+      // Render all layers
+      for (auto &layer : m_LayerStack) {
+        if (layer && layer->IsEnabled()) {
+          layer->OnRender();
+        }
+      }
+
+      Renderer::EndFrame();
+    }
+
+    // Swap buffers
+    m_Window->OnUpdate();
 
     // TODO: Render ImGui
     // if (m_ImGuiEnabled) {
@@ -147,7 +168,7 @@ void Application::UpdateLayers(Timestep ts) {
   // Update all layers in forward order
   for (auto &layer : m_LayerStack) {
     if (layer && layer->IsEnabled()) {
-      layer->onUpdate(ts);
+      layer->OnUpdate(ts);
     }
   }
 }
