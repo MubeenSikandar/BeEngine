@@ -365,7 +365,7 @@ BeEngine uses the following third-party libraries as git submodules:
 
 ```bash
 # Clone with submodules
-git clone --recursive https://github.com/your-repo/BeEngine.git
+git clone --recursive https://github.com/MubeenSikandar/BeEngine.git
 
 # Or if already cloned, initialize submodules
 git submodule update --init --recursive
