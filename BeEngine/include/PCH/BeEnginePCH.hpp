@@ -21,7 +21,7 @@
 #include "Window.hpp"
 #include "Renderer/OpenGLRendererAPI.hpp"
 #include "Renderer/Renderer.hpp"
-#include "../../Sandbox/src/TriangleLayer.hpp"
+#include "ImGui/ImGuiLayer.hpp"
 #include "spdlog/async.h"
 #include "spdlog/async_logger.h"
 #include "spdlog/common.h"

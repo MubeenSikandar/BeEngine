@@ -7,7 +7,6 @@
 #include "../BeEngine/include/KeyCodes.hpp"
 #include "../BeEngine/include/Logs/Log.hpp"
 #include "../BeEngine/include/MouseCodes.hpp"
-#include "src/TriangleLayer.hpp"
 
 class Sandbox : public BeEngine::Application {
 public:
@@ -17,7 +16,6 @@ public:
     BE_INFO("╚════════════════════════════════════════╝");
 
     // Push your layers
-    PushLayer(std::make_shared<TriangleLayer>());
 
     BE_INFO("Sandbox Application created!");
     BE_INFO("Controls:");
@@ -97,25 +95,6 @@ private:
         });
 
     BE_INFO("Event listeners setup complete!");
-  }
-
-  void TestEventSystem() {
-    BE_INFO("\n=== Testing Event System ===\n");
-
-    // Test various events
-    GetEventQueue().QueueEvent<BeEngine::WindowResizeEvent>(
-        BeEngine::WindowResizeEvent::WindowSize{1920, 1080});
-
-    GetEventQueue().QueueEvent<BeEngine::KeyPressedEvent>(BeEngine::KeyCode::A,
-                                                          false);
-
-    GetEventQueue().QueueEvent<BeEngine::MouseButtonPressedEvent>(
-        BeEngine::MouseButton::Left);
-
-    // Process test events
-    GetEventQueue().ProcessEvents();
-
-    BE_INFO("\n=== Event System Test Complete ===\n");
   }
 
   bool OnWindowResize(BeEngine::WindowResizeEvent &e) {

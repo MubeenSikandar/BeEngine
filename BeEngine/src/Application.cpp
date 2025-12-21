@@ -27,6 +27,10 @@ Application::Application()
   // Set initial viewport
   Renderer::SetViewport(0, 0, 1280, 720);
 
+  // Create and push ImGui layer
+  m_ImGuiLayer = std::make_shared<ImGuiLayer>();
+  PushOverlay(m_ImGuiLayer);
+
   m_Window->SetEventCallback([this](Event &e) {
     EventDispatcher dispatcher(e);
 
@@ -93,18 +97,24 @@ void Application::Run() {
         }
       }
 
+      // Render ImGui
+      if (m_ImGuiLayer) {
+        m_ImGuiLayer->Begin();
+
+        for (auto &layer : m_LayerStack) {
+          if (layer && layer->IsEnabled()) {
+            layer->OnImGuiRender();
+          }
+        }
+
+        m_ImGuiLayer->End();
+      }
+
       Renderer::EndFrame();
     }
 
     // Swap buffers
     m_Window->OnUpdate();
-
-    // TODO: Render ImGui
-    // if (m_ImGuiEnabled) {
-    //     for (auto& layer : m_LayerStack) {
-    //         layer->OnImGuiRender();
-    //     }
-    // }
   }
 
   BE_CORE_INFO("Application loop ended");

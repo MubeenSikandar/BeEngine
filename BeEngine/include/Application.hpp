@@ -1,6 +1,7 @@
 // include/Application.hpp
 #pragma once
 
+#include "ImGui/ImGuiLayer.hpp"
 #include "PCH/BeEnginePCH.hpp"
 #include <memory>
 
@@ -148,6 +149,7 @@ private:
   std::unique_ptr<Window> m_Window;
   LayerStack m_LayerStack;
   EventQueue m_EventQueue;
+  std::shared_ptr<ImGuiLayer> m_ImGuiLayer;
 
   bool m_Running = true;
   bool m_Minimized = false;

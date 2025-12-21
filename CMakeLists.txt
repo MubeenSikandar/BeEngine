@@ -73,6 +73,7 @@ add_library(BeEngine SHARED
     BeEngine/src/Layers/LayerStack.cpp
     BeEngine/src/Renderer/OpenGLRendererAPI.cpp
     BeEngine/src/Renderer/Renderer.cpp
+    BeEngine/src/ImGui/ImGuiLayer.cpp
 )
 
 target_include_directories(BeEngine
