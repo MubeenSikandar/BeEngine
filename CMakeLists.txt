@@ -191,6 +191,7 @@ elseif(UNIX AND NOT APPLE)
 
     # Linux requires pthread for threading
     find_package(Threads REQUIRED)
+    find_package(X11 REQUIRED)
     target_link_libraries(BeEngine PRIVATE Threads::Threads)
 
     # Add -ldl for dynamic linking
@@ -201,6 +202,12 @@ endif()
 add_executable(Sandbox
     Sandbox/SandBoxApp.cpp
 )
+
+if(UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+    target_link_libraries(Sandbox PRIVATE X11::X11)
+endif()
+
 
 target_link_libraries(Sandbox PRIVATE BeEngine)
 

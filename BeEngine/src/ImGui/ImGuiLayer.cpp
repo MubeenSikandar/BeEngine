@@ -85,8 +85,10 @@ void ImGuiLayer::OnAttach() {
 
 #if defined(__APPLE__)
   const char *glsl_version = "#version 410";
-#else
+#elif defined(WIN32)
   const char *glsl_version = "version 450";
+#else
+  const char *glsl_version = "version 330";
 #endif
 
   ImGui_ImplOpenGL3_Init(glsl_version);

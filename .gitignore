@@ -8,6 +8,7 @@ compile_commands.json
 *.log
 runtime_logs/
 app_logs/
+imgui.ini
 
 # IDE
 .vscode/
