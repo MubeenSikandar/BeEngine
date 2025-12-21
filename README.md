@@ -354,7 +354,7 @@ BE_LOG_CATEGORY(LogCategory::Events, info, "Event logged");
 - Automatic compile commands generation
 - Full IntelliSense support
 
-## � Deqpendencies
+### Dependencies
 
 BeEngine uses the following third-party libraries as git submodules:
 
@@ -446,7 +446,7 @@ target_compile_features(imgui PUBLIC cxx_std_17)
 - Atomic operations
 - Chrono library for timing
 
-## � Logging System
+### Logging System
 
 BeEngine features a comprehensive logging system built on spdlog:
 
