@@ -189,25 +189,20 @@ elseif(UNIX AND NOT APPLE)
         POSITION_INDEPENDENT_CODE ON
     )
 
-    # Linux requires pthread for threading
+    # Threads for GLFW
     find_package(Threads REQUIRED)
+
+    # X11 for windowing
     find_package(X11 REQUIRED)
-    target_link_libraries(BeEngine PRIVATE Threads::Threads)
 
     # Add -ldl for dynamic linking
-    target_link_libraries(BeEngine PRIVATE ${CMAKE_DL_LIBS})
+    target_link_libraries(BeEngine PRIVATE Threads::Threads X11::X11 ${CMAKE_DL_LIBS})
 endif()
 
 # Sandbox - Executable
 add_executable(Sandbox
     Sandbox/SandBoxApp.cpp
 )
-
-if(UNIX AND NOT APPLE)
-    find_package(X11 REQUIRED)
-    target_link_libraries(Sandbox PRIVATE X11::X11)
-endif()
-
 
 target_link_libraries(Sandbox PRIVATE BeEngine)
 

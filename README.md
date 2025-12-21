@@ -371,6 +371,49 @@ git clone --recursive https://github.com/MubeenSikandar/BeEngine.git
 git submodule update --init --recursive
 ```
 
+### CMake for imgui
+
+```bash
+cmake_minimum_required(VERSION 3.20)
+project(imgui)
+
+# ImGui core files
+set(IMGUI_SOURCES
+    imgui.cpp
+    imgui_demo.cpp
+    imgui_draw.cpp
+    imgui_tables.cpp
+    imgui_widgets.cpp
+)
+
+# ImGui backends (GLFW + OpenGL3)
+set(IMGUI_BACKENDS
+    backends/imgui_impl_glfw.cpp
+    backends/imgui_impl_opengl3.cpp
+)
+
+# Create static library
+add_library(imgui STATIC
+    ${IMGUI_SOURCES}
+    ${IMGUI_BACKENDS}
+)
+
+# Include directories
+target_include_directories(imgui PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/backends
+)
+
+# Link dependencies
+find_package(OpenGL REQUIRED)
+target_link_libraries(imgui PUBLIC
+    glfw
+)
+
+# Enable C++17 (ImGui requirement)
+target_compile_features(imgui PUBLIC cxx_std_17)
+```
+
 ## 📋 Requirements
 
 ### macOS
