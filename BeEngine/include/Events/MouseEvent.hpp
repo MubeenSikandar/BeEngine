@@ -1,9 +1,9 @@
 // MouseEvent.hpp
 #pragma once
 
+#include "Codes/MouseCodes.hpp"
 #include "Core.hpp"
 #include "Events/Event.hpp"
-#include "MouseCodes.hpp"
 #include <format>
 #include <string>
 

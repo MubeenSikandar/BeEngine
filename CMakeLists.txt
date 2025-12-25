@@ -74,6 +74,7 @@ add_library(BeEngine SHARED
     BeEngine/src/Renderer/OpenGLRendererAPI.cpp
     BeEngine/src/Renderer/Renderer.cpp
     BeEngine/src/ImGui/ImGuiLayer.cpp
+    BeEngine/src/Input/Input.cpp
 )
 
 target_include_directories(BeEngine

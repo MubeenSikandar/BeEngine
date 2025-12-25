@@ -1,26 +1,18 @@
 // Sandbox/SandboxApp.cpp
-#include "../BeEngine/include/Application.hpp"
-#include "../BeEngine/include/EntryPoint.hpp"
-#include "../BeEngine/include/Events/ApplicationEvent.hpp"
-#include "../BeEngine/include/Events/KeyEvent.hpp"
-#include "../BeEngine/include/Events/MouseEvent.hpp"
-#include "../BeEngine/include/KeyCodes.hpp"
-#include "../BeEngine/include/Logs/Log.hpp"
-#include "../BeEngine/include/MouseCodes.hpp"
+#include "Application.hpp"
+#include "EntryPoint.hpp"
+#include "PCH/BeEnginePCH.hpp"
 
 class Sandbox : public BeEngine::Application {
 public:
   Sandbox() {
     BE_INFO("╔════════════════════════════════════════╗");
-    BE_INFO("║     BeEngine OpenGL Sandbox App       ║");
+    BE_INFO("║     BeEngine OpenGL Sandbox App        ║");
     BE_INFO("╚════════════════════════════════════════╝");
 
     // Push your layers
 
     BE_INFO("Sandbox Application created!");
-    BE_INFO("Controls:");
-    BE_INFO("  SPACE - Change triangle color");
-    BE_INFO("  ESC   - Exit application");
 
     SetupEventListeners();
   }

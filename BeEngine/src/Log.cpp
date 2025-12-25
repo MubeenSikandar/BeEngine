@@ -1,7 +1,6 @@
 // Log.cpp
 #include "PCH/BeEnginePCH.hpp"
 
-
 namespace BeEngine {
 
 // Static Member Initialization

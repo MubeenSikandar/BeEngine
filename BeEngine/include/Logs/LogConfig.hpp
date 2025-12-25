@@ -36,7 +36,7 @@ struct BE_API LogConfig {
   static constexpr size_t ASYNC_THREAD_COUNT{1};
 
   // Pattern
-  std::string pattern{"[%Y-%m-%d %H:%M:%S.%e] %^%l%$] [%n] [thread %t] %v"};
+  std::string pattern{"[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%n] [thread %t] %v"};
 
   // Global Level
   spdlog::level::level_enum minLevel{spdlog::level::trace};

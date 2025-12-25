@@ -1,9 +1,7 @@
 // include/Application.hpp
 #pragma once
 
-#include "ImGui/ImGuiLayer.hpp"
 #include "PCH/BeEnginePCH.hpp"
-#include <memory>
 
 namespace BeEngine {
 

@@ -24,6 +24,9 @@ Application::Application()
   RendererAPI::SetAPI(RenderAPI::OpenGL);
   Renderer::Init();
 
+  // Initialize Input System
+  Input::Init();
+
   // Set initial viewport
   Renderer::SetViewport(0, 0, 1280, 720);
 
@@ -78,6 +81,8 @@ void Application::Run() {
     Timestep timestep{time - m_LastFrameTime};
     m_LastFrameTime = time;
 
+    Input::Update();
+
     // Process events from queue
     ProcessEvents();
 
@@ -88,7 +93,7 @@ void Application::Run() {
 
     if (!m_Minimized) {
       Renderer::BeginFrame();
-      Renderer::Clear(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
+      Renderer::Clear(0.1F, 0.1F, 0.1F, 1.0F); // Dark gray background
 
       // Render all layers
       for (auto &layer : m_LayerStack) {
@@ -111,6 +116,7 @@ void Application::Run() {
       }
 
       Renderer::EndFrame();
+      BeEngine::Input::EndFrame();
     }
 
     // Swap buffers
