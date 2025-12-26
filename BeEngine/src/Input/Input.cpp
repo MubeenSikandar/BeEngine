@@ -865,4 +865,55 @@ void Input::UpdateGamepadStates() {
   }
 }
 
+InputState Input::GetKeyState(KeyCode key) {
+  auto it = s_KeyStates.find(key);
+  return (it != s_KeyStates.end()) ? it->second : InputState::None;
+}
+
+InputState Input::GetMouseButtonState(MouseButton button) {
+  auto it = s_MouseButtonStates.find(button);
+  return (it != s_MouseButtonStates.end()) ? it->second : InputState::None;
+}
+
+InputState Input::GetGamepadButtonState(GamepadButton button, GamepadID id) {
+  if (id == GamepadID::Any) {
+    // Check all connected gamepads
+    for (const auto &gamepad : s_Gamepads) {
+      if (!gamepad.connected) {
+        continue;
+      }
+      auto it = gamepad.buttonStates.find(button);
+      if (it != gamepad.buttonStates.end() && it->second != InputState::None) {
+        return it->second;
+      }
+    }
+    return InputState::None;
+  }
+
+  if (!IsValidGamepadID(id)) {
+    return InputState::None;
+  }
+
+  const auto &gamepad = s_Gamepads[static_cast<size_t>(id)];
+  if (!gamepad.connected) {
+  }
+  return InputState::None;
+
+  auto it = gamepad.buttonStates.find(button);
+  return (it != gamepad.buttonStates.end()) ? it->second : InputState::None;
+}
+
+float Input::ApplyDeadZone(float value, float deadZone) {
+  if (std::abs(value) < deadZone) {
+    return 0.0F;
+  }
+
+  // Remap value from [deadZone, 1.0] to [0.0, 1.0]
+  float sign = (value > 0.0F) ? 1.0F : -1.0F;
+  float absValue = std::abs(value);
+  float remapped = (absValue - deadZone) / (1.0F - deadZone);
+
+  return sign * remapped;
+}
+
 } // namespace BeEngine
