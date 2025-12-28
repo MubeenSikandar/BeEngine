@@ -106,11 +106,17 @@ void Application::Run() {
       if (m_ImGuiLayer) {
         m_ImGuiLayer->Begin();
 
+        // Begin dockspace (full-window docking area)
+        m_ImGuiLayer->BeginDockspace();
+
         for (auto &layer : m_LayerStack) {
           if (layer && layer->IsEnabled()) {
             layer->OnImGuiRender();
           }
         }
+
+        // End dockspace
+        m_ImGuiLayer->EndDockspace();
 
         m_ImGuiLayer->End();
       }

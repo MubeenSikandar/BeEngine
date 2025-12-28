@@ -45,8 +45,32 @@ public:
    */
   NODISCARD bool WantCaptureKeyboard() const;
 
+  /**
+   * @brief Setup dockspace for the main window
+   *
+   * Creates a fullscreen dockspace that fills the entire window.
+   * Call this in your OnImGuiRender() implementation.
+   */
+  void BeginDockspace();
+
+  /**
+   * @brief End dockspace
+   */
+  void EndDockspace();
+
+  /**
+   * @brief Enable/disable dockspace
+   */
+  void SetDockspaceEnabled(bool enabled) { m_DockspaceEnabled = enabled; }
+
+  /**
+   * @brief Check if dockspace is enabled
+   */
+  NODISCARD bool IsDockspaceEnabled() const { return m_DockspaceEnabled; }
+
 private:
   bool m_BlockEvents{true};
+  bool m_DockspaceEnabled{true};
   float m_Time{0.0F};
 };
 } // namespace BeEngine

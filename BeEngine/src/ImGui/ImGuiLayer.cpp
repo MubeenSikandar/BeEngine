@@ -1,8 +1,4 @@
-#include "ImGui/ImGuiLayer.hpp"
 #include "Application.hpp"
-#include "Events/Event.hpp"
-#include "GLFW/glfw3.h"
-#include "Logs/Log.hpp"
 #include "PCH/BeEnginePCH.hpp"
 #include "imgui_impl_opengl3.h"
 #include <imgui.h>
@@ -16,34 +12,34 @@ ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer") {}
 static void SetDarkThemeColors() {
   auto &colors = ImGui::GetStyle().Colors;
 
-  colors[ImGuiCol_WindowBg] = ImVec4{0.1f, 0.105f, 0.11f, 1.0f};
+  colors[ImGuiCol_WindowBg] = ImVec4{0.1F, 0.105F, 0.11F, 1.0F};
 
   // Headers
-  colors[ImGuiCol_Header] = ImVec4{0.2f, 0.205f, 0.21f, 1.0f};
-  colors[ImGuiCol_HeaderHovered] = ImVec4{0.3f, 0.305f, 0.31f, 1.0f};
-  colors[ImGuiCol_HeaderActive] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+  colors[ImGuiCol_Header] = ImVec4{0.2F, 0.205F, 0.21F, 1.0F};
+  colors[ImGuiCol_HeaderHovered] = ImVec4{0.3F, 0.305F, 0.31F, 1.0F};
+  colors[ImGuiCol_HeaderActive] = ImVec4{0.15F, 0.1505F, 0.151F, 1.0F};
 
   // Buttons
-  colors[ImGuiCol_Button] = ImVec4{0.2f, 0.205f, 0.21f, 1.0f};
-  colors[ImGuiCol_ButtonHovered] = ImVec4{0.3f, 0.305f, 0.31f, 1.0f};
-  colors[ImGuiCol_ButtonActive] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+  colors[ImGuiCol_Button] = ImVec4{0.2F, 0.205F, 0.21F, 1.0F};
+  colors[ImGuiCol_ButtonHovered] = ImVec4{0.3F, 0.305F, 0.31F, 1.0F};
+  colors[ImGuiCol_ButtonActive] = ImVec4{0.15F, 0.1505F, 0.151F, 1.0F};
 
   // Frame BG
-  colors[ImGuiCol_FrameBg] = ImVec4{0.2f, 0.205f, 0.21f, 1.0f};
-  colors[ImGuiCol_FrameBgHovered] = ImVec4{0.3f, 0.305f, 0.31f, 1.0f};
-  colors[ImGuiCol_FrameBgActive] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+  colors[ImGuiCol_FrameBg] = ImVec4{0.2F, 0.205F, 0.21F, 1.0F};
+  colors[ImGuiCol_FrameBgHovered] = ImVec4{0.3F, 0.305F, 0.31F, 1.0F};
+  colors[ImGuiCol_FrameBgActive] = ImVec4{0.15F, 0.1505F, 0.151F, 1.0F};
 
   // Tabs
-  colors[ImGuiCol_Tab] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
-  colors[ImGuiCol_TabHovered] = ImVec4{0.38f, 0.3805f, 0.381f, 1.0f};
-  colors[ImGuiCol_TabActive] = ImVec4{0.28f, 0.2805f, 0.281f, 1.0f};
-  colors[ImGuiCol_TabUnfocused] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
-  colors[ImGuiCol_TabUnfocusedActive] = ImVec4{0.2f, 0.205f, 0.21f, 1.0f};
+  colors[ImGuiCol_Tab] = ImVec4{0.15F, 0.1505F, 0.151F, 1.0F};
+  colors[ImGuiCol_TabHovered] = ImVec4{0.38F, 0.3805F, 0.381F, 1.0F};
+  colors[ImGuiCol_TabActive] = ImVec4{0.28F, 0.2805F, 0.281F, 1.0F};
+  colors[ImGuiCol_TabUnfocused] = ImVec4{0.15F, 0.1505F, 0.151F, 1.0F};
+  colors[ImGuiCol_TabUnfocusedActive] = ImVec4{0.2F, 0.205F, 0.21F, 1.0F};
 
   // Title
-  colors[ImGuiCol_TitleBg] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
-  colors[ImGuiCol_TitleBgActive] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
-  colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
+  colors[ImGuiCol_TitleBg] = ImVec4{0.15F, 0.1505F, 0.151F, 1.0F};
+  colors[ImGuiCol_TitleBgActive] = ImVec4{0.15F, 0.1505F, 0.151F, 1.0F};
+  colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.15F, 0.1505F, 0.151F, 1.0F};
 }
 
 void ImGuiLayer::OnAttach() {
@@ -75,8 +71,7 @@ void ImGuiLayer::OnAttach() {
 
   // Setup Platform/Renderer backends
   Application &app = Application::Get();
-  GLFWwindow *window =
-      static_cast<GLFWwindow *>(app.GetWindow().GetNativeWindow());
+  auto *window = static_cast<GLFWwindow *>(app.GetWindow().GetNativeWindow());
 
   // Initialize GLFW backend
   ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -157,6 +152,62 @@ bool ImGuiLayer::WantCaptureMouse() const {
 
 bool ImGuiLayer::WantCaptureKeyboard() const {
   return ImGui::GetIO().WantCaptureKeyboard;
+}
+
+void ImGuiLayer::BeginDockspace() {
+  if (!m_DockspaceEnabled) {
+    return;
+  }
+
+  // Setup dockspace
+  static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+  // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window
+  // not dockable
+  ImGuiWindowFlags window_flags =
+      ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+
+  // Get the main viewport
+  const ImGuiViewport *viewport = ImGui::GetMainViewport();
+  ImGui::SetNextWindowPos(viewport->WorkPos);
+  ImGui::SetNextWindowSize(viewport->WorkSize);
+  ImGui::SetNextWindowViewport(viewport->ID);
+
+  // Transparent window settings
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+  window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+  window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+  window_flags |=
+      ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+  // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render
+  // our background
+  if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) {
+    window_flags |= ImGuiWindowFlags_NoBackground;
+  }
+
+  // Important: note that we proceed even if Begin() returns false (closed
+  // window). This is because we want to keep our DockSpace() active.
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+  ImGui::Begin("DockSpace", nullptr, window_flags);
+  ImGui::PopStyleVar();
+  ImGui::PopStyleVar(2);
+
+  // Submit the DockSpace
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+  }
+}
+
+void ImGuiLayer::EndDockspace() {
+  if (!m_DockspaceEnabled) {
+    return;
+  }
+
+  ImGui::End(); // End DockSpace window
 }
 
 } // namespace BeEngine

@@ -32,6 +32,10 @@ public:
 
     dispatcher.Dispatch<BeEngine::KeyPressedEvent>(
         [this](BeEngine::KeyPressedEvent &e) { return OnKeyPressed(e); });
+    dispatcher.Dispatch<BeEngine::GamepadButtonPressedEvent>(
+        [this](BeEngine::GamepadButtonPressedEvent &e) {
+          return OnGamepadButtonPressed(e);
+        });
   }
 
 private:
@@ -52,14 +56,14 @@ private:
           m_AccumulatedTime += updateEvent.GetDeltaTime();
 
           // Log FPS Evey Second
-          if (m_AccumulatedTime >= 1.0f) {
+          if (m_AccumulatedTime >= 1.0F) {
             BE_INFO("FPS: ~{:.1f}", m_TickCount / m_AccumulatedTime);
             m_AccumulatedTime = 0.0F;
             m_TickCount = 0;
           }
 
           m_TotalTime += updateEvent.GetDeltaTime();
-          if (!m_HasRequestedClose && m_TotalTime >= 5.0f) {
+          if (!m_HasRequestedClose && m_TotalTime >= 5.0F) {
             BE_INFO("Test duration complete (5s), closing...");
             GetEventQueue().QueueEvent<BeEngine::WindowCloseEvent>();
             m_HasRequestedClose = true;
@@ -86,6 +90,61 @@ private:
           return false;
         });
 
+    // Gamepad connection events
+    GetEventQueue().Subscribe(
+        BeEngine::EventType::GamepadConnected, [](BeEngine::Event &e) {
+          auto &gamepadEvent =
+              static_cast<BeEngine::GamepadConnectedEvent &>(e);
+          BE_INFO("Gamepad Connected: {} ({})",
+                  BeEngine::ToString(gamepadEvent.GetGamepadID()),
+                  gamepadEvent.GetGamepadName());
+          return false;
+        });
+
+    GetEventQueue().Subscribe(
+        BeEngine::EventType::GamepadDisconnected, [](BeEngine::Event &e) {
+          auto &gamepadEvent =
+              static_cast<BeEngine::GamepadDisconnectedEvent &>(e);
+          BE_WARN("Gamepad Disconnected: {}",
+                  BeEngine::ToString(gamepadEvent.GetGamepadID()));
+          return false;
+        });
+
+    // Gamepad button events
+    GetEventQueue().Subscribe(
+        BeEngine::EventType::GamepadButtonPressed, [](BeEngine::Event &e) {
+          auto &buttonEvent =
+              static_cast<BeEngine::GamepadButtonPressedEvent &>(e);
+          BE_INFO("Gamepad {} Button Pressed: {}",
+                  BeEngine::ToString(buttonEvent.GetGamepadID()),
+                  BeEngine::ToString(buttonEvent.GetButton()));
+          return false;
+        });
+
+    GetEventQueue().Subscribe(
+        BeEngine::EventType::GamepadButtonReleased, [](BeEngine::Event &e) {
+          auto &buttonEvent =
+              static_cast<BeEngine::GamepadButtonReleasedEvent &>(e);
+          BE_INFO("Gamepad {} Button Released: {}",
+                  BeEngine::ToString(buttonEvent.GetGamepadID()),
+                  BeEngine::ToString(buttonEvent.GetButton()));
+          return false;
+        });
+
+    // Gamepad axis events (with deadzone filtering to avoid spam)
+    GetEventQueue().Subscribe(
+        BeEngine::EventType::GamepadAxisMoved, [](BeEngine::Event &e) {
+          auto &axisEvent = static_cast<BeEngine::GamepadAxisMovedEvent &>(e);
+          // Only log significant movements to avoid console spam
+          if (std::abs(axisEvent.GetValue()) > 0.2f) {
+            BE_TRACE("Gamepad {} Axis {}: {:.3f}",
+                     BeEngine::ToString(axisEvent.GetGamepadID()),
+                     BeEngine::ToString(axisEvent.GetAxis()),
+                     axisEvent.GetValue());
+          }
+          return false;
+        });
+
     BE_INFO("Event listeners setup complete!");
   }
 
@@ -97,6 +156,16 @@ private:
   bool OnKeyPressed(BeEngine::KeyPressedEvent &e) {
     if (e.GetKeyCode() == BeEngine::KeyCode::Escape) {
       BE_WARN("Escape pressed - shutting down");
+      GetEventQueue().QueueEvent<BeEngine::WindowCloseEvent>();
+      return true;
+    }
+    return false;
+  }
+
+  bool OnGamepadButtonPressed(BeEngine::GamepadButtonPressedEvent &e) {
+    // Example: Start button closes the app (like Escape key)
+    if (e.GetButton() == BeEngine::GamepadButton::Start) {
+      BE_WARN("Start button pressed - shutting down");
       GetEventQueue().QueueEvent<BeEngine::WindowCloseEvent>();
       return true;
     }

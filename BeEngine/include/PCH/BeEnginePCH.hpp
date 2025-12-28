@@ -16,6 +16,7 @@
 #include "Events/ApplicationEvent.hpp"
 #include "Events/Event.hpp"
 #include "Events/EventQueue.hpp"
+#include "Events/GamepadEvent.hpp"
 #include "Events/KeyEvent.hpp"
 #include "Events/MouseEvent.hpp"
 #include "ImGui/ImGuiLayer.hpp"
