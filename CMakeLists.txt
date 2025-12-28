@@ -17,6 +17,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ============================================
 # BUILD CONFIGURATION
 # ============================================
+option(BE_BUILD_SHARED "Build BeEngine as shared library (DLL)" OFF)
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
     message(STATUS "Build type not specified, defaulting to Debug")
@@ -31,8 +33,15 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     message(STATUS "Building in RELEASE mode")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Distribution" OR CMAKE_BUILD_TYPE STREQUAL "Dist")
     add_compile_definitions(BE_DIST)
-    add_compile_definitions(NDEBUG)  # Disable standard asserts
+    add_compile_definitions(NDEBUG)
     message(STATUS "Building in DISTRIBUTION mode")
+endif()
+
+# Library type message
+if(BE_BUILD_SHARED)
+    message(STATUS "Library Type: SHARED (DLL)")
+else()
+    message(STATUS "Library Type: STATIC")
 endif()
 
 
@@ -60,10 +69,16 @@ add_subdirectory(BeEngine/vendor/Glad)
 add_subdirectory(BeEngine/vendor/GLM)
 add_subdirectory(BeEngine/vendor/imgui)
 
+
 # ============================================
-# BeEngine - Shared Library (DLL/dylib/so)
+# BUILD OPTIONS
 # ============================================
-add_library(BeEngine SHARED
+option(BE_BUILD_SHARED "Build BeEngine as shared library" OFF)
+
+# ============================================
+# BeEngine Library
+# ============================================
+set(BEENGINE_SOURCES
     BeEngine/src/Application.cpp
     BeEngine/src/Log.cpp
     BeEngine/src/Events/Event.cpp
@@ -76,6 +91,24 @@ add_library(BeEngine SHARED
     BeEngine/src/ImGui/ImGuiLayer.cpp
     BeEngine/src/Input/Input.cpp
 )
+
+if(BE_BUILD_SHARED)
+    add_library(BeEngine SHARED ${BEENGINE_SOURCES})
+    target_compile_definitions(BeEngine PRIVATE BE_BUILD_DLL BE_DYNAMIC_LINK)
+
+    # Windows: Copy DLL to executable directory
+    if(WIN32)
+        add_custom_command(TARGET Sandbox POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:BeEngine>
+                $<TARGET_FILE_DIR:Sandbox>
+            COMMENT "Copying BeEngine.dll to Sandbox directory"
+        )
+    endif()
+else()
+    add_library(BeEngine STATIC ${BEENGINE_SOURCES})
+    # No DLL copying needed for static library
+endif()
 
 target_include_directories(BeEngine
     PUBLIC
@@ -93,10 +126,6 @@ target_link_libraries(BeEngine
         glm
         imgui
 )
-
-
-# Define BE_BUILD_DLL when building the library
-target_compile_definitions(BeEngine PRIVATE BE_BUILD_DLL)
 
 
 # ============================================
@@ -217,27 +246,6 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Distribution" OR CMAKE_BUILD_TYPE STREQUAL "Di
 endif()
 
 # ============================================
-# COPY DLL TO EXECUTABLE DIRECTORY
-# ============================================
-if(WIN32)
-    add_custom_command(TARGET Sandbox POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:BeEngine>
-        $<TARGET_FILE_DIR:Sandbox>
-    )
-endif()
-
-if(WIN32)
-    # Copy BeEngine.dll next to Sandbox.exe
-    add_custom_command(TARGET Sandbox POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:BeEngine>
-            $<TARGET_FILE_DIR:Sandbox>
-        COMMENT "Copying BeEngine.dll to Sandbox directory"
-    )
-endif()
-
-# ============================================
 # CREATE LOGS DIRECTORY
 # ============================================
 add_custom_command(TARGET BeEngine POST_BUILD
@@ -268,12 +276,16 @@ message(STATUS "========================================")
 message(STATUS "BeEngine Configuration Summary")
 message(STATUS "========================================")
 message(STATUS "Build Type:          ${CMAKE_BUILD_TYPE}")
+if(BE_BUILD_SHARED)
+    message(STATUS "Library Type:        SHARED (DLL)")
+else()
+    message(STATUS "Library Type:        STATIC")
+endif()
 message(STATUS "C++ Standard:        C++${CMAKE_CXX_STANDARD}")
 message(STATUS "Compiler:            ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "Platform:            ${CMAKE_SYSTEM_NAME}")
 message(STATUS "Architecture:        ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "Install Prefix:      ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "Build Tests:         ${BUILD_TESTS}")
 message(STATUS "========================================")
 message(STATUS "")
 

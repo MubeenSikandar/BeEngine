@@ -1,3 +1,4 @@
+//EntryPoint.hpp
 #pragma once
 #include "../include/Logs/Log.hpp"
 #include "Application.hpp"

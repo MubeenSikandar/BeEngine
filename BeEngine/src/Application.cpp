@@ -173,7 +173,7 @@ bool Application::OnWindowResize(WindowResizeEvent &e) {
   m_Minimized = false;
 
   // TODO: Update renderer viewport
-  // Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+  Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 
   return false;
 }
