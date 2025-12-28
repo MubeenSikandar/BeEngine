@@ -23,6 +23,35 @@ public:
     BE_INFO("===========================================");
   }
 
+  void OnImGuiRender() {
+     // Example dockable windows
+
+     // Statistics window
+     ImGui::Begin("Statistics");
+     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+     ImGui::Text("Frame Time: %.3f ms", 1000.0F / ImGui::GetIO().Framerate);
+     ImGui::Text("Tick Count: %llu", static_cast<long long unsigned>(m_TickCount));
+     ImGui::Text("Total Time: %.2f s", m_TotalTime);
+     ImGui::End();
+
+     // Controls window
+     ImGui::Begin("Controls");
+     ImGui::Text("Press ESC to close");
+     ImGui::Text("Press Space to do something");
+     if (ImGui::Button("Queue Close Event")) {
+       GetEventQueue().QueueEvent<BeEngine::WindowCloseEvent>();
+     }
+     ImGui::End();
+
+     // Debug window
+     ImGui::Begin("Debug Info");
+     ImGui::Text("Application: BeEngine Sandbox");
+     ImGui::Text("Renderer: OpenGL");
+     ImGui::Separator();
+     ImGui::Checkbox("VSync", &m_VSync);
+     ImGui::End();
+   }
+
   void OnEvent(BeEngine::Event &event) override {
     BeEngine::EventDispatcher dispatcher(event);
 
@@ -176,6 +205,7 @@ private:
   float m_AccumulatedTime = 0.0F;
   float m_TotalTime = 0.0F;
   bool m_HasRequestedClose{false};
+   bool m_VSync {true};
 };
 
 BeEngine::Application *BeEngine::CreateApplication() { return new Sandbox(); }

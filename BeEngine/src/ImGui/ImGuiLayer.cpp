@@ -116,6 +116,12 @@ void ImGuiLayer::OnEvent(Event &e) {
         io.WantCaptureKeyboard) {
       e.IsHandled = true;
     }
+
+    // Block gamepad events if ImGui wants gamepad
+      if (e.IsInCategory(EventCategory::EventCategoryGamepad) &&
+          io.WantCaptureKeyboard) { // ImGui uses keyboard flag for gamepads too
+        e.IsHandled = true;
+      }
   }
 }
 
