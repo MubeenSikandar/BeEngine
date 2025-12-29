@@ -1,12 +1,6 @@
 #pragma once
 
-#include "Core.hpp"
-#include "Events/Event.hpp"
-#include <GLFW/glfw3.h>
-#include <cstdint>
-#include <functional>
-#include <memory>
-#include <string>
+#include "PCH/BeEnginePCH.hpp"
 
 // Forward declare GLFW types to avoid including GLFW in header
 struct GLFWwindow {};

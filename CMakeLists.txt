@@ -88,6 +88,8 @@ set(BEENGINE_SOURCES
     BeEngine/src/Layers/LayerStack.cpp
     BeEngine/src/Renderer/OpenGLRendererAPI.cpp
     BeEngine/src/Renderer/Renderer.cpp
+    BeEngine/src/Renderer/OpenGLContext.cpp
+    BeEngine/src/Renderer/GraphicsContext.cpp
     BeEngine/src/ImGui/ImGuiLayer.cpp
     BeEngine/src/Input/Input.cpp
 )

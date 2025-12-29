@@ -2,9 +2,9 @@
   "languages": {
     "C++": {
       "format_on_save": "on",
-      "formatter": "clang-format",
-      "tab_size": 4
-    }
+      "formatter": ["prettier"],
+      "tab_size": 4,
+    },
   },
   "lsp": {
     "clangd": {
@@ -14,12 +14,10 @@
           "--background-index",
           "--clang-tidy",
           "--completion-style=detailed",
-          "--header-insertion=iwyu"
-        ]
-      }
-    }
+          "--header-insertion=iwyu",
+        ],
+      },
+    },
   },
-  "terminal": {
-    "working_directory": "current_project_directory"
-  }
+  "terminal": { "working_directory": "current_project_directory" },
 }
