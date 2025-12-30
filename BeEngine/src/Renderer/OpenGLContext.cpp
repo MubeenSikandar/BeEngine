@@ -31,14 +31,14 @@ namespace BeEngine {
            BE_CORE_INFO("  GLSL:     {}", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
 
            // Optional: Check for required OpenGL version
-           GLint major, minor;
-           glGetIntegerv(GL_MAJOR_VERSION, &major);
-           glGetIntegerv(GL_MINOR_VERSION, &minor);
+           // GLint major, minor;
+           // glGetIntegerv(GL_MAJOR_VERSION, &major);
+           // glGetIntegerv(GL_MINOR_VERSION, &minor);
 
-           BE_CORE_ASSERT(major > 4 || (major == 4 && minor >= 5),
-                          "BeEngine requires at least OpenGL 4.5!");
+           // BE_CORE_ASSERT(major > 4 || (major == 4 && minor >= 5),
+           //                "BeEngine requires at least OpenGL 4.5!");
 
-           BE_CORE_INFO("OpenGL {}.{} context created successfully", major, minor);
+           // BE_CORE_INFO("OpenGL {}.{} context created successfully", major, minor);
          }
 
          void OpenGLContext::SwapBuffers() {
