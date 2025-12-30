@@ -37,19 +37,16 @@ void Window::Init(const WindowProps &props) {
   m_Data.vSync = props.vSync;
 
   BE_CORE_INFO("Creating Window '{} ({} x {})'", props.title,
-               props.height.value, props.width.value);
+               props.width.value, props.height.value);
 
   // Initialize GLFW (only once for first window)
   if (s_GLFWWindowCount == 0) {
     int success = glfwInit();
-    if (success == GLFW_FALSE) {
-      BE_CORE_CRITICAL("Failed to Initialize GLFW!");
-      return;
-    }
-  }
+    BE_CORE_ASSERT(success, "Failed to initialize GLFW!");
 
-  glfwSetErrorCallback(GLFWErrorCallback);
-  BE_CORE_INFO("GLFW initialized successfully!");
+    glfwSetErrorCallback(GLFWErrorCallback);
+    BE_CORE_INFO("GLFW initialized successfully");
+    }
 
   // Set OpenGL version BEFORE creating window
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -75,24 +72,10 @@ void Window::Init(const WindowProps &props) {
 
   ++s_GLFWWindowCount;
 
-  // Make OpenGL context current (needed for OpenGL calls)
-  glfwMakeContextCurrent(m_Window);
 
-  int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-  if (status == 0) {
-    BE_CORE_CRITICAL("Failed to initialize GLAD!");
-    return;
-  }
-
-  // Log OpenGL info
-  BE_CORE_INFO("OpenGL Info:");
-  BE_CORE_INFO("  Vendor: {}", (const char *)glGetString(GL_VENDOR));
-  BE_CORE_INFO("  Renderer: {}", (const char *)glGetString(GL_RENDERER));
-  BE_CORE_INFO("  Version: {}", (const char *)glGetString(GL_VERSION));
-  BE_CORE_INFO("  GLSL Version: {}",
-               (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION));
-
-  BE_CORE_ASSERT(status, "Failed to intialize GLAD");
+  // Create and initialize graphics context
+    m_Context = GraphicsContext::Create(m_Window);
+    m_Context->Init();
 
   // Store our WindowData in GLFW's user pointer (for callbacks)
   glfwSetWindowUserPointer(m_Window, &m_Data);
@@ -131,28 +114,29 @@ void Window::ShutDown() {
 void Window::SetupCallbacks() {
 
   // Window Resize
-  glfwSetWindowSizeCallback(
-      m_Window, [](GLFWwindow *window, int width, int height) {
-        Width w{static_cast<uint32_t>(width)};
-        Height h{static_cast<uint32_t>(height)};
-        WindowData &data =
-            *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-        data.width = w.value;
-        data.height = h.value;
+  glfwSetWindowSizeCallback(m_Window, [](GLFWwindow *window, int width, int height) {
+      WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+      data.width = static_cast<uint32_t>(width);
+      data.height = static_cast<uint32_t>(height);
 
-        WindowResizeEvent event(WindowResizeEvent::WindowSize{
-            .Width = data.height, .Height = data.height});
-        if (data.eventCallback) {
-          data.eventCallback(event);
-        }
+      WindowResizeEvent event(WindowResizeEvent::WindowSize{
+          .Width = data.width,
+          .Height = data.height
       });
+
+      if (data.eventCallback) {
+          data.eventCallback(event);
+      }
+  });
 
   // Window Close
   glfwSetWindowCloseCallback(m_Window, [](GLFWwindow *window) {
     WindowData &data =
         *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
     WindowCloseEvent event;
-    data.eventCallback(event);
+    if (data.eventCallback) {
+        data.eventCallback(event);
+    }
   });
 
   // Keyboard input
@@ -163,17 +147,23 @@ void Window::SetupCallbacks() {
     switch (action) {
     case GLFW_PRESS: {
       KeyPressedEvent event(static_cast<KeyCode>(key), false);
-      data.eventCallback(event);
+      if (data.eventCallback) {
+          data.eventCallback(event);
+      }
       break;
     }
     case GLFW_RELEASE: {
       KeyReleasedEvent event(static_cast<KeyCode>(key));
-      data.eventCallback(event);
+      if (data.eventCallback) {
+          data.eventCallback(event);
+      }
       break;
     }
     case GLFW_REPEAT: {
       KeyPressedEvent event(static_cast<KeyCode>(key), true);
-      data.eventCallback(event);
+      if (data.eventCallback) {
+          data.eventCallback(event);
+      }
       break;
     }
     default:
@@ -187,7 +177,9 @@ void Window::SetupCallbacks() {
         *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
 
     KeyTypedEvent event(static_cast<KeyCode>(codepoint));
-    data.eventCallback(event);
+    if (data.eventCallback) {
+        data.eventCallback(event);
+    }
   });
 
   // Mouse Button
@@ -199,12 +191,16 @@ void Window::SetupCallbacks() {
         switch (action) {
         case GLFW_PRESS: {
           MouseButtonPressedEvent event(static_cast<MouseButton>(button));
-          data.eventCallback(event);
+          if (data.eventCallback) {
+              data.eventCallback(event);
+          }
           break;
         }
         case GLFW_RELEASE: {
           MouseButtonReleasedEvent event(static_cast<MouseButton>(button));
-          data.eventCallback(event);
+          if (data.eventCallback) {
+              data.eventCallback(event);
+          }
           break;
         }
         default:
@@ -213,26 +209,28 @@ void Window::SetupCallbacks() {
       });
 
   // Mouse Scroll
-  glfwSetCursorPosCallback(
-      m_Window, [](GLFWwindow *window, double xPos, double yPos) {
-        WindowData &data =
-            *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
-
-        // Calculate delta (if you want to track it)
-        static double lastX = xPos;
-        static double lastY = yPos;
-        auto deltaX = static_cast<float>(xPos - lastX);
-        auto deltaY = static_cast<float>(yPos - lastY);
-        lastX = xPos;
-        lastY = yPos;
-
-        MouseMovedEvent event(static_cast<float>(xPos),
-                              static_cast<float>(yPos), deltaX, deltaY);
-
-        if (data.eventCallback) {
+  glfwSetScrollCallback(m_Window, [](GLFWwindow *window, double xOffset, double yOffset) {
+      WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+      MouseScrolledEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
+      if (data.eventCallback) {
           data.eventCallback(event);
-        }
-      });
+      }
+  });
+
+  // Mouse Movement
+  glfwSetCursorPosCallback(m_Window, [](GLFWwindow *window, double xPos, double yPos) {
+    WindowData &data = *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+
+    float deltaX = static_cast<float>(xPos - data.lastMouseX);
+    float deltaY = static_cast<float>(yPos - data.lastMouseY);
+    data.lastMouseX = xPos;
+    data.lastMouseY = yPos;
+
+    MouseMovedEvent event(static_cast<float>(xPos), static_cast<float>(yPos), deltaX, deltaY);
+    if (data.eventCallback) {
+        data.eventCallback(event);
+    }
+  });
 
   // Cursor Enter/Leave Window
   glfwSetCursorEnterCallback(m_Window, [](GLFWwindow *window, int entered) {
@@ -241,10 +239,14 @@ void Window::SetupCallbacks() {
 
     if (entered) {
       MouseEnterEvent event;
-      data.eventCallback(event);
+      if (data.eventCallback) {
+          data.eventCallback(event);
+      }
     } else {
       MouseLeaveEvent event;
-      data.eventCallback(event);
+      if (data.eventCallback) {
+          data.eventCallback(event);
+      }
     }
   });
 }
@@ -254,11 +256,8 @@ void Window::SetupCallbacks() {
 // ============================================================================
 
 void Window::OnUpdate() {
-  // Poll for events (keyboard, mouse, Window events)
   glfwPollEvents();
-
-  // swap front and back buffers (for rendering)
-  glfwSwapBuffers(m_Window);
+  m_Context->SwapBuffers();
 }
 
 bool Window::shouldClose() const {

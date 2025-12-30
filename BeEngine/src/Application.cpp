@@ -20,6 +20,10 @@ Application::Application()
 
   m_Window = Window::Create(WindowProps("BeEngine", Width{1280}, Height{720}));
 
+  auto* context = m_Window->GetContext();
+  BE_CORE_INFO("Renderer: {}", context->GetRendererInfo());
+  BE_CORE_INFO("Version: {}", context->GetVersionInfo());
+
   // Initialize renderer (AFTER window creation!)
   RendererAPI::SetAPI(RenderAPI::OpenGL);
   Renderer::Init();

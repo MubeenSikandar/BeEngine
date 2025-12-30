@@ -3,7 +3,7 @@
 #include "PCH/BeEnginePCH.hpp"
 
 // Forward declare GLFW types to avoid including GLFW in header
-struct GLFWwindow {};
+struct GLFWwindow;
 
 namespace BeEngine {
 
@@ -66,7 +66,7 @@ public:
   NODISCARD uint32_t GetWidth() const { return m_Data.width; }
   NODISCARD uint32_t GetHeight() const { return m_Data.height; }
   NODISCARD std::string GetTitle() const { return m_Data.title; }
-  NODISCARD bool IsVSynce() const { return m_Data.vSync; }
+  NODISCARD bool IsVSync() const { return m_Data.vSync; }
 
   /**
    * @brief Get native GLFW window handle
@@ -75,11 +75,16 @@ public:
 
   NODISCARD void *GetNativeWindow() const { return m_Window; }
 
-  /**
-   * @brief Set callback for window events
-   * @param callback Function to call when events occur
-   */
+   /**
+    * @brief Get the graphics context
+    * @return Pointer to the graphics context (OpenGL, Vulkan, etc.)
+    */
+   NODISCARD GraphicsContext* GetContext() const { return m_Context.get(); }
 
+   /**
+    * @brief Set callback for window events
+    * @param callback Function to call when events occur
+    */
   void SetEventCallback(const EventCallbackFn &callback) {
     m_Data.eventCallback = callback;
   }
@@ -102,6 +107,7 @@ private:
   void SetupCallbacks();
 
   GLFWwindow *m_Window;
+   std::unique_ptr<GraphicsContext> m_Context;
 
   struct WindowData {
     std::string title;
@@ -109,6 +115,10 @@ private:
     uint32_t height;
     bool vSync;
     EventCallbackFn eventCallback;
+
+    // Add mouse tracking
+    double lastMouseX = 0.0;
+    double lastMouseY = 0.0;
   };
 
   WindowData m_Data;
