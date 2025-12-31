@@ -57,9 +57,8 @@ public:
   void OnUpdate();
 
   /**
-   * @brief Poll events and swap buffers (call once per frame)
+   * @brief Check if window should close
    */
-
   NODISCARD bool shouldClose() const;
 
   // Getters

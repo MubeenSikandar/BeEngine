@@ -2,7 +2,7 @@
   "languages": {
     "C++": {
       "format_on_save": "on",
-      "formatter": ["prettier"],
+      "formatter": "auto",
       "tab_size": 4,
     },
   },

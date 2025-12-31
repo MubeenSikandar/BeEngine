@@ -59,6 +59,10 @@ void Window::Init(const WindowProps &props) {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
+#ifdef BE_DEBUG
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
+
   // Create window
   m_Window = glfwCreateWindow(static_cast<int>(props.width.value),
                               static_cast<int>(props.height.value),
@@ -252,7 +256,7 @@ void Window::SetupCallbacks() {
 }
 
 // ============================================================================
-// Public Methodss
+// Public Methods
 // ============================================================================
 
 void Window::OnUpdate() {
