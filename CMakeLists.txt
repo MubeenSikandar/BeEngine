@@ -86,10 +86,18 @@ set(BEENGINE_SOURCES
     BeEngine/src/Window.cpp
     BeEngine/src/Layers/Layer.cpp
     BeEngine/src/Layers/LayerStack.cpp
-    BeEngine/src/Renderer/OpenGLRendererAPI.cpp
+    BeEngine/src/Renderer/OpenGL/OpenGLRendererAPI.cpp
+    BeEngine/src/Renderer/OpenGL/OpenGLContext.cpp
+    BeEngine/src/Renderer/OpenGL/OpenGLIndexBuffer.cpp
+    BeEngine/src/Renderer/OpenGL/OpenGLShader.cpp
+    BeEngine/src/Renderer/OpenGL/OpenGLVertexArray.cpp
+    BeEngine/src/Renderer/OpenGL/OpenGLVertexBuffer.cpp
     BeEngine/src/Renderer/Renderer.cpp
-    BeEngine/src/Renderer/OpenGLContext.cpp
     BeEngine/src/Renderer/GraphicsContext.cpp
+    BeEngine/src/Renderer/IndexBuffer.cpp
+    BeEngine/src/Renderer/Shader.cpp
+    BeEngine/src/Renderer/VertexArray.cpp
+    BeEngine/src/Renderer/VertexBuffer.cpp
     BeEngine/src/ImGui/ImGuiLayer.cpp
     BeEngine/src/Input/Input.cpp
 )
@@ -234,6 +242,7 @@ endif()
 # Sandbox - Executable
 add_executable(Sandbox
     Sandbox/SandBoxApp.cpp
+    Sandbox/SandboxLayer.cpp
 )
 
 target_link_libraries(Sandbox PRIVATE BeEngine)

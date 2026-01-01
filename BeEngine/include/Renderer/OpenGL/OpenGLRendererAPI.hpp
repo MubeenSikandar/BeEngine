@@ -1,4 +1,4 @@
-//OpenGLRendererAPI.hpp
+// OpenGLRendererAPI.hpp
 #pragma once
 
 #include "Renderer/RendererAPI.hpp"

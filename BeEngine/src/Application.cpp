@@ -20,7 +20,7 @@ Application::Application()
 
   m_Window = Window::Create(WindowProps("BeEngine", Width{1280}, Height{720}));
 
-  auto* context = m_Window->GetContext();
+  auto *context = m_Window->GetContext();
   BE_CORE_INFO("Renderer: {}", context->GetRendererInfo());
   BE_CORE_INFO("Version: {}", context->GetVersionInfo());
 
@@ -97,7 +97,6 @@ void Application::Run() {
 
     if (!m_Minimized) {
       Renderer::BeginFrame();
-      Renderer::Clear(0.1F, 0.1F, 0.1F, 1.0F); // Dark gray background
 
       // Render all layers
       for (auto &layer : m_LayerStack) {
@@ -106,12 +105,12 @@ void Application::Run() {
         }
       }
 
-      // Render ImGui
+      // Render ImGui WITHOUT dockspace
       if (m_ImGuiLayer) {
         m_ImGuiLayer->Begin();
 
-        // Begin dockspace (full-window docking area)
-        m_ImGuiLayer->BeginDockspace();
+        // Commented out dockspace - ImGui windows will float over the scene
+        // m_ImGuiLayer->BeginDockspace();
 
         for (auto &layer : m_LayerStack) {
           if (layer && layer->IsEnabled()) {
@@ -119,8 +118,7 @@ void Application::Run() {
           }
         }
 
-        // End dockspace
-        m_ImGuiLayer->EndDockspace();
+        // m_ImGuiLayer->EndDockspace();
 
         m_ImGuiLayer->End();
       }

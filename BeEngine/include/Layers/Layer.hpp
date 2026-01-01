@@ -85,8 +85,6 @@ public:
 
   // ===== Rendering Methods =====
 
-  virtual void OnRender() {}
-
   /**
    * @brief Called every frame for ImGui rendering
    *
@@ -98,6 +96,7 @@ public:
    *   ImGui::Text("FPS: %.1f", ts.GetFPS());
    *   ImGui::End();
    */
+  virtual void OnRender() {}
 
   /**
    * @brief Called every frame for ImGui rendering
