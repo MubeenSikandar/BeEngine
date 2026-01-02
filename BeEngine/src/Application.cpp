@@ -96,21 +96,23 @@ void Application::Run() {
     }
 
     if (!m_Minimized) {
+      // ===== RENDER PHASE =====
       Renderer::BeginFrame();
 
-      // Render all layers
+      // 1. Render all layers to their framebuffers
+      //    Each layer's OnRender() binds its own framebuffer, renders, unbinds
       for (auto &layer : m_LayerStack) {
         if (layer && layer->IsEnabled()) {
           layer->OnRender();
         }
       }
 
-      // Render ImGui WITHOUT dockspace
+      // 2. Render ImGui (displays framebuffer textures in dockable windows)
       if (m_ImGuiLayer) {
         m_ImGuiLayer->Begin();
 
-        // Commented out dockspace - ImGui windows will float over the scene
-        // m_ImGuiLayer->BeginDockspace();
+        // Enable dockspace - now works because scene renders to framebuffer!
+        m_ImGuiLayer->BeginDockspace();
 
         for (auto &layer : m_LayerStack) {
           if (layer && layer->IsEnabled()) {
@@ -118,7 +120,7 @@ void Application::Run() {
           }
         }
 
-        // m_ImGuiLayer->EndDockspace();
+        m_ImGuiLayer->EndDockspace();
 
         m_ImGuiLayer->End();
       }

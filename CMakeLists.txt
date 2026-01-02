@@ -92,12 +92,14 @@ set(BEENGINE_SOURCES
     BeEngine/src/Renderer/OpenGL/OpenGLShader.cpp
     BeEngine/src/Renderer/OpenGL/OpenGLVertexArray.cpp
     BeEngine/src/Renderer/OpenGL/OpenGLVertexBuffer.cpp
+    BeEngine/src/Renderer/OpenGL/OpenGLFrameBuffer.cpp
     BeEngine/src/Renderer/Renderer.cpp
     BeEngine/src/Renderer/GraphicsContext.cpp
     BeEngine/src/Renderer/IndexBuffer.cpp
     BeEngine/src/Renderer/Shader.cpp
     BeEngine/src/Renderer/VertexArray.cpp
     BeEngine/src/Renderer/VertexBuffer.cpp
+    BeEngine/src/Renderer/FrameBuffer.cpp
     BeEngine/src/ImGui/ImGuiLayer.cpp
     BeEngine/src/Input/Input.cpp
 )
