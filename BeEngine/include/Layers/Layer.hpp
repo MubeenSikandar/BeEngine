@@ -2,7 +2,7 @@
 
 #include "Core.hpp"
 #include "Events/Event.hpp"
-#include "Timestep.hpp"
+#include "Time/Timestep.hpp"
 #include <string>
 namespace BeEngine {
 /**
@@ -81,7 +81,7 @@ public:
    * Use this for physics updates that need a fixed timestep.
    * Called multiple times per frame if framerate is high.
    */
-  virtual void OnFixedUpdate(Timestep ts) {};
+  virtual void OnFixedUpdate(float fixedDeltaTime) {}
 
   // ===== Rendering Methods =====
 

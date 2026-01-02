@@ -25,7 +25,7 @@ void SandboxLayer::SetupTriangle() {
       layout(location = 0) out vec4 o_Color;
 
       void main() {
-          o_Color = vec4(1.0, 0.5, 0.2, 1.0);  // Orange
+          o_Color = vec4(0.5, 0.9, 0.9, 1.0);
       }
   )";
 

@@ -86,6 +86,7 @@ set(BEENGINE_SOURCES
     BeEngine/src/Window.cpp
     BeEngine/src/Layers/Layer.cpp
     BeEngine/src/Layers/LayerStack.cpp
+    BeEngine/src/Time/Time.cpp
     BeEngine/src/Renderer/OpenGL/OpenGLRendererAPI.cpp
     BeEngine/src/Renderer/OpenGL/OpenGLContext.cpp
     BeEngine/src/Renderer/OpenGL/OpenGLIndexBuffer.cpp

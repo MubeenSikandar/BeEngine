@@ -138,6 +138,12 @@ private:
   void UpdateLayers(Timestep ts);
 
   /**
+   * @brief Updates all layers using a fixed timestep
+   * @param fixedDeltaTime Fixed timestep duration
+   */
+  void FixedUpdateLayers(float fixedDeltaTime);
+
+  /**
    * @brief Dispatch event to all layers (reverse order)
    */
   void DispatchEventToLayers(Event &event);
@@ -151,8 +157,6 @@ private:
 
   bool m_Running = true;
   bool m_Minimized = false;
-
-  float m_LastFrameTime = 0.0F;
 
   static Application *s_Instance;
 };

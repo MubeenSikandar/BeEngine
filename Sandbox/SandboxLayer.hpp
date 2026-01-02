@@ -82,14 +82,34 @@ public:
     ImGui::PopStyleVar();
 
     // ===== DEBUG INFO WINDOW =====
+    // Debug window with time info
     ImGui::Begin("Triangle Demo");
-    ImGui::Text("Hello from Sandbox!");
     ImGui::Text("Triangle Status: %s",
                 (m_VertexArray && m_Shader) ? "Ready" : "Not Ready");
     ImGui::Separator();
-    ImGui::Text("Viewport Size: %.0f x %.0f", m_ViewportSize.x,
-                m_ViewportSize.y);
-    ImGui::Text("Viewport Focused: %s", m_ViewportFocused ? "Yes" : "No");
+    ImGui::Text("Viewport: %.0f x %.0f", m_ViewportSize.x, m_ViewportSize.y);
+    ImGui::Text("Focused: %s", m_ViewportFocused ? "Yes" : "No");
+
+    // Time info
+    ImGui::Separator();
+    ImGui::Text("FPS: %.1f", BeEngine::Time::GetFPS());
+    ImGui::Text("Delta Time: %.3f ms",
+                BeEngine::Time::GetDeltaTime() * 1000.0f);
+    ImGui::Text("Time: %.2f s", BeEngine::Time::GetTime());
+    ImGui::Text("Frame: %llu", BeEngine::Time::GetFrameCount());
+
+    // Time controls
+    ImGui::Separator();
+    float timeScale = BeEngine::Time::GetTimeScale();
+    if (ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 2.0f)) {
+      BeEngine::Time::SetTimeScale(timeScale);
+    }
+
+    bool paused = BeEngine::Time::IsPaused();
+    if (ImGui::Checkbox("Paused", &paused)) {
+      BeEngine::Time::SetPaused(paused);
+    }
+
     ImGui::End();
   }
 

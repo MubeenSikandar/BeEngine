@@ -80,10 +80,8 @@ void Application::Run() {
   BE_CORE_INFO("Application started");
 
   while (m_Running && !m_Window->shouldClose()) {
-    // Calculate delta time
-    auto time = static_cast<float>(glfwGetTime());
-    Timestep timestep{time - m_LastFrameTime};
-    m_LastFrameTime = time;
+    // Update time system (replaces manual delta time calculation)
+    Time::Update();
 
     Input::Update();
 
@@ -92,7 +90,14 @@ void Application::Run() {
 
     // Update layers (if not minimized)
     if (!m_Minimized) {
-      UpdateLayers(timestep);
+      // Fixed timestep updates (for physics/simulation)
+      while (Time::ShouldRunFixedUpdate()) {
+        FixedUpdateLayers(Time::GetFixedDeltaTime());
+        Time::ConsumeFixedTime();
+      }
+
+      // Variable timestep updates (for game logic)
+      UpdateLayers(Timestep(Time::GetDeltaTime()));
     }
 
     if (!m_Minimized) {
@@ -185,6 +190,14 @@ bool Application::OnWindowResize(WindowResizeEvent &e) {
 void Application::ProcessEvents() {
   // Process events with a time budget of 5ms per frame
   m_EventQueue.ProcessEventsWithBudget(5.0);
+}
+
+void Application::FixedUpdateLayers(float fixedDeltaTime) {
+  for (auto &layer : m_LayerStack) {
+    if (layer && layer->IsEnabled()) {
+      layer->OnFixedUpdate(fixedDeltaTime);
+    }
+  }
 }
 
 void Application::UpdateLayers(Timestep ts) {
