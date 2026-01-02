@@ -1,6 +1,14 @@
 #pragma once
 
-#include "PCH/BeEnginePCH.hpp"
+#include "Codes/GamepadCodes.hpp"
+#include "Codes/KeyCodes.hpp"
+#include "Codes/MouseCodes.hpp"
+#include "glm/fwd.hpp"
+#include <array>
+#include <cstdint>
+#include <functional>
+#include <string>
+
 namespace BeEngine {
 /**
  * @brief Input state for a single frame

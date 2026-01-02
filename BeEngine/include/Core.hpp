@@ -66,19 +66,19 @@
 
 // DLL EXPORT/IMPORT
 #ifdef BE_DYNAMIC_LINK
-  // Keep dynamic library support as optional (for future use)
-  #ifdef BE_PLATFORM_WINDOWS
-    #ifdef BE_BUILD_DLL
-      #define BE_API __declspec(dllexport)
-    #else
-      #define BE_API __declspec(dllimport)
-    #endif
-  #else
-    #define BE_API __attribute__((visibility("default")))
-  #endif
+// Keep dynamic library support as optional (for future use)
+#ifdef BE_PLATFORM_WINDOWS
+#ifdef BE_BUILD_DLL
+#define BE_API __declspec(dllexport)
 #else
-  // Static library - no export/import needed
-  #define BE_API
+#define BE_API __declspec(dllimport)
+#endif
+#else
+#define BE_API __attribute__((visibility("default")))
+#endif
+#else
+// Static library - no export/import needed
+#define BE_API
 #endif
 
 // Architecture Detection

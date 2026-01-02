@@ -147,7 +147,7 @@ target_link_libraries(BeEngine
 if(MSVC)
     target_compile_options(BeEngine PRIVATE
         /W4                    # Warning level 4
-        /WX                    # Treat warnings as errors (optional, comment out if too strict)
+        # /WX                    # Treat warnings as errors (optional, comment out if too strict)
         /permissive-           # Standards conformance
         /MP                    # Multi-processor compilation
     )
