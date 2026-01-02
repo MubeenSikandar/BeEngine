@@ -96,7 +96,8 @@ public:
     ImGui::Text("Delta Time: %.3f ms",
                 BeEngine::Time::GetDeltaTime() * 1000.0f);
     ImGui::Text("Time: %.2f s", BeEngine::Time::GetTime());
-    ImGui::Text("Frame: %llu", BeEngine::Time::GetFrameCount());
+    ImGui::Text("Frame: %llu", static_cast<long long unsigned int>(
+                                   BeEngine::Time::GetFrameCount()));
 
     // Time controls
     ImGui::Separator();
