@@ -9,6 +9,10 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 
+#include "Camera/Camera.hpp"
+#include "Camera/OrthographicCamera.hpp"
+#include "Camera/OrthographicCameraController.hpp"
+#include "Camera/PerspectiveCamera.hpp"
 #include "Codes/GamepadCodes.hpp"
 #include "Codes/KeyCodes.hpp"
 #include "Codes/MouseCodes.hpp"

@@ -101,6 +101,10 @@ set(BEENGINE_SOURCES
     BeEngine/src/Renderer/VertexArray.cpp
     BeEngine/src/Renderer/VertexBuffer.cpp
     BeEngine/src/Renderer/FrameBuffer.cpp
+    BeEngine/src/Camera/Camera.cpp
+    BeEngine/src/Camera/OrthographicCamera.cpp
+    BeEngine/src/Camera/OrthographicCameraController.cpp
+    BeEngine/src/Camera/PerspectiveCamera.cpp
     BeEngine/src/ImGui/ImGuiLayer.cpp
     BeEngine/src/Input/Input.cpp
 )

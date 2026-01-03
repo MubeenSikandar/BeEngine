@@ -4,8 +4,8 @@
 void SandboxLayer::SetupTriangle() {
   BE_INFO("Setting up triangle geometry...");
 
-  std::array<float, 9> vertices = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f,
-                                   0.0f,  0.0f,  0.5f, 0.0f};
+  std::array<float, 9> vertices = {-0.5F, -0.5F, 0.0F, 0.5F, -0.5F,
+                                   0.0F,  0.0F,  0.5F, 0.0F};
 
   m_VertexArray = BeEngine::VertexArray::Create();
   auto vb = BeEngine::VertexBuffer::Create(
@@ -13,11 +13,14 @@ void SandboxLayer::SetupTriangle() {
   m_VertexArray->AddVertexBuffer(vb);
 
   std::string vertexSrc = R"(
-    #version 410 core
-    layout(location = 0) in vec3 a_Position;
-    void main() {
-      gl_Position = vec4(a_Position, 1.0);
-    }
+      #version 410 core
+      layout(location = 0) in vec3 a_Position;
+
+      uniform mat4 u_ViewProjection;
+
+      void main() {
+          gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+      }
   )";
 
   std::string fragmentSrc = R"(

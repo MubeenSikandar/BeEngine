@@ -102,26 +102,24 @@ void ImGuiLayer::OnDetach() {
 }
 
 void ImGuiLayer::OnEvent(Event &e) {
-  if (m_BlockEvents) {
+  // Use Application's block setting instead of local m_BlockEvents
+  if (Application::Get().IsBlockingEvents()) {
     ImGuiIO &io = ImGui::GetIO();
 
-    // Block mouse events if ImGui wants mouse
     if (e.IsInCategory(EventCategory::EventCategoryMouse) &&
         io.WantCaptureMouse) {
       e.IsHandled = true;
     }
 
-    // Block keyboard events if ImGui wants keyboard
     if (e.IsInCategory(EventCategory::EventCategoryKeyboard) &&
         io.WantCaptureKeyboard) {
       e.IsHandled = true;
     }
 
-    // Block gamepad events if ImGui wants gamepad
-      if (e.IsInCategory(EventCategory::EventCategoryGamepad) &&
-          io.WantCaptureKeyboard) { // ImGui uses keyboard flag for gamepads too
-        e.IsHandled = true;
-      }
+    if (e.IsInCategory(EventCategory::EventCategoryGamepad) &&
+        io.WantCaptureKeyboard) {
+      e.IsHandled = true;
+    }
   }
 }
 

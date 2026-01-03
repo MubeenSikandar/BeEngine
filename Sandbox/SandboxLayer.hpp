@@ -1,5 +1,6 @@
 // SandboxLayer.hpp
 #pragma once
+#include "Application.hpp"
 #include "PCH/BeEnginePCH.hpp"
 
 class SandboxLayer : public BeEngine::Layer {
@@ -8,6 +9,13 @@ public:
 
   void OnAttach() override {
     BE_INFO("SandboxLayer attached - setting up rendering");
+
+    m_CameraController =
+        std::make_unique<BeEngine::OrthographicCameraController>(
+            1280.0F / 720.0F, // Aspect ratio
+            1.0F,             // Size
+            true              // Enable rotation
+        );
 
     BeEngine::FramebufferSpecification fbSpec;
     fbSpec.Width = 1280;
@@ -24,6 +32,10 @@ public:
   void OnDetach() override { BE_INFO("SandboxLayer detached"); }
 
   void OnUpdate(BeEngine::Timestep ts) override {
+    if (m_ViewportFocused) {
+      m_CameraController->OnUpdate(ts);
+    }
+
     // Handle viewport resize
     const auto &spec = m_Framebuffer->GetSpecification();
     if (m_ViewportSize.x > 0.0F && m_ViewportSize.y > 0.0F &&
@@ -31,7 +43,12 @@ public:
          static_cast<uint32_t>(m_ViewportSize.y) != spec.Height)) {
       m_Framebuffer->Resize(static_cast<uint32_t>(m_ViewportSize.x),
                             static_cast<uint32_t>(m_ViewportSize.y));
+      m_CameraController->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
     }
+  }
+
+  void OnEvent(BeEngine::Event &event) override {
+    m_CameraController->OnEvent(event);
   }
 
   void OnRender() override {
@@ -49,6 +66,11 @@ public:
     glDisable(GL_CULL_FACE);
 
     m_Shader->Bind();
+
+    m_Shader->SetMat4(
+        "u_ViewProjection",
+        m_CameraController->GetCamera().GetViewProjectionMatrix());
+
     m_VertexArray->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -59,63 +81,44 @@ public:
   }
 
   void OnImGuiRender() override {
-    // ===== VIEWPORT WINDOW - DISPLAYS THE FRAMEBUFFER =====
+    // Viewport window
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::Begin("Viewport");
 
-    // Track focus/hover state
     m_ViewportFocused = ImGui::IsWindowFocused();
     m_ViewportHovered = ImGui::IsWindowHovered();
 
-    // Get available size for the viewport
+    BeEngine::Application::Get().SetBlockEvents(!m_ViewportHovered);
+
     ImVec2 viewportSize = ImGui::GetContentRegionAvail();
     m_ViewportSize = {viewportSize.x, viewportSize.y};
 
-    // Display the framebuffer texture
     uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID(0);
     ImGui::Image(reinterpret_cast<void *>(textureID),
-                 ImVec2(m_ViewportSize.x, m_ViewportSize.y),
-                 ImVec2(0, 1),  // UV top-left (flipped for OpenGL)
-                 ImVec2(1, 0)); // UV bottom-right (flipped for OpenGL)
+                 ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2(0, 1),
+                 ImVec2(1, 0));
 
     ImGui::End();
     ImGui::PopStyleVar();
 
-    // ===== DEBUG INFO WINDOW =====
-    // Debug window with time info
-    ImGui::Begin("Triangle Demo");
-    ImGui::Text("Triangle Status: %s",
-                (m_VertexArray && m_Shader) ? "Ready" : "Not Ready");
+    // Camera info window
+    ImGui::Begin("Camera");
+    auto &camera = m_CameraController->GetCamera();
+    auto pos = camera.GetPosition();
+    ImGui::Text("Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+    ImGui::Text("Zoom: %.2f", camera.GetZoom());
+    ImGui::Text("Rotation: %.1f°", glm::degrees(camera.GetRotation()));
     ImGui::Separator();
-    ImGui::Text("Viewport: %.0f x %.0f", m_ViewportSize.x, m_ViewportSize.y);
-    ImGui::Text("Focused: %s", m_ViewportFocused ? "Yes" : "No");
-
-    // Time info
-    ImGui::Separator();
-    ImGui::Text("FPS: %.1f", BeEngine::Time::GetFPS());
-    ImGui::Text("Delta Time: %.3f ms",
-                BeEngine::Time::GetDeltaTime() * 1000.0f);
-    ImGui::Text("Time: %.2f s", BeEngine::Time::GetTime());
-    ImGui::Text("Frame: %llu", static_cast<long long unsigned int>(
-                                   BeEngine::Time::GetFrameCount()));
-
-    // Time controls
-    ImGui::Separator();
-    float timeScale = BeEngine::Time::GetTimeScale();
-    if (ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 2.0f)) {
-      BeEngine::Time::SetTimeScale(timeScale);
-    }
-
-    bool paused = BeEngine::Time::IsPaused();
-    if (ImGui::Checkbox("Paused", &paused)) {
-      BeEngine::Time::SetPaused(paused);
-    }
-
+    ImGui::Text("Controls:");
+    ImGui::Text("  WASD - Move");
+    ImGui::Text("  Q/E  - Rotate");
+    ImGui::Text("  Scroll - Zoom");
     ImGui::End();
   }
 
 private:
   void SetupTriangle();
+  std::unique_ptr<BeEngine::OrthographicCameraController> m_CameraController;
   std::shared_ptr<BeEngine::VertexArray> m_VertexArray;
   std::shared_ptr<BeEngine::Shader> m_Shader;
   std::shared_ptr<BeEngine::Framebuffer> m_Framebuffer;

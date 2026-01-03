@@ -43,6 +43,8 @@ public:
    */
   void Unbind() const override;
 
+  void SetMat4(const std::string &name, const glm::mat4 &value) override;
+
 private:
   uint32_t m_RendererID{0}; ///< OpenGL shader program ID
 

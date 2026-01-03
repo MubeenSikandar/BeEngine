@@ -119,6 +119,9 @@ public:
    */
   void Close() { m_Running = false; }
 
+  void SetBlockEvents(bool block) { m_BlockEvents = block; }
+  bool IsBlockingEvents() const { return m_BlockEvents; }
+
 private:
   // ===== Event Handlers =====
   bool OnWindowClose(WindowCloseEvent &e);
@@ -157,6 +160,8 @@ private:
 
   bool m_Running = true;
   bool m_Minimized = false;
+
+  bool m_BlockEvents = true;
 
   static Application *s_Instance;
 };
