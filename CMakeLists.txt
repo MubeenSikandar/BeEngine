@@ -108,6 +108,7 @@ set(BEENGINE_SOURCES
     BeEngine/src/Camera/PerspectiveCameraController.cpp
     BeEngine/src/ImGui/ImGuiLayer.cpp
     BeEngine/src/Input/Input.cpp
+    BeEngine/src/Math/Transform.cpp
 )
 
 if(BE_BUILD_SHARED)

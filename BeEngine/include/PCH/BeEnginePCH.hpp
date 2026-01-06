@@ -29,6 +29,7 @@
 #include "Layers/Layer.hpp"
 #include "Layers/LayerStack.hpp"
 #include "Logs/Log.hpp"
+#include "Math/Transform.hpp"
 #include "Renderer/BufferLayout.hpp"
 #include "Renderer/FrameBuffer.hpp"
 #include "Renderer/GraphicsContext.hpp"

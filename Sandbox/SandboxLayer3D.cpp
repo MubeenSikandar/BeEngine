@@ -15,6 +15,10 @@ void SandboxLayer3D::OnAttach() {
   m_CameraController->SetYaw(-120.0f);
   m_CameraController->SetPitch(-15.0f);
 
+  m_CubeTransform.SetPosition(0.0F, 0.5F, 0.0F);
+  m_CubeTransform.SetPosition(0.0F, 0.5F, 0.0F);
+  m_CubeEulerAngles = {0.0F, 0.0F, 0.0F};
+
   BeEngine::FramebufferSpecification fbSpec;
   fbSpec.Width = 1280;
   fbSpec.Height = 720;
@@ -35,15 +39,16 @@ void SandboxLayer3D::OnUpdate(BeEngine::Timestep ts) {
 
   // Auto-rotate cube
   if (m_AutoRotate) {
-    m_CubeRotation.y += 45.0f * ts.GetSeconds();
-    if (m_CubeRotation.y > 360.0f) {
-      m_CubeRotation.y -= 360.0f;
+    m_CubeEulerAngles.y += 45.0F * ts.GetSeconds();
+    if (m_CubeEulerAngles.y > 360.0F) {
+      m_CubeEulerAngles.y -= 360.0F;
     }
+    m_CubeTransform.SetRotation(m_CubeEulerAngles); // Apply euler to transform
   }
 
   // Handle viewport resize
   const auto &spec = m_Framebuffer->GetSpecification();
-  if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
+  if (m_ViewportSize.x > 0.0F && m_ViewportSize.y > 0.0F &&
       (static_cast<uint32_t>(m_ViewportSize.x) != spec.Width ||
        static_cast<uint32_t>(m_ViewportSize.y) != spec.Height)) {
     m_Framebuffer->Resize(static_cast<uint32_t>(m_ViewportSize.x),
@@ -63,7 +68,7 @@ void SandboxLayer3D::OnRender() {
 
   m_Framebuffer->Bind();
 
-  glClearColor(0.15f, 0.15f, 0.2f, 1.0f);
+  glClearColor(0.15F, 0.15F, 0.2F, 1.0F);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glEnable(GL_DEPTH_TEST);
@@ -75,29 +80,20 @@ void SandboxLayer3D::OnRender() {
   if (m_GridShader && m_GridVAO) {
     m_GridShader->Bind();
     m_GridShader->SetMat4("u_ViewProjection", viewProj);
-    m_GridShader->SetMat4("u_Model", glm::mat4(1.0f));
+    m_GridShader->SetMat4("u_Model", glm::mat4(1.0F));
     m_GridVAO->Bind();
-    glDrawArrays(GL_LINES, 0, m_GridVertexCount);
+    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(m_GridVertexCount));
   }
 
   // Draw Cube
   {
-    // Build model matrix: Scale -> Rotate -> Translate
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, m_CubePosition);
-    model =
-        glm::rotate(model, glm::radians(m_CubeRotation.x), glm::vec3(1, 0, 0));
-    model =
-        glm::rotate(model, glm::radians(m_CubeRotation.y), glm::vec3(0, 1, 0));
-    model =
-        glm::rotate(model, glm::radians(m_CubeRotation.z), glm::vec3(0, 0, 1));
-    model = glm::scale(model, glm::vec3(m_CubeScale));
+    glm::mat4 model = m_CubeTransform.GetWorldMatrix();
 
     m_CubeShader->Bind();
     m_CubeShader->SetMat4("u_ViewProjection", viewProj);
     m_CubeShader->SetMat4("u_Model", model);
-    m_CubeVAO->Bind();
-    glDrawArrays(GL_TRIANGLES, 0, 36); // 6 faces * 2 triangles * 3 vertices
+    m_CubeVAO->Bind();                 // ADD THIS
+    glDrawArrays(GL_TRIANGLES, 0, 36); // ADD THIS
   }
 
   m_Framebuffer->Unbind();
@@ -126,8 +122,8 @@ void SandboxLayer3D::OnImGuiRender() {
 
   // Camera info window
   ImGui::Begin("Camera");
-  auto pos = m_CameraController->GetPosition();
-  ImGui::Text("Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+  auto camPos = m_CameraController->GetPosition(); // Renamed to camPos
+  ImGui::Text("Position: (%.2f, %.2f, %.2f)", camPos.x, camPos.y, camPos.z);
   ImGui::Text("Yaw: %.1f°  Pitch: %.1f°", m_CameraController->GetYaw(),
               m_CameraController->GetPitch());
 
@@ -154,19 +150,32 @@ void SandboxLayer3D::OnImGuiRender() {
   ImGui::Text("  Scroll      - Adjust Speed");
   ImGui::End();
 
-  // Scene settings window
+  // Scene
   ImGui::Begin("Scene");
 
   ImGui::Text("Cube Transform");
-  ImGui::DragFloat3("Position", &m_CubePosition.x, 0.1f);
-  ImGui::DragFloat3("Rotation", &m_CubeRotation.x, 1.0f, -180.0f, 180.0f);
-  ImGui::DragFloat("Scale", &m_CubeScale, 0.1f, 0.1f, 10.0f);
+
+  glm::vec3 cubePos = m_CubeTransform.GetPosition();
+  if (ImGui::DragFloat3("Position", &cubePos.x, 0.1f)) {
+    m_CubeTransform.SetPosition(cubePos);
+  }
+
+  // Use stored euler angles instead of converting from quaternion
+  if (ImGui::DragFloat3("Rotation", &m_CubeEulerAngles.x, 1.0f)) {
+    m_CubeTransform.SetRotation(m_CubeEulerAngles);
+  }
+
+  glm::vec3 scale = m_CubeTransform.GetScale();
+  if (ImGui::DragFloat3("Scale", &scale.x, 0.1f, 0.1f, 10.0f)) {
+    m_CubeTransform.SetScale(scale);
+  }
+
   ImGui::Checkbox("Auto Rotate", &m_AutoRotate);
 
   if (ImGui::Button("Reset Cube")) {
-    m_CubePosition = {0.0f, 0.5f, 0.0f};
-    m_CubeRotation = {0.0f, 0.0f, 0.0f};
-    m_CubeScale = 1.0f;
+    m_CubeTransform.Reset();
+    m_CubeTransform.SetPosition(0.0f, 0.5f, 0.0f);
+    m_CubeEulerAngles = {0.0f, 0.0f, 0.0f}; // Reset euler angles too
   }
 
   ImGui::Separator();

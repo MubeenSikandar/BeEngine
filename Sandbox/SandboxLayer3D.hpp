@@ -37,8 +37,11 @@ private:
   bool m_ViewportHovered = false;
 
   // Cube transform
-  glm::vec3 m_CubePosition = {0.0f, 0.5f, 0.0f};
-  glm::vec3 m_CubeRotation = {0.0f, 0.0f, 0.0f};
-  float m_CubeScale = 1.0f;
+  // glm::vec3 m_CubePosition = {0.0f, 0.5f, 0.0f};
+  // glm::vec3 m_CubeRotation = {0.0f, 0.0f, 0.0f};
+  // float m_CubeScale = 1.0f;
   bool m_AutoRotate = true;
+  glm::vec3 m_CubeEulerAngles = {0.0F, 0.0F, 0.0F};
+
+  BeEngine::Transform m_CubeTransform;
 };
