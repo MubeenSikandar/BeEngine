@@ -13,7 +13,7 @@ public:
     BE_INFO("╚════════════════════════════════════════╝");
 
     // Push your layers
-    PushLayer(std::make_shared<SandboxLayer3D>());
+    PushLayer(std::make_shared<SandboxLayer>());
 
     BE_INFO("Sandbox Application created!");
 

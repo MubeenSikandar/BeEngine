@@ -156,7 +156,7 @@ void SandboxLayer3D::OnImGuiRender() {
   ImGui::Text("Cube Transform");
 
   glm::vec3 cubePos = m_CubeTransform.GetPosition();
-  if (ImGui::DragFloat3("Position", &cubePos.x, 0.1f)) {
+  if (ImGui::DragFloat3("Position", &cubePos.x, 0.1F)) {
     m_CubeTransform.SetPosition(cubePos);
   }
 

@@ -15,14 +15,14 @@ public:
     float aspectRatio = 1280.0F / 720.0F;
 
     // For 2D:
-    // m_CameraController2D =
-    //     std::make_unique<BeEngine::OrthographicCameraController>(aspectRatio,
-    //                                                              1.0f, true);
+    m_CameraController2D =
+        std::make_unique<BeEngine::OrthographicCameraController>(aspectRatio,
+                                                                 1.0f, true);
 
     // For 3D:
-    m_CameraController3D =
-        std::make_unique<BeEngine::PerspectiveCameraController>(
-            aspectRatio, 45.0F, 0.1F, 1000.0F);
+    // m_CameraController2D3D =
+    //     std::make_unique<BeEngine::PerspectiveCameraController>(
+    //         aspectRatio, 45.0F, 0.1F, 1000.0F);
 
     BeEngine::FramebufferSpecification fbSpec;
     fbSpec.Width = 1280;
@@ -40,7 +40,7 @@ public:
 
   void OnUpdate(BeEngine::Timestep ts) override {
     if (m_ViewportFocused) {
-      m_CameraController3D->OnUpdate(ts);
+      m_CameraController2D->OnUpdate(ts);
     }
 
     // Handle viewport resize
@@ -50,13 +50,13 @@ public:
          static_cast<uint32_t>(m_ViewportSize.y) != spec.Height)) {
       m_Framebuffer->Resize(static_cast<uint32_t>(m_ViewportSize.x),
                             static_cast<uint32_t>(m_ViewportSize.y));
-      m_CameraController3D->OnViewportResize(m_ViewportSize.x,
+      m_CameraController2D->OnViewportResize(m_ViewportSize.x,
                                              m_ViewportSize.y);
     }
   }
 
   void OnEvent(BeEngine::Event &event) override {
-    m_CameraController3D->OnEvent(event);
+    m_CameraController2D->OnEvent(event);
   }
 
   void OnRender() override {
@@ -77,7 +77,7 @@ public:
 
     m_Shader->SetMat4(
         "u_ViewProjection",
-        m_CameraController3D->GetCamera().GetViewProjectionMatrix());
+        m_CameraController2D->GetCamera().GetViewProjectionMatrix());
 
     m_VertexArray->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -108,34 +108,19 @@ public:
     ImGui::End();
     ImGui::PopStyleVar();
 
-    ImGui::Begin("Camera");
-    auto pos = m_CameraController3D->GetPosition();
-    ImGui::Text("Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-    ImGui::Text("Yaw: %.1f°  Pitch: %.1f°", m_CameraController3D->GetYaw(),
-                m_CameraController3D->GetPitch());
-
-    // Show speed with sprint indicator
-    float speed = m_CameraController3D->GetMoveSpeed();
-    bool sprinting = m_CameraController3D->IsSprinting();
-    if (sprinting) {
-      ImGui::TextColored(ImVec4(1.0F, 0.5F, 0.0F, 1.0F),
-                         "Speed: %.1f (SPRINTING)",
-                         speed * m_CameraController3D->GetSprintMultiplier());
-    } else {
-      ImGui::Text("Speed: %.1f", speed);
-    }
-
-    ImGui::Text("FOV: %.1f°", m_CameraController3D->GetCamera().GetFOV());
+    // 2D Camera Info
+    ImGui::Begin("Camera (2D)");
+    auto pos = m_CameraController2D->GetPosition();
+    ImGui::Text("Position: (%.2f, %.2f)", pos.x, pos.y);
+    ImGui::Text("Rotation: %.1f°", m_CameraController2D->GetRotation());
+    ImGui::Text("Zoom: %.2fx", m_CameraController2D->GetZoom());
+    ImGui::Text("Speed: %.1f", m_CameraController2D->GetMoveSpeed());
 
     ImGui::Separator();
-    ImGui::Text("Controls:");
-    ImGui::Text("  WASD        - Move");
-    ImGui::Text("  Space       - Up");
-    ImGui::Text("  C/F         - Down");
-    ImGui::Text("  Shift+Move  - Sprint");
-    ImGui::Text("  RMB + Drag  - Look");
-    ImGui::Text("  Q/E         - Turn");
-    ImGui::Text("  Scroll      - Adjust Speed");
+    ImGui::Text("2D Controls:");
+    ImGui::Text("  WASD/Arrows - Move");
+    ImGui::Text("  Q/E         - Rotate");
+    ImGui::Text("  Scroll      - Zoom");
     ImGui::End();
   }
 

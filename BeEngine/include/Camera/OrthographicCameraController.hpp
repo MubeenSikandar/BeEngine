@@ -63,6 +63,11 @@ public:
 
   void OnViewportResize(float width, float height);
 
+  // ===== State Access =====
+  NODISCARD const glm::vec3 &GetPosition() const { return m_Position; }
+  NODISCARD float GetRotation() const { return m_Rotation; }
+  NODISCARD float GetZoom() const { return m_Zoom; }
+
 private:
   bool OnMouseScrolled(class MouseScrolledEvent &event);
   bool OnWindowResized(class WindowResizeEvent &event);
