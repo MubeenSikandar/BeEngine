@@ -105,6 +105,7 @@ set(BEENGINE_SOURCES
     BeEngine/src/Camera/OrthographicCamera.cpp
     BeEngine/src/Camera/OrthographicCameraController.cpp
     BeEngine/src/Camera/PerspectiveCamera.cpp
+    BeEngine/src/Camera/PerspectiveCameraController.cpp
     BeEngine/src/ImGui/ImGuiLayer.cpp
     BeEngine/src/Input/Input.cpp
 )
@@ -250,6 +251,7 @@ endif()
 add_executable(Sandbox
     Sandbox/SandBoxApp.cpp
     Sandbox/SandboxLayer.cpp
+    Sandbox/SandboxLayer3D.cpp
 )
 
 target_link_libraries(Sandbox PRIVATE BeEngine)

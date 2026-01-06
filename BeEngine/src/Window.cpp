@@ -214,7 +214,6 @@ void Window::SetupCallbacks() {
   // Mouse Scroll
   glfwSetScrollCallback(
       m_Window, [](GLFWwindow *window, double xOffset, double yOffset) {
-        BE_CORE_INFO("GLFW Scroll: x={}, y={}", xOffset, yOffset);
         WindowData &data =
             *static_cast<WindowData *>(glfwGetWindowUserPointer(window));
         MouseScrolledEvent event(static_cast<float>(xOffset),

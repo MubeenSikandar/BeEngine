@@ -3,6 +3,7 @@
 #include "EntryPoint.hpp"
 #include "PCH/BeEnginePCH.hpp"
 #include "SandboxLayer.hpp"
+#include "SandboxLayer3D.hpp"
 
 class Sandbox : public BeEngine::Application {
 public:
@@ -12,7 +13,7 @@ public:
     BE_INFO("╚════════════════════════════════════════╝");
 
     // Push your layers
-    PushLayer(std::make_shared<SandboxLayer>());
+    PushLayer(std::make_shared<SandboxLayer3D>());
 
     BE_INFO("Sandbox Application created!");
 

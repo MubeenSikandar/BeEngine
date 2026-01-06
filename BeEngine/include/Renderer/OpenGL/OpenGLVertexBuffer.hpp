@@ -39,7 +39,18 @@ public:
    */
   void Unbind() const override;
 
+  /**
+   * @brief Set the buffer layout
+   */
+  void SetLayout(const BufferLayout &layout) override { m_Layout = layout; }
+
+  /**
+   * @brief Get the buffer layout
+   */
+  NODISCARD const BufferLayout &GetLayout() const override { return m_Layout; }
+
 private:
   uint32_t m_RendererID{0}; ///< OpenGL buffer object ID
+  BufferLayout m_Layout;    ///< Vertex attribute layout
 };
 } // namespace BeEngine
