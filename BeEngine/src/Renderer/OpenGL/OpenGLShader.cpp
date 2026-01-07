@@ -115,4 +115,20 @@ void OpenGLShader::SetMat4(const std::string &name, const glm::mat4 &value) {
   glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
+void OpenGLShader::SetInt(const std::string &name, int value) {
+  GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+  glUniform1i(location, value);
+}
+
+void OpenGLShader::SetIntArray(const std::string &name, int *values,
+                               uint32_t count) {
+  GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+  glUniform1iv(location, count, values);
+}
+
+void OpenGLShader::SetBool(const std::string &name, bool value) {
+  GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+  glUniform1i(location, value ? 1 : 0);
+}
+
 } // namespace BeEngine

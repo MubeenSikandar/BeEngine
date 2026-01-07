@@ -11,3 +11,6 @@
 	path = BeEngine/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "BeEngine/vendor/STB"]
+	path = BeEngine/vendor/STB
+	url = https://github.com/nothings/stb.git

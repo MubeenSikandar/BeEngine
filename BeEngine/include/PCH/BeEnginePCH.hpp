@@ -29,6 +29,8 @@
 #include "Layers/Layer.hpp"
 #include "Layers/LayerStack.hpp"
 #include "Logs/Log.hpp"
+#include "MaterialSystem/OpenGL/OpenGLTexture2D.hpp"
+#include "MaterialSystem/Texture.hpp"
 #include "Math/Transform.hpp"
 #include "Renderer/BufferLayout.hpp"
 #include "Renderer/FrameBuffer.hpp"

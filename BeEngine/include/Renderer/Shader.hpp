@@ -1,3 +1,4 @@
+// Renderer/Shader.hpp
 #pragma once
 #include "Core.hpp"
 #include "glm/fwd.hpp"
@@ -25,5 +26,10 @@ public:
    */
   static std::shared_ptr<Shader> Create(const std::string &vertexSrc,
                                         const std::string &fragmentSrc);
+
+  virtual void SetInt(const std::string &name, int value) = 0;
+  virtual void SetIntArray(const std::string &name, int *values,
+                           uint32_t count) = 0;
+  virtual void SetBool(const std::string &name, bool value) = 0;
 };
 } // namespace BeEngine

@@ -44,4 +44,6 @@ private:
   glm::vec3 m_CubeEulerAngles = {0.0F, 0.0F, 0.0F};
 
   BeEngine::Transform m_CubeTransform;
+  std::shared_ptr<BeEngine::Texture2D> m_TestTexture;
+  std::shared_ptr<BeEngine::Texture2D> m_CheckerTexture;
 };

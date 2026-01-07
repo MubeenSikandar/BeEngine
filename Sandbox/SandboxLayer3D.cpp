@@ -26,6 +26,9 @@ void SandboxLayer3D::OnAttach() {
                         BeEngine::FramebufferTextureFormat::Depth};
   m_Framebuffer = BeEngine::Framebuffer::Create(fbSpec);
 
+  m_CheckerTexture = BeEngine::Texture2D::CreateCheckerboard(256, 256, 32);
+  BE_INFO("Created checkerboard texture!");
+
   SetupCube();
   SetupGrid();
 }
@@ -72,7 +75,7 @@ void SandboxLayer3D::OnRender() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glEnable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE); // Show both sides of cube for now
+  glDisable(GL_CULL_FACE);
 
   auto viewProj = m_CameraController->GetCamera().GetViewProjectionMatrix();
 
@@ -89,11 +92,17 @@ void SandboxLayer3D::OnRender() {
   {
     glm::mat4 model = m_CubeTransform.GetWorldMatrix();
 
-    m_CubeShader->Bind();
+    m_CubeShader->Bind(); // Bind shader FIRST
     m_CubeShader->SetMat4("u_ViewProjection", viewProj);
     m_CubeShader->SetMat4("u_Model", model);
-    m_CubeVAO->Bind();                 // ADD THIS
-    glDrawArrays(GL_TRIANGLES, 0, 36); // ADD THIS
+
+    // Then set texture uniforms
+    m_CheckerTexture->Bind(0);
+    m_CubeShader->SetInt("u_Texture", 0);
+    m_CubeShader->SetBool("u_UseTexture", true);
+
+    m_CubeVAO->Bind();
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
   }
 
   m_Framebuffer->Unbind();
@@ -192,270 +201,311 @@ void SandboxLayer3D::OnImGuiRender() {
 void SandboxLayer3D::SetupCube() {
   BE_INFO("Setting up 3D cube...");
 
-  // Cube vertices with colors (position + color)
-  // Each face has a different color
+  // 24 vertices (4 per face, 6 faces)
+  // Format: x, y, z, r, g, b, u, v
   std::vector<float> vertices = {
-      // Front face (Red)
+      // Front face (red)
       -0.5f,
       -0.5f,
       0.5f,
       1.0f,
-      0.3f,
-      0.3f,
+      0.0f,
+      0.0f,
+      0.0f,
+      0.0f,
       0.5f,
       -0.5f,
       0.5f,
       1.0f,
-      0.3f,
-      0.3f,
+      0.0f,
+      0.0f,
+      1.0f,
+      0.0f,
       0.5f,
       0.5f,
       0.5f,
       1.0f,
-      0.3f,
-      0.3f,
-      0.5f,
-      0.5f,
-      0.5f,
+      0.0f,
+      0.0f,
       1.0f,
-      0.3f,
-      0.3f,
-      -0.5f,
-      0.5f,
-      0.5f,
-      1.0f,
-      0.3f,
-      0.3f,
-      -0.5f,
-      -0.5f,
-      0.5f,
-      1.0f,
-      0.3f,
-      0.3f,
-
-      // Back face (Green)
-      -0.5f,
-      -0.5f,
-      -0.5f,
-      0.3f,
-      1.0f,
-      0.3f,
-      0.5f,
-      0.5f,
-      -0.5f,
-      0.3f,
-      1.0f,
-      0.3f,
-      0.5f,
-      -0.5f,
-      -0.5f,
-      0.3f,
-      1.0f,
-      0.3f,
-      0.5f,
-      0.5f,
-      -0.5f,
-      0.3f,
-      1.0f,
-      0.3f,
-      -0.5f,
-      -0.5f,
-      -0.5f,
-      0.3f,
-      1.0f,
-      0.3f,
-      -0.5f,
-      0.5f,
-      -0.5f,
-      0.3f,
-      1.0f,
-      0.3f,
-
-      // Top face (Blue)
-      -0.5f,
-      0.5f,
-      -0.5f,
-      0.3f,
-      0.3f,
-      1.0f,
-      0.5f,
-      0.5f,
-      0.5f,
-      0.3f,
-      0.3f,
-      1.0f,
-      0.5f,
-      0.5f,
-      -0.5f,
-      0.3f,
-      0.3f,
-      1.0f,
-      0.5f,
-      0.5f,
-      0.5f,
-      0.3f,
-      0.3f,
-      1.0f,
-      -0.5f,
-      0.5f,
-      -0.5f,
-      0.3f,
-      0.3f,
       1.0f,
       -0.5f,
       0.5f,
       0.5f,
-      0.3f,
-      0.3f,
+      1.0f,
+      0.0f,
+      0.0f,
+      0.0f,
       1.0f,
 
-      // Bottom face (Yellow)
-      -0.5f,
-      -0.5f,
-      -0.5f,
-      1.0f,
-      1.0f,
-      0.3f,
+      // Back face (green)
       0.5f,
       -0.5f,
       -0.5f,
+      0.0f,
       1.0f,
+      0.0f,
+      0.0f,
+      0.0f,
+      -0.5f,
+      -0.5f,
+      -0.5f,
+      0.0f,
       1.0f,
-      0.3f,
-      0.5f,
+      0.0f,
+      1.0f,
+      0.0f,
       -0.5f,
       0.5f,
-      1.0f,
-      1.0f,
-      0.3f,
-      0.5f,
       -0.5f,
-      0.5f,
+      0.0f,
       1.0f,
+      0.0f,
       1.0f,
-      0.3f,
-      -0.5f,
-      -0.5f,
-      0.5f,
-      1.0f,
-      1.0f,
-      0.3f,
-      -0.5f,
-      -0.5f,
-      -0.5f,
-      1.0f,
-      1.0f,
-      0.3f,
-
-      // Right face (Magenta)
-      0.5f,
-      -0.5f,
-      -0.5f,
-      1.0f,
-      0.3f,
       1.0f,
       0.5f,
       0.5f,
       -0.5f,
+      0.0f,
       1.0f,
-      0.3f,
-      1.0f,
-      0.5f,
-      0.5f,
-      0.5f,
-      1.0f,
-      0.3f,
-      1.0f,
-      0.5f,
-      0.5f,
-      0.5f,
-      1.0f,
-      0.3f,
-      1.0f,
-      0.5f,
-      -0.5f,
-      0.5f,
-      1.0f,
-      0.3f,
-      1.0f,
-      0.5f,
-      -0.5f,
-      -0.5f,
-      1.0f,
-      0.3f,
+      0.0f,
+      0.0f,
       1.0f,
 
-      // Left face (Cyan)
+      // Top face (blue)
       -0.5f,
+      0.5f,
+      0.5f,
+      0.0f,
+      0.0f,
+      1.0f,
+      0.0f,
+      0.0f,
+      0.5f,
+      0.5f,
+      0.5f,
+      0.0f,
+      0.0f,
+      1.0f,
+      1.0f,
+      0.0f,
+      0.5f,
+      0.5f,
       -0.5f,
-      -0.5f,
-      0.3f,
+      0.0f,
+      0.0f,
+      1.0f,
       1.0f,
       1.0f,
       -0.5f,
       0.5f,
+      -0.5f,
+      0.0f,
+      0.0f,
+      1.0f,
+      0.0f,
+      1.0f,
+
+      // Bottom face (yellow)
+      -0.5f,
+      -0.5f,
+      -0.5f,
+      1.0f,
+      1.0f,
+      0.0f,
+      0.0f,
+      0.0f,
       0.5f,
-      0.3f,
-      1.0f,
-      1.0f,
       -0.5f,
+      -0.5f,
+      1.0f,
+      1.0f,
+      0.0f,
+      1.0f,
+      0.0f,
       0.5f,
       -0.5f,
-      0.3f,
-      1.0f,
-      1.0f,
-      -0.5f,
       0.5f,
-      0.5f,
-      0.3f,
       1.0f,
       1.0f,
-      -0.5f,
-      -0.5f,
-      -0.5f,
-      0.3f,
+      0.0f,
       1.0f,
       1.0f,
       -0.5f,
       -0.5f,
       0.5f,
-      0.3f,
       1.0f,
+      1.0f,
+      0.0f,
+      0.0f,
+      1.0f,
+
+      // Right face (magenta)
+      0.5f,
+      -0.5f,
+      0.5f,
+      1.0f,
+      0.0f,
+      1.0f,
+      0.0f,
+      0.0f,
+      0.5f,
+      -0.5f,
+      -0.5f,
+      1.0f,
+      0.0f,
+      1.0f,
+      1.0f,
+      0.0f,
+      0.5f,
+      0.5f,
+      -0.5f,
+      1.0f,
+      0.0f,
+      1.0f,
+      1.0f,
+      1.0f,
+      0.5f,
+      0.5f,
+      0.5f,
+      1.0f,
+      0.0f,
+      1.0f,
+      0.0f,
+      1.0f,
+
+      // Left face (cyan)
+      -0.5f,
+      -0.5f,
+      -0.5f,
+      0.0f,
+      1.0f,
+      1.0f,
+      0.0f,
+      0.0f,
+      -0.5f,
+      -0.5f,
+      0.5f,
+      0.0f,
+      1.0f,
+      1.0f,
+      1.0f,
+      0.0f,
+      -0.5f,
+      0.5f,
+      0.5f,
+      0.0f,
+      1.0f,
+      1.0f,
+      1.0f,
+      1.0f,
+      -0.5f,
+      0.5f,
+      -0.5f,
+      0.0f,
+      1.0f,
+      1.0f,
+      0.0f,
       1.0f,
   };
 
+  // Index buffer: 6 faces × 2 triangles × 3 vertices = 36 indices
+  std::vector<uint32_t> indices = {
+      // Front
+      0,
+      1,
+      2,
+      2,
+      3,
+      0,
+      // Back
+      4,
+      5,
+      6,
+      6,
+      7,
+      4,
+      // Top
+      8,
+      9,
+      10,
+      10,
+      11,
+      8,
+      // Bottom
+      12,
+      13,
+      14,
+      14,
+      15,
+      12,
+      // Right
+      16,
+      17,
+      18,
+      18,
+      19,
+      16,
+      // Left
+      20,
+      21,
+      22,
+      22,
+      23,
+      20,
+  };
+
   m_CubeVAO = BeEngine::VertexArray::Create();
+
   auto vb = BeEngine::VertexBuffer::Create(
       vertices.data(), static_cast<uint32_t>(vertices.size() * sizeof(float)));
 
   vb->SetLayout({{BeEngine::ShaderDataType::Float3, "a_Position"},
-                 {BeEngine::ShaderDataType::Float3, "a_Color"}});
+                 {BeEngine::ShaderDataType::Float3, "a_Color"},
+                 {BeEngine::ShaderDataType::Float2, "a_TexCoord"}});
   m_CubeVAO->AddVertexBuffer(vb);
 
+  // Add index buffer
+  auto ib = BeEngine::IndexBuffer::Create(
+      indices.data(), static_cast<uint32_t>(indices.size()));
+  m_CubeVAO->SetIndexBuffer(ib);
+
   std::string vertexSrc = R"(
-    #version 410 core
-    layout(location = 0) in vec3 a_Position;
-    layout(location = 1) in vec3 a_Color;
+      #version 410 core
+      layout(location = 0) in vec3 a_Position;
+      layout(location = 1) in vec3 a_Color;
+      layout(location = 2) in vec2 a_TexCoord;
 
-    uniform mat4 u_ViewProjection;
-    uniform mat4 u_Model;
+      uniform mat4 u_ViewProjection;
+      uniform mat4 u_Model;
 
-    out vec3 v_Color;
+      out vec3 v_Color;
+      out vec2 v_TexCoord;
 
-    void main() {
-      v_Color = a_Color;
-      gl_Position = u_ViewProjection * u_Model * vec4(a_Position, 1.0);
-    }
+      void main() {
+          v_Color = a_Color;
+          v_TexCoord = a_TexCoord;
+          gl_Position = u_ViewProjection * u_Model * vec4(a_Position, 1.0);
+      }
   )";
 
   std::string fragmentSrc = R"(
-    #version 410 core
-    in vec3 v_Color;
-    layout(location = 0) out vec4 o_Color;
+      #version 410 core
+      in vec3 v_Color;
+      in vec2 v_TexCoord;
 
-    void main() {
-      o_Color = vec4(v_Color, 1.0);
-    }
+      uniform sampler2D u_Texture;
+      uniform bool u_UseTexture;
+
+      layout(location = 0) out vec4 o_Color;
+
+      void main() {
+          if (u_UseTexture) {
+              o_Color = texture(u_Texture, v_TexCoord);
+          } else {
+              o_Color = vec4(v_Color, 1.0);
+          }
+      }
   )";
 
   m_CubeShader = BeEngine::Shader::Create(vertexSrc, fragmentSrc);

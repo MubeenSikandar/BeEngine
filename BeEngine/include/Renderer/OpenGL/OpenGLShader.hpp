@@ -1,3 +1,4 @@
+// Renderer/OpenGL/OpenGLShader.hpp
 #pragma once
 
 #include "Renderer/Shader.hpp"
@@ -55,5 +56,10 @@ private:
    * @return Compiled shader ID, or 0 on failure
    */
   uint32_t CompileShader(uint32_t type, const std::string &source);
+
+  void SetInt(const std::string &name, int value) override;
+  void SetIntArray(const std::string &name, int *values,
+                   uint32_t count) override;
+  void SetBool(const std::string &name, bool value) override;
 };
 } // namespace BeEngine

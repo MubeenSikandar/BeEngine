@@ -68,6 +68,7 @@ add_subdirectory(BeEngine/vendor/GLFW)
 add_subdirectory(BeEngine/vendor/Glad)
 add_subdirectory(BeEngine/vendor/GLM)
 add_subdirectory(BeEngine/vendor/imgui)
+add_subdirectory(BeEngine/vendor/STB)
 
 
 # ============================================
@@ -109,6 +110,8 @@ set(BEENGINE_SOURCES
     BeEngine/src/ImGui/ImGuiLayer.cpp
     BeEngine/src/Input/Input.cpp
     BeEngine/src/Math/Transform.cpp
+    BeEngine/src/MaterialSystem/Texture.cpp
+    BeEngine/src/MaterialSystem/OpenGL/OpenGLTexture2D.cpp
 )
 
 if(BE_BUILD_SHARED)
@@ -144,6 +147,7 @@ target_link_libraries(BeEngine
         glad
         glm
         imgui
+        stb
 )
 
 
