@@ -6,15 +6,15 @@
 void SandboxLayer3D::OnAttach() {
   BE_INFO("SandboxLayer3D attached - setting up 3D scene");
 
-  float aspectRatio = 1280.0f / 720.0f;
+  float aspectRatio = 1280.0F / 720.0F;
 
   m_CameraController = std::make_unique<BeEngine::PerspectiveCameraController>(
-      aspectRatio, 45.0f, 0.1f, 1000.0f);
+      aspectRatio, 45.0F, 0.1F, 1000.0F);
 
   // Position camera to see the scene nicely
-  m_CameraController->SetPosition({3.0f, 2.0f, 5.0f});
-  m_CameraController->SetYaw(-120.0f);
-  m_CameraController->SetPitch(-15.0f);
+  m_CameraController->SetPosition({3.0F, 2.0F, 5.0F});
+  m_CameraController->SetYaw(-120.0F);
+  m_CameraController->SetPitch(-15.0F);
 
   m_CubeTransform.SetPosition(0.0F, 0.5F, 0.0F);
   m_CubeTransform.SetPosition(0.0F, 0.5F, 0.0F);
@@ -92,7 +92,7 @@ void SandboxLayer3D::OnAttach() {
   m_CubeMaterial->SetTexture2D("u_Texture", m_CubeTexture);
   m_CubeMaterial->SetBool("u_UseTexture", true);
   m_CubeMaterial->SetFloat4("u_TintColor",
-                            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)); // No tint
+                            glm::vec4(1.0F, 1.0F, 1.0F, 1.0F)); // No tint
 
   // 5. Set render state
   m_CubeMaterial->SetCullMode(BeEngine::Material::CullMode::Back);
@@ -212,7 +212,7 @@ void SandboxLayer3D::OnImGuiRender() {
   float speed = m_CameraController->GetMoveSpeed();
   bool sprinting = m_CameraController->IsSprinting();
   if (sprinting) {
-    ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f),
+    ImGui::TextColored(ImVec4(1.0F, 0.5F, 0.0F, 1.0F),
                        "Speed: %.1f (SPRINTING)",
                        speed * m_CameraController->GetSprintMultiplier());
   } else {
@@ -242,16 +242,17 @@ void SandboxLayer3D::OnImGuiRender() {
 
   // Cull mode selector
   static int cullMode = 0;
-  const char *cullModes[] = {"Back", "Front", "None"};
-  if (ImGui::Combo("Cull Mode", &cullMode, cullModes, 3)) {
+  std::array<char *, 3> cullModes = {"Back", "Front", "None"};
+  if (ImGui::Combo("Cull Mode", &cullMode, cullModes.data(), 3)) {
     m_CubeMaterial->SetCullMode(
         static_cast<BeEngine::Material::CullMode>(cullMode));
   }
 
   // Blend mode selector
   static int blendMode = 0;
-  const char *blendModes[] = {"Opaque", "Transparent", "Additive", "Multiply"};
-  if (ImGui::Combo("Blend Mode", &blendMode, blendModes, 4)) {
+  std::array<char *, 4> blendModes = {"Opaque", "Transparent", "Additive",
+                                      "Multiply"};
+  if (ImGui::Combo("Blend Mode", &blendMode, blendModes.data(), 4)) {
     m_CubeMaterial->SetBlendMode(
         static_cast<BeEngine::Material::BlendMode>(blendMode));
   }
@@ -278,12 +279,12 @@ void SandboxLayer3D::OnImGuiRender() {
   }
 
   // Use stored euler angles instead of converting from quaternion
-  if (ImGui::DragFloat3("Rotation", &m_CubeEulerAngles.x, 1.0f)) {
+  if (ImGui::DragFloat3("Rotation", &m_CubeEulerAngles.x, 1.0F)) {
     m_CubeTransform.SetRotation(m_CubeEulerAngles);
   }
 
   glm::vec3 scale = m_CubeTransform.GetScale();
-  if (ImGui::DragFloat3("Scale", &scale.x, 0.1f, 0.1f, 10.0f)) {
+  if (ImGui::DragFloat3("Scale", &scale.x, 0.1F, 0.1F, 10.0F)) {
     m_CubeTransform.SetScale(scale);
   }
 
@@ -291,16 +292,16 @@ void SandboxLayer3D::OnImGuiRender() {
 
   if (ImGui::Button("Reset Cube")) {
     m_CubeTransform.Reset();
-    m_CubeTransform.SetPosition(0.0f, 0.5f, 0.0f);
-    m_CubeEulerAngles = {0.0f, 0.0f, 0.0f}; // Reset euler angles too
+    m_CubeTransform.SetPosition(0.0F, 0.5F, 0.0F);
+    m_CubeEulerAngles = {0.0F, 0.0F, 0.0F}; // Reset euler angles too
   }
 
   ImGui::Separator();
 
   if (ImGui::Button("Reset Camera")) {
-    m_CameraController->SetPosition({3.0f, 2.0f, 5.0f});
-    m_CameraController->SetYaw(-120.0f);
-    m_CameraController->SetPitch(-15.0f);
+    m_CameraController->SetPosition({3.0F, 2.0F, 5.0F});
+    m_CameraController->SetYaw(-120.0F);
+    m_CameraController->SetPitch(-15.0F);
   }
 
   ImGui::End();
@@ -313,208 +314,208 @@ void SandboxLayer3D::SetupCube() {
   // Format: x, y, z, r, g, b, u, v
   std::vector<float> vertices = {
       // Front face (red)
-      -0.5f,
-      -0.5f,
-      0.5f,
-      1.0f,
-      0.0f,
-      0.0f,
-      0.0f,
-      0.0f,
-      0.5f,
-      -0.5f,
-      0.5f,
-      1.0f,
-      0.0f,
-      0.0f,
-      1.0f,
-      0.0f,
-      0.5f,
-      0.5f,
-      0.5f,
-      1.0f,
-      0.0f,
-      0.0f,
-      1.0f,
-      1.0f,
-      -0.5f,
-      0.5f,
-      0.5f,
-      1.0f,
-      0.0f,
-      0.0f,
-      0.0f,
-      1.0f,
+      -0.5F,
+      -0.5F,
+      0.5F,
+      1.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.5F,
+      -0.5F,
+      0.5F,
+      1.0F,
+      0.0F,
+      0.0F,
+      1.0F,
+      0.0F,
+      0.5F,
+      0.5F,
+      0.5F,
+      1.0F,
+      0.0F,
+      0.0F,
+      1.0F,
+      1.0F,
+      -0.5F,
+      0.5F,
+      0.5F,
+      1.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      1.0F,
 
       // Back face (green)
-      0.5f,
-      -0.5f,
-      -0.5f,
-      0.0f,
-      1.0f,
-      0.0f,
-      0.0f,
-      0.0f,
-      -0.5f,
-      -0.5f,
-      -0.5f,
-      0.0f,
-      1.0f,
-      0.0f,
-      1.0f,
-      0.0f,
-      -0.5f,
-      0.5f,
-      -0.5f,
-      0.0f,
-      1.0f,
-      0.0f,
-      1.0f,
-      1.0f,
-      0.5f,
-      0.5f,
-      -0.5f,
-      0.0f,
-      1.0f,
-      0.0f,
-      0.0f,
-      1.0f,
+      0.5F,
+      -0.5F,
+      -0.5F,
+      0.0F,
+      1.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      -0.5F,
+      -0.5F,
+      -0.5F,
+      0.0F,
+      1.0F,
+      0.0F,
+      1.0F,
+      0.0F,
+      -0.5F,
+      0.5F,
+      -0.5F,
+      0.0F,
+      1.0F,
+      0.0F,
+      1.0F,
+      1.0F,
+      0.5F,
+      0.5F,
+      -0.5F,
+      0.0F,
+      1.0F,
+      0.0F,
+      0.0F,
+      1.0F,
 
       // Top face (blue)
-      -0.5f,
-      0.5f,
-      0.5f,
-      0.0f,
-      0.0f,
-      1.0f,
-      0.0f,
-      0.0f,
-      0.5f,
-      0.5f,
-      0.5f,
-      0.0f,
-      0.0f,
-      1.0f,
-      1.0f,
-      0.0f,
-      0.5f,
-      0.5f,
-      -0.5f,
-      0.0f,
-      0.0f,
-      1.0f,
-      1.0f,
-      1.0f,
-      -0.5f,
-      0.5f,
-      -0.5f,
-      0.0f,
-      0.0f,
-      1.0f,
-      0.0f,
-      1.0f,
+      -0.5F,
+      0.5F,
+      0.5F,
+      0.0F,
+      0.0F,
+      1.0F,
+      0.0F,
+      0.0F,
+      0.5F,
+      0.5F,
+      0.5F,
+      0.0F,
+      0.0F,
+      1.0F,
+      1.0F,
+      0.0F,
+      0.5F,
+      0.5F,
+      -0.5F,
+      0.0F,
+      0.0F,
+      1.0F,
+      1.0F,
+      1.0F,
+      -0.5F,
+      0.5F,
+      -0.5F,
+      0.0F,
+      0.0F,
+      1.0F,
+      0.0F,
+      1.0F,
 
       // Bottom face (yellow)
-      -0.5f,
-      -0.5f,
-      -0.5f,
-      1.0f,
-      1.0f,
-      0.0f,
-      0.0f,
-      0.0f,
-      0.5f,
-      -0.5f,
-      -0.5f,
-      1.0f,
-      1.0f,
-      0.0f,
-      1.0f,
-      0.0f,
-      0.5f,
-      -0.5f,
-      0.5f,
-      1.0f,
-      1.0f,
-      0.0f,
-      1.0f,
-      1.0f,
-      -0.5f,
-      -0.5f,
-      0.5f,
-      1.0f,
-      1.0f,
-      0.0f,
-      0.0f,
-      1.0f,
+      -0.5F,
+      -0.5F,
+      -0.5F,
+      1.0F,
+      1.0F,
+      0.0F,
+      0.0F,
+      0.0F,
+      0.5F,
+      -0.5F,
+      -0.5F,
+      1.0F,
+      1.0F,
+      0.0F,
+      1.0F,
+      0.0F,
+      0.5F,
+      -0.5F,
+      0.5F,
+      1.0F,
+      1.0F,
+      0.0F,
+      1.0F,
+      1.0F,
+      -0.5F,
+      -0.5F,
+      0.5F,
+      1.0F,
+      1.0F,
+      0.0F,
+      0.0F,
+      1.0F,
 
       // Right face (magenta)
-      0.5f,
-      -0.5f,
-      0.5f,
-      1.0f,
-      0.0f,
-      1.0f,
-      0.0f,
-      0.0f,
-      0.5f,
-      -0.5f,
-      -0.5f,
-      1.0f,
-      0.0f,
-      1.0f,
-      1.0f,
-      0.0f,
-      0.5f,
-      0.5f,
-      -0.5f,
-      1.0f,
-      0.0f,
-      1.0f,
-      1.0f,
-      1.0f,
-      0.5f,
-      0.5f,
-      0.5f,
-      1.0f,
-      0.0f,
-      1.0f,
-      0.0f,
-      1.0f,
+      0.5F,
+      -0.5F,
+      0.5F,
+      1.0F,
+      0.0F,
+      1.0F,
+      0.0F,
+      0.0F,
+      0.5F,
+      -0.5F,
+      -0.5F,
+      1.0F,
+      0.0F,
+      1.0F,
+      1.0F,
+      0.0F,
+      0.5F,
+      0.5F,
+      -0.5F,
+      1.0F,
+      0.0F,
+      1.0F,
+      1.0F,
+      1.0F,
+      0.5F,
+      0.5F,
+      0.5F,
+      1.0F,
+      0.0F,
+      1.0F,
+      0.0F,
+      1.0F,
 
       // Left face (cyan)
-      -0.5f,
-      -0.5f,
-      -0.5f,
-      0.0f,
-      1.0f,
-      1.0f,
-      0.0f,
-      0.0f,
-      -0.5f,
-      -0.5f,
-      0.5f,
-      0.0f,
-      1.0f,
-      1.0f,
-      1.0f,
-      0.0f,
-      -0.5f,
-      0.5f,
-      0.5f,
-      0.0f,
-      1.0f,
-      1.0f,
-      1.0f,
-      1.0f,
-      -0.5f,
-      0.5f,
-      -0.5f,
-      0.0f,
-      1.0f,
-      1.0f,
-      0.0f,
-      1.0f,
+      -0.5F,
+      -0.5F,
+      -0.5F,
+      0.0F,
+      1.0F,
+      1.0F,
+      0.0F,
+      0.0F,
+      -0.5F,
+      -0.5F,
+      0.5F,
+      0.0F,
+      1.0F,
+      1.0F,
+      1.0F,
+      0.0F,
+      -0.5F,
+      0.5F,
+      0.5F,
+      0.0F,
+      1.0F,
+      1.0F,
+      1.0F,
+      1.0F,
+      -0.5F,
+      0.5F,
+      -0.5F,
+      0.0F,
+      1.0F,
+      1.0F,
+      0.0F,
+      1.0F,
   };
 
   // Index buffer: 6 faces × 2 triangles × 3 vertices = 36 indices
@@ -626,8 +627,8 @@ void SandboxLayer3D::SetupGrid() {
 
   std::vector<float> gridVertices;
   const int gridSize = 10;
-  const float gridStep = 1.0f;
-  const float gridY = 0.0f;
+  const float gridStep = 1.0F;
+  const float gridY = 0.0F;
 
   // Generate grid lines
   for (int i = -gridSize; i <= gridSize; ++i) {
@@ -637,31 +638,31 @@ void SandboxLayer3D::SetupGrid() {
     gridVertices.push_back(pos);
     gridVertices.push_back(gridY);
     gridVertices.push_back(static_cast<float>(-gridSize) * gridStep);
-    gridVertices.push_back(0.4f); // Color
-    gridVertices.push_back(0.4f);
-    gridVertices.push_back(0.4f);
+    gridVertices.push_back(0.4F); // Color
+    gridVertices.push_back(0.4F);
+    gridVertices.push_back(0.4F);
 
     gridVertices.push_back(pos);
     gridVertices.push_back(gridY);
     gridVertices.push_back(static_cast<float>(gridSize) * gridStep);
-    gridVertices.push_back(0.4f);
-    gridVertices.push_back(0.4f);
-    gridVertices.push_back(0.4f);
+    gridVertices.push_back(0.4F);
+    gridVertices.push_back(0.4F);
+    gridVertices.push_back(0.4F);
 
     // Lines parallel to X axis
     gridVertices.push_back(static_cast<float>(-gridSize) * gridStep);
     gridVertices.push_back(gridY);
     gridVertices.push_back(pos);
-    gridVertices.push_back(0.4f);
-    gridVertices.push_back(0.4f);
-    gridVertices.push_back(0.4f);
+    gridVertices.push_back(0.4F);
+    gridVertices.push_back(0.4F);
+    gridVertices.push_back(0.4F);
 
     gridVertices.push_back(static_cast<float>(gridSize) * gridStep);
     gridVertices.push_back(gridY);
     gridVertices.push_back(pos);
-    gridVertices.push_back(0.4f);
-    gridVertices.push_back(0.4f);
-    gridVertices.push_back(0.4f);
+    gridVertices.push_back(0.4F);
+    gridVertices.push_back(0.4F);
+    gridVertices.push_back(0.4F);
   }
 
   m_GridVertexCount = static_cast<uint32_t>(gridVertices.size() / 6);
