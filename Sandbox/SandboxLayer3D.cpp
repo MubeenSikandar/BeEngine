@@ -1,5 +1,6 @@
 // SandboxLayer3D.cpp
 #include "SandboxLayer3D.hpp"
+#include "MaterialSystem/Texture.hpp"
 #include <vector>
 
 void SandboxLayer3D::OnAttach() {
@@ -27,10 +28,79 @@ void SandboxLayer3D::OnAttach() {
   m_Framebuffer = BeEngine::Framebuffer::Create(fbSpec);
 
   m_CheckerTexture = BeEngine::Texture2D::CreateCheckerboard(256, 256, 32);
-  BE_INFO("Created checkerboard texture!");
+  m_CubeTexture = BeEngine::Texture2D::Create("BeEngine/Assets/Brick.jpeg");
+
+  if (!m_CubeTexture->IsLoaded()) {
+    BE_WARN("Failed to load brick texture, using checkerboard");
+    m_CubeTexture = BeEngine::Texture2D::CreateCheckerboard(256, 256, 32);
+  }
+
+  // BE_INFO("Created checkerboard texture!");
 
   SetupCube();
   SetupGrid();
+
+  // =====================================================
+  // MATERIAL SYSTEM USAGE
+  // =====================================================
+
+  // 1. Define shader source
+  std::string vertexSrc = R"(
+        #version 410 core
+        layout(location = 0) in vec3 a_Position;
+        layout(location = 1) in vec3 a_Color;
+        layout(location = 2) in vec2 a_TexCoord;
+
+        uniform mat4 u_ViewProjection;
+        uniform mat4 u_Model;
+
+        out vec3 v_Color;
+        out vec2 v_TexCoord;
+
+        void main() {
+            v_Color = a_Color;
+            v_TexCoord = a_TexCoord;
+            gl_Position = u_ViewProjection * u_Model * vec4(a_Position, 1.0);
+        }
+    )";
+
+  std::string fragmentSrc = R"(
+        #version 410 core
+        in vec3 v_Color;
+        in vec2 v_TexCoord;
+
+        uniform sampler2D u_Texture;
+        uniform bool u_UseTexture;
+        uniform vec4 u_TintColor;
+
+        layout(location = 0) out vec4 o_Color;
+
+        void main() {
+            vec4 texColor = u_UseTexture ? texture(u_Texture, v_TexCoord) : vec4(v_Color, 1.0);
+            o_Color = texColor * u_TintColor;
+        }
+    )";
+
+  // 2. Load shader into library
+  auto cubeShader =
+      m_ShaderLibrary.Load("TexturedShader", vertexSrc, fragmentSrc);
+
+  // 3. Create material with shader
+  m_CubeMaterial = m_MaterialLibrary.Create("BrickMaterial", cubeShader);
+
+  // 4. Set material properties
+  m_CubeMaterial->SetTexture2D("u_Texture", m_CubeTexture);
+  m_CubeMaterial->SetBool("u_UseTexture", true);
+  m_CubeMaterial->SetFloat4("u_TintColor",
+                            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)); // No tint
+
+  // 5. Set render state
+  m_CubeMaterial->SetCullMode(BeEngine::Material::CullMode::Back);
+  m_CubeMaterial->SetDepthTest(true);
+  m_CubeMaterial->SetDepthWrite(true);
+  m_CubeMaterial->SetBlendMode(BeEngine::Material::BlendMode::Opaque);
+
+  BE_INFO("Material system initialized!");
 }
 
 void SandboxLayer3D::OnDetach() { BE_INFO("SandboxLayer3D detached"); }
@@ -88,18 +158,21 @@ void SandboxLayer3D::OnRender() {
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(m_GridVertexCount));
   }
 
-  // Draw Cube
+  // =====================================================
+  // DRAW CUBE USING MATERIAL SYSTEM
+  // =====================================================
   {
     glm::mat4 model = m_CubeTransform.GetWorldMatrix();
 
-    m_CubeShader->Bind(); // Bind shader FIRST
-    m_CubeShader->SetMat4("u_ViewProjection", viewProj);
-    m_CubeShader->SetMat4("u_Model", model);
+    // Material::Bind() does ALL of this automatically:
+    // - Binds the shader
+    // - Uploads all uniforms (textures, floats, bools, etc.)
+    // - Sets render state (culling, blending, depth)
+    m_CubeMaterial->Bind();
 
-    // Then set texture uniforms
-    m_CheckerTexture->Bind(0);
-    m_CubeShader->SetInt("u_Texture", 0);
-    m_CubeShader->SetBool("u_UseTexture", true);
+    // Only set per-object uniforms (transform matrices)
+    m_CubeMaterial->GetShader()->SetMat4("u_ViewProjection", viewProj);
+    m_CubeMaterial->GetShader()->SetMat4("u_Model", model);
 
     m_CubeVAO->Bind();
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
@@ -147,6 +220,41 @@ void SandboxLayer3D::OnImGuiRender() {
   }
 
   ImGui::Text("FOV: %.1f°", m_CameraController->GetCamera().GetFOV());
+
+  ImGui::Separator();
+  ImGui::Text("Material Properties");
+
+  // =====================================================
+  // EDIT MATERIAL PROPERTIES IN REAL-TIME
+  // =====================================================
+
+  // Tint color picker
+  static glm::vec4 tintColor = glm::vec4(1.0f);
+  if (ImGui::ColorEdit4("Tint Color", &tintColor.x)) {
+    m_CubeMaterial->SetFloat4("u_TintColor", tintColor);
+  }
+
+  // Toggle texture on/off
+  static bool useTexture = true;
+  if (ImGui::Checkbox("Use Texture", &useTexture)) {
+    m_CubeMaterial->SetBool("u_UseTexture", useTexture);
+  }
+
+  // Cull mode selector
+  static int cullMode = 0;
+  const char *cullModes[] = {"Back", "Front", "None"};
+  if (ImGui::Combo("Cull Mode", &cullMode, cullModes, 3)) {
+    m_CubeMaterial->SetCullMode(
+        static_cast<BeEngine::Material::CullMode>(cullMode));
+  }
+
+  // Blend mode selector
+  static int blendMode = 0;
+  const char *blendModes[] = {"Opaque", "Transparent", "Additive", "Multiply"};
+  if (ImGui::Combo("Blend Mode", &blendMode, blendModes, 4)) {
+    m_CubeMaterial->SetBlendMode(
+        static_cast<BeEngine::Material::BlendMode>(blendMode));
+  }
 
   ImGui::Separator();
   ImGui::Text("Controls:");

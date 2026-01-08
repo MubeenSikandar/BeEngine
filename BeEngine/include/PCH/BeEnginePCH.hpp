@@ -29,7 +29,10 @@
 #include "Layers/Layer.hpp"
 #include "Layers/LayerStack.hpp"
 #include "Logs/Log.hpp"
+#include "MaterialSystem/Material.hpp"
+#include "MaterialSystem/MaterialLibrary.hpp"
 #include "MaterialSystem/OpenGL/OpenGLTexture2D.hpp"
+#include "MaterialSystem/ShaderLibrary.hpp"
 #include "MaterialSystem/Texture.hpp"
 #include "Math/Transform.hpp"
 #include "Renderer/BufferLayout.hpp"
@@ -64,6 +67,7 @@
 #include <cstdint>
 #include <exception>
 #include <format>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <memory>

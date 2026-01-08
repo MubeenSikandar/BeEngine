@@ -110,11 +110,6 @@ uint32_t OpenGLShader::CompileShader(uint32_t type, const std::string &source) {
   return shader;
 }
 
-void OpenGLShader::SetMat4(const std::string &name, const glm::mat4 &value) {
-  GLint location = glGetUniformLocation(m_RendererID, name.c_str());
-  glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
-}
-
 void OpenGLShader::SetInt(const std::string &name, int value) {
   GLint location = glGetUniformLocation(m_RendererID, name.c_str());
   glUniform1i(location, value);
@@ -126,9 +121,70 @@ void OpenGLShader::SetIntArray(const std::string &name, int *values,
   glUniform1iv(location, count, values);
 }
 
+int OpenGLShader::GetUniformLocation(const std::string &name) const {
+  // Check cache first
+  auto it = m_UniformLocationCache.find(name);
+  if (it != m_UniformLocationCache.end()) {
+    return it->second;
+  }
+
+  // Query OpenGL
+  int location = glGetUniformLocation(m_RendererID, name.c_str());
+  if (location == -1) {
+    BE_CORE_WARN("Shader uniform '{}' not found or unused", name);
+  }
+
+  m_UniformLocationCache[name] = location;
+  return location;
+}
+
+void OpenGLShader::SetFloat(const std::string &name, float value) {
+  int location = GetUniformLocation(name);
+  if (location != -1) {
+    glUniform1f(location, value);
+  }
+}
+
+void OpenGLShader::SetFloat2(const std::string &name, const glm::vec2 &value) {
+  int location = GetUniformLocation(name);
+  if (location != -1) {
+    glUniform2f(location, value.x, value.y);
+  }
+}
+
+void OpenGLShader::SetFloat3(const std::string &name, const glm::vec3 &value) {
+  int location = GetUniformLocation(name);
+  if (location != -1) {
+    glUniform3f(location, value.x, value.y, value.z);
+  }
+}
+
+void OpenGLShader::SetFloat4(const std::string &name, const glm::vec4 &value) {
+  int location = GetUniformLocation(name);
+  if (location != -1) {
+    glUniform4f(location, value.x, value.y, value.z, value.w);
+  }
+}
+
+void OpenGLShader::SetMat3(const std::string &name, const glm::mat3 &value) {
+  int location = GetUniformLocation(name);
+  if (location != -1) {
+    glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
+  }
+}
+
+void OpenGLShader::SetMat4(const std::string &name, const glm::mat4 &value) {
+  int location = GetUniformLocation(name);
+  if (location != -1) {
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+  }
+}
+
 void OpenGLShader::SetBool(const std::string &name, bool value) {
-  GLint location = glGetUniformLocation(m_RendererID, name.c_str());
-  glUniform1i(location, value ? 1 : 0);
+  int location = GetUniformLocation(name);
+  if (location != -1) {
+    glUniform1i(location, value ? 1 : 0);
+  }
 }
 
 } // namespace BeEngine

@@ -111,6 +111,9 @@ set(BEENGINE_SOURCES
     BeEngine/src/Input/Input.cpp
     BeEngine/src/Math/Transform.cpp
     BeEngine/src/MaterialSystem/Texture.cpp
+    BeEngine/src/MaterialSystem/ShaderLibrary.cpp
+    BeEngine/src/MaterialSystem/Material.cpp
+    BeEngine/src/MaterialSystem/MaterialLibrary.cpp
     BeEngine/src/MaterialSystem/OpenGL/OpenGLTexture2D.cpp
 )
 
@@ -123,6 +126,7 @@ if(BE_BUILD_SHARED)
         add_custom_command(TARGET Sandbox POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 $<TARGET_FILE:BeEngine>
+                 ${CMAKE_SOURCE_DIR}/Assets
                 $<TARGET_FILE_DIR:Sandbox>
             COMMENT "Copying BeEngine.dll to Sandbox directory"
         )

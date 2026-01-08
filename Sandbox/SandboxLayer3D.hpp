@@ -2,7 +2,9 @@
 #pragma once
 
 #include "Application.hpp"
+#include "MaterialSystem/Texture.hpp"
 #include "PCH/BeEnginePCH.hpp"
+#include <memory>
 
 class SandboxLayer3D : public BeEngine::Layer {
 public:
@@ -46,4 +48,9 @@ private:
   BeEngine::Transform m_CubeTransform;
   std::shared_ptr<BeEngine::Texture2D> m_TestTexture;
   std::shared_ptr<BeEngine::Texture2D> m_CheckerTexture;
+  std::shared_ptr<BeEngine::Texture2D> m_CubeTexture;
+
+  BeEngine::ShaderLibrary m_ShaderLibrary;
+  BeEngine::MaterialLibrary m_MaterialLibrary;
+  std::shared_ptr<BeEngine::Material> m_CubeMaterial;
 };

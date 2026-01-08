@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Renderer/Shader.hpp"
+#include <unordered_map>
 namespace BeEngine {
 
 /**
@@ -44,7 +45,16 @@ public:
    */
   void Unbind() const override;
 
+  void SetInt(const std::string &name, int value) override;
+  void SetIntArray(const std::string &name, int *values,
+                   uint32_t count) override;
+  void SetFloat(const std::string &name, float value) override;
+  void SetFloat2(const std::string &name, const glm::vec2 &value) override;
+  void SetFloat3(const std::string &name, const glm::vec3 &value) override;
+  void SetFloat4(const std::string &name, const glm::vec4 &value) override;
+  void SetMat3(const std::string &name, const glm::mat3 &value) override;
   void SetMat4(const std::string &name, const glm::mat4 &value) override;
+  void SetBool(const std::string &name, bool value) override;
 
 private:
   uint32_t m_RendererID{0}; ///< OpenGL shader program ID
@@ -57,9 +67,8 @@ private:
    */
   uint32_t CompileShader(uint32_t type, const std::string &source);
 
-  void SetInt(const std::string &name, int value) override;
-  void SetIntArray(const std::string &name, int *values,
-                   uint32_t count) override;
-  void SetBool(const std::string &name, bool value) override;
+  // Uniform location cache
+  mutable std::unordered_map<std::string, int> m_UniformLocationCache;
+  int GetUniformLocation(const std::string &name) const;
 };
 } // namespace BeEngine
