@@ -1,17 +1,23 @@
 # BeEngine
 
-A modern, cross-platform C++23 game engine with event-driven architecture and comprehensive logging system.
+A modern, cross-platform C++23 game engine with event-driven architecture, comprehensive logging system, and OpenGL rendering pipeline.
 
 ## Overview
 
-BeEngine is a lightweight game engine built with modern C++ standards, featuring a robust event system, flexible logging infrastructure, and cross-platform support. The engine follows a shared library architecture, making it easy to integrate into client applications.
+BeEngine is a feature-rich game engine built with modern C++ standards, featuring a robust event system, flexible logging infrastructure, OpenGL-based rendering pipeline, and cross-platform support. The engine follows a modular architecture with both shared and static library options, making it easy to integrate into client applications.
 
 ## 🚀 Technology Stack
 
 - **C++ Standard**: C++23 (ISO/IEC 14882:2024)
 - **Build System**: CMake 3.31+
+- **Graphics API**: OpenGL 4.1+
+- **Windowing**: GLFW 3.x
+- **Mathematics**: GLM (OpenGL Mathematics)
+- **UI Framework**: Dear ImGui (docking branch)
+- **Image Loading**: STB Image
+- **OpenGL Loading**: Glad
 - **Logging**: spdlog (integrated as submodule)
-- **Architecture**: Shared library (DLL/dylib/so)
+- **Architecture**: Shared/Static library (DLL/dylib/so/lib)
 
 ### Platform Support
 
@@ -23,6 +29,16 @@ BeEngine is a lightweight game engine built with modern C++ standards, featuring
 
 ## 🎯 Core Features
 
+### Rendering System
+
+- **OpenGL 4.1+ pipeline** with modern shader support
+- **Vertex Array Objects (VAO)** and buffer management
+- **Shader compilation and linking** with error handling
+- **Texture loading and management** via STB Image
+- **Frame buffer objects** for render-to-texture
+- **Camera system** with orthographic and perspective projections
+- **Transform system** for 3D object positioning and scaling
+
 ### Event System
 
 - **Priority-based event queue** with configurable capacity
@@ -32,6 +48,37 @@ BeEngine is a lightweight game engine built with modern C++ standards, featuring
 - **Event filtering** and blocking by type or category
 - **Performance profiling** with statistics tracking
 - **Time-budgeted processing** to prevent frame drops
+
+### UI System (ImGui Integration)
+
+- **Dear ImGui integration** with docking support
+- **ImGui layer management** with event handling
+- **Dockspace support** for editor-style interfaces
+- **Input capture management** (mouse/keyboard)
+- **Custom styling and theming** support
+
+### Input System
+
+- **Cross-platform input handling** via GLFW
+- **Keyboard and mouse event processing**
+- **Key code and mouse button abstractions**
+- **Input state management** and polling
+
+### Material System
+
+- **Texture management** with OpenGL backend
+- **2D texture loading** from various formats
+- **Texture binding and sampling** in shaders
+- **Material property management**
+
+### Camera System
+
+- **Abstract camera base class** with common functionality
+- **Orthographic camera** for 2D rendering and UI
+- **Perspective camera** for 3D rendering
+- **Camera controllers** with input handling
+- **View and projection matrix management**
+- **Screen-to-world coordinate conversion**
 
 ### Logging System
 
@@ -50,6 +97,7 @@ BeEngine is a lightweight game engine built with modern C++ standards, featuring
 - **Configurable window properties** (size, title, VSync)
 - **Native window handle access** for advanced integration
 - **Automatic event callback setup** with the event system
+- **OpenGL context management**
 
 ### Layer System
 
@@ -73,6 +121,7 @@ BeEngine is a lightweight game engine built with modern C++ standards, featuring
 - **Debug**: Full logging, assertions enabled, no optimization
 - **Release**: Optimized with debug info, reduced logging
 - **Distribution**: Maximum optimization, minimal logging, LTO enabled
+- **Static/Shared library options** for different deployment needs
 
 ## 📁 Project Structure
 
@@ -96,22 +145,55 @@ BeEngine/
 │   │   ├── Layers/             # Layer system
 │   │   │   ├── Layer.hpp       # Base layer class
 │   │   │   └── LayerStack.hpp  # Layer management
+│   │   ├── Renderer/           # Rendering system
+│   │   │   ├── Renderer.hpp    # High-level renderer
+│   │   │   ├── RendererAPI.hpp # Abstract rendering API
+│   │   │   ├── Shader.hpp      # Shader management
+│   │   │   ├── VertexArray.hpp # VAO abstraction
+│   │   │   ├── VertexBuffer.hpp# VBO abstraction
+│   │   │   ├── IndexBuffer.hpp # EBO abstraction
+│   │   │   ├── FrameBuffer.hpp # FBO abstraction
+│   │   │   └── OpenGL/         # OpenGL implementation
+│   │   ├── Camera/             # Camera system
+│   │   │   ├── Camera.hpp      # Base camera class
+│   │   │   ├── OrthographicCamera.hpp
+│   │   │   ├── PerspectiveCamera.hpp
+│   │   │   └── *CameraController.hpp
+│   │   ├── ImGui/              # ImGui integration
+│   │   │   └── ImGuiLayer.hpp  # ImGui layer
+│   │   ├── Input/              # Input handling
+│   │   │   └── Input.hpp       # Input abstraction
+│   │   ├── MaterialSystem/     # Material and texture system
+│   │   │   ├── Texture.hpp     # Texture abstraction
+│   │   │   └── OpenGL/         # OpenGL texture implementation
+│   │   ├── Math/               # Mathematics utilities
+│   │   │   └── Transform.hpp   # 3D transforms
 │   │   └── Logs/               # Logging system
 │   │       ├── Log.hpp         # Logger interface
 │   │       └── LogConfig.hpp   # Configuration
 │   ├── src/                    # Implementation files
 │   │   ├── Application.cpp
-│   │   ├── Event.cpp
-│   │   ├── EventQueue.cpp
-│   │   ├── Layer.cpp
-│   │   ├── LayerStack.cpp
-│   │   ├── Log.cpp
-│   │   └── Window.cpp
+│   │   ├── Window.cpp
+│   │   ├── Events/             # Event implementations
+│   │   ├── Layers/             # Layer implementations
+│   │   ├── Renderer/           # Rendering implementations
+│   │   ├── Camera/             # Camera implementations
+│   │   ├── ImGui/              # ImGui implementations
+│   │   ├── Input/              # Input implementations
+│   │   ├── MaterialSystem/     # Material implementations
+│   │   ├── Math/               # Math implementations
+│   │   └── Logs/               # Logging implementations
 │   └── vendor/                 # Third-party dependencies
 │       ├── spdlog/            # Logging library (submodule)
-│       └── GLFW/              # Window/input library (submodule)
+│       ├── GLFW/              # Window/input library (submodule)
+│       ├── GLM/               # Mathematics library (submodule)
+│       ├── imgui/             # UI library (submodule)
+│       ├── STB/               # Image loading (submodule)
+│       └── Glad/              # OpenGL loader
 ├── Sandbox/                    # Example application
-│   └── SandBoxApp.cpp         # Demo client
+│   ├── SandBoxApp.cpp         # Main demo application
+│   ├── SandboxLayer.cpp       # 2D rendering demo
+│   └── SandboxLayer3D.cpp     # 3D rendering demo
 ├── .vscode/                   # VS Code configuration
 ├── .zed/                      # Zed editor configuration
 ├── build/                     # Build output directory
@@ -182,25 +264,28 @@ cmake --build build --target rebuild
 build/
 ├── bin/
 │   ├── Debug/          # Debug builds
-│   │   ├── BeEngine.dll/dylib/so
+│   │   ├── BeEngine.dll/dylib/so (or .lib/.a for static)
 │   │   ├── Sandbox
 │   │   └── logs/       # Runtime logs
 │   └── Release/        # Release builds
-│       ├── BeEngine.dll/dylib/so
+│       ├── BeEngine.dll/dylib/so (or .lib/.a for static)
 │       ├── Sandbox
 │       └── logs/
 └── lib/                # Static libraries
     ├── libglfw3.a
-    └── libspdlogd.a
+    ├── libspdlogd.a
+    ├── libimgui.a
+    ├── libstb.a
+    └── libglad.a
 ```
 
 ### Platform-Specific Output
 
-| Platform    | Library             | Executable    |
-| ----------- | ------------------- | ------------- |
-| **Windows** | `BeEngine.dll`      | `Sandbox.exe` |
-| **macOS**   | `libBeEngine.dylib` | `Sandbox`     |
-| **Linux**   | `libBeEngine.so`    | `Sandbox`     |
+| Platform    | Shared Library      | Static Library  | Executable    |
+| ----------- | ------------------- | --------------- | ------------- |
+| **Windows** | `BeEngine.dll`      | `BeEngine.lib`  | `Sandbox.exe` |
+| **macOS**   | `libBeEngine.dylib` | `libBeEngine.a` | `Sandbox`     |
+| **Linux**   | `libBeEngine.so`    | `libBeEngine.a` | `Sandbox`     |
 
 ## 💻 Creating a Client Application
 
@@ -210,19 +295,41 @@ build/
 #include "Events/ApplicationEvent.hpp"
 #include "Layers/Layer.hpp"
 #include "Logs/Log.hpp"
+#include "Renderer/Renderer.hpp"
+#include "Camera/OrthographicCamera.hpp"
 
-// Custom game layer
+// Custom rendering layer
 class GameLayer : public BeEngine::Layer {
 public:
-    GameLayer() : Layer("GameLayer") {}
-
-    void onAttach() override {
-        BE_INFO("Game layer attached!");
+    GameLayer() : Layer("GameLayer") {
+        // Initialize camera
+        m_Camera = std::make_unique<BeEngine::OrthographicCamera>(
+            -1.6f, 1.6f, -0.9f, 0.9f
+        );
     }
 
-    void onUpdate(BeEngine::Timestep ts) override {
-        // Update game logic here
-        // Use ts.GetSeconds() for frame-rate independent updates
+    void OnAttach() override {
+        BE_INFO("Game layer attached!");
+
+        // Initialize renderer
+        BeEngine::Renderer::Init();
+
+        // Setup your geometry, shaders, textures here
+        SetupScene();
+    }
+
+    void OnUpdate(BeEngine::Timestep ts) override {
+        // Update game logic
+        UpdateCamera(ts);
+
+        // Render
+        BeEngine::Renderer::Clear(0.1f, 0.1f, 0.1f, 1.0f);
+        BeEngine::Renderer::BeginFrame();
+
+        // Render your objects here
+        RenderScene();
+
+        BeEngine::Renderer::EndFrame();
     }
 
     void OnEvent(BeEngine::Event& event) override {
@@ -234,6 +341,28 @@ public:
             }
         );
     }
+
+    void OnImGuiRender() override {
+        // Render debug UI
+        ImGui::Begin("Debug Info");
+        ImGui::Text("FPS: %.1f", 1.0f / GetTimestep().GetSeconds());
+        ImGui::End();
+    }
+
+private:
+    void SetupScene() {
+        // Setup your vertex arrays, shaders, textures
+    }
+
+    void UpdateCamera(BeEngine::Timestep ts) {
+        // Update camera position, rotation, etc.
+    }
+
+    void RenderScene() {
+        // Render your geometry
+    }
+
+    std::unique_ptr<BeEngine::OrthographicCamera> m_Camera;
 };
 
 class MyGame : public BeEngine::Application {
@@ -244,22 +373,8 @@ public:
         // Push your game layer
         PushLayer(std::make_shared<GameLayer>());
 
-        // Subscribe to global events
-        GetEventQueue().Subscribe(
-            BeEngine::EventType::KeyPressed,
-            [](BeEngine::Event& e) {
-                auto& keyEvent = static_cast<BeEngine::KeyPressedEvent&>(e);
-                if (keyEvent.GetKeyCode() == BeEngine::KeyCode::Escape) {
-                    BE_WARN("Escape pressed - shutting down");
-                    return true; // Consume the event
-                }
-                return false;
-            }
-        );
-    }
-
-    void OnEvent(BeEngine::Event& event) override {
-        // Handle application-level events
+        // Push ImGui layer for debug UI
+        PushOverlay(std::make_shared<BeEngine::ImGuiLayer>());
     }
 };
 
@@ -279,8 +394,61 @@ The base application class provides:
 - Window creation and management
 - Layer stack management
 - Event queue management
+- Renderer initialization
 - Configurable frame rate
 - Automatic cleanup
+
+### Rendering System
+
+Modern OpenGL-based rendering featuring:
+
+- **Renderer**: High-level rendering API with state management
+- **Shader Management**: Compilation, linking, and uniform handling
+- **Vertex Array Objects**: Efficient geometry organization
+- **Buffer Management**: Vertex, index, and frame buffer abstractions
+- **Texture System**: 2D texture loading and management via STB
+- **OpenGL Context**: Cross-platform OpenGL setup and management
+
+### Camera System
+
+Flexible camera system with:
+
+- **Abstract Camera Base**: Common functionality for all camera types
+- **Orthographic Camera**: Perfect for 2D games and UI rendering
+- **Perspective Camera**: 3D rendering with proper depth perception
+- **Camera Controllers**: Input-driven camera movement and rotation
+- **Matrix Management**: Automatic view/projection matrix calculation
+- **Coordinate Conversion**: Screen-to-world and world-to-screen utilities
+
+### ImGui Integration
+
+Comprehensive UI system featuring:
+
+- **ImGui Layer**: Seamless integration with the layer system
+- **Docking Support**: Editor-style dockable windows
+- **Event Handling**: Proper input capture and event filtering
+- **Styling Support**: Custom themes and styling options
+- **Debug Tools**: Built-in debugging and profiling interfaces
+
+### Material System
+
+Advanced material and texture management:
+
+- **Texture Abstraction**: Platform-independent texture interface
+- **STB Integration**: Support for PNG, JPG, BMP, TGA, and more formats
+- **OpenGL Backend**: Optimized OpenGL texture implementation
+- **Binding Management**: Automatic texture unit management
+- **Format Support**: Various pixel formats and compression options
+
+### Input System
+
+Cross-platform input handling:
+
+- **GLFW Integration**: Robust keyboard and mouse input
+- **Event Generation**: Automatic conversion to engine events
+- **Key Mapping**: Platform-independent key code system
+- **Mouse Support**: Button, movement, and scroll wheel handling
+- **Input Polling**: Both event-driven and polling-based input
 
 ### Window System
 
@@ -291,6 +459,7 @@ GLFW-based window abstraction featuring:
 - VSync control
 - Window property management
 - Native handle access for advanced use
+- OpenGL context management
 
 ### Layer System
 
@@ -354,12 +523,16 @@ BE_LOG_CATEGORY(LogCategory::Events, info, "Event logged");
 - Automatic compile commands generation
 - Full IntelliSense support
 
-### Dependencies
+## 🔗 Dependencies
 
 BeEngine uses the following third-party libraries as git submodules:
 
 - **[spdlog](https://github.com/gabime/spdlog)**: Fast C++ logging library
 - **[GLFW](https://github.com/glfw/glfw)**: Cross-platform window and input handling
+- **[GLM](https://github.com/g-truc/glm)**: OpenGL Mathematics library
+- **[Dear ImGui](https://github.com/ocornut/imgui)**: Immediate mode GUI (docking branch)
+- **[STB](https://github.com/nothings/stb)**: Single-file public domain libraries for image loading
+- **[Glad](https://glad.dav1d.de/)**: OpenGL function loader
 
 ### Cloning with Submodules
 
@@ -371,47 +544,16 @@ git clone --recursive https://github.com/MubeenSikandar/BeEngine.git
 git submodule update --init --recursive
 ```
 
-### CMake for imgui
+### Build Options
+
+BeEngine supports both static and shared library builds:
 
 ```bash
-cmake_minimum_required(VERSION 3.20)
-project(imgui)
+# Build as static library (default)
+cmake -DBE_BUILD_SHARED=OFF ..
 
-# ImGui core files
-set(IMGUI_SOURCES
-    imgui.cpp
-    imgui_demo.cpp
-    imgui_draw.cpp
-    imgui_tables.cpp
-    imgui_widgets.cpp
-)
-
-# ImGui backends (GLFW + OpenGL3)
-set(IMGUI_BACKENDS
-    backends/imgui_impl_glfw.cpp
-    backends/imgui_impl_opengl3.cpp
-)
-
-# Create static library
-add_library(imgui STATIC
-    ${IMGUI_SOURCES}
-    ${IMGUI_BACKENDS}
-)
-
-# Include directories
-target_include_directories(imgui PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/backends
-)
-
-# Link dependencies
-find_package(OpenGL REQUIRED)
-target_link_libraries(imgui PUBLIC
-    glfw
-)
-
-# Enable C++17 (ImGui requirement)
-target_compile_features(imgui PUBLIC cxx_std_17)
+# Build as shared library (DLL/dylib/so)
+cmake -DBE_BUILD_SHARED=ON ..
 ```
 
 ## 📋 Requirements
@@ -422,6 +564,7 @@ target_compile_features(imgui PUBLIC cxx_std_17)
 - Xcode Command Line Tools
 - CMake 3.31+
 - Clang 18+ with C++23 support
+- OpenGL 4.1+ (built into macOS)
 
 ### Windows
 
@@ -429,6 +572,7 @@ target_compile_features(imgui PUBLIC cxx_std_17)
 - Visual Studio 2022 (v17.10+) or MinGW-w64
 - Windows SDK 10.0.26100+
 - CMake 3.31+
+- OpenGL 4.1+ drivers (usually included with graphics drivers)
 
 ### Linux
 
@@ -436,6 +580,8 @@ target_compile_features(imgui PUBLIC cxx_std_17)
 - GCC 14+ or Clang 18+
 - CMake 3.31+
 - Build essentials and pthread
+- OpenGL 4.1+ drivers
+- X11 development libraries (`libx11-dev` on Ubuntu)
 
 ## 🎨 C++23 Features Used
 
@@ -445,6 +591,25 @@ target_compile_features(imgui PUBLIC cxx_std_17)
 - Modern smart pointer utilities
 - Atomic operations
 - Chrono library for timing
+
+## 🎮 Graphics Features
+
+### OpenGL Support
+
+- **OpenGL 4.1+** core profile for maximum compatibility
+- **Glad loader** for modern OpenGL function loading
+- **Vertex Array Objects** for efficient geometry management
+- **Shader compilation** with error reporting and validation
+- **Texture management** with multiple format support
+- **Frame buffer objects** for render-to-texture capabilities
+
+### Rendering Pipeline
+
+- **Forward rendering** with depth testing
+- **Immediate mode rendering** for simple geometry
+- **Batch rendering** support for performance optimization
+- **Wireframe mode** for debugging and visualization
+- **Viewport management** with automatic resize handling
 
 ### Logging System
 
@@ -494,8 +659,48 @@ BE_LOG_CATEGORY(LogCategory::Events, info, "Event processed: {}", event.ToString
 - **Priority queues** ensure critical events are processed first
 - **Layer system** allows efficient update and event handling order
 - **Timestep-based updates** provide frame-rate independent game logic
+- **OpenGL state caching** reduces redundant state changes
+- **Vertex Array Objects** minimize draw call overhead
+- **Texture binding optimization** reduces GPU state changes
+- **ImGui integration** with minimal performance impact
 - **Compile-time optimizations** with LTO in Distribution builds
 - **Platform-specific optimizations** (SIMD, cache alignment)
+
+## 🏗️ Architecture Overview
+
+### Rendering Architecture
+
+```
+Application Layer
+    ↓
+Layer System (Game Logic, UI, Debug)
+    ↓
+Renderer (High-level API)
+    ↓
+RendererAPI (Platform abstraction)
+    ↓
+OpenGL Implementation
+    ↓
+GLFW + OpenGL Context
+```
+
+### Event Flow
+
+```
+GLFW Input → Window Events → Event Queue → Layer Stack → Application
+                                ↓
+                         Event Subscribers
+```
+
+### Layer Stack Organization
+
+```
+┌─────────────────┐ ← Overlays (UI, Debug) - Events first
+├─────────────────┤
+├─────────────────┤ ← Regular Layers (Game Logic)
+├─────────────────┤
+└─────────────────┘ ← Base Layer - Updates first
+```
 
 ## 🔐 Build Macros
 
