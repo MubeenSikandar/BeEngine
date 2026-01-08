@@ -229,7 +229,7 @@ void SandboxLayer3D::OnImGuiRender() {
   // =====================================================
 
   // Tint color picker
-  static glm::vec4 tintColor = glm::vec4(1.0f);
+  static auto tintColor = glm::vec4(1.0F);
   if (ImGui::ColorEdit4("Tint Color", &tintColor.x)) {
     m_CubeMaterial->SetFloat4("u_TintColor", tintColor);
   }
@@ -242,7 +242,7 @@ void SandboxLayer3D::OnImGuiRender() {
 
   // Cull mode selector
   static int cullMode = 0;
-  std::array<char *, 3> cullModes = {"Back", "Front", "None"};
+  std::array<const char *, 3> cullModes = {"Back", "Front", "None"};
   if (ImGui::Combo("Cull Mode", &cullMode, cullModes.data(), 3)) {
     m_CubeMaterial->SetCullMode(
         static_cast<BeEngine::Material::CullMode>(cullMode));
@@ -250,8 +250,8 @@ void SandboxLayer3D::OnImGuiRender() {
 
   // Blend mode selector
   static int blendMode = 0;
-  std::array<char *, 4> blendModes = {"Opaque", "Transparent", "Additive",
-                                      "Multiply"};
+  std::array<const char *, 4> blendModes = {"Opaque", "Transparent", "Additive",
+                                            "Multiply"};
   if (ImGui::Combo("Blend Mode", &blendMode, blendModes.data(), 4)) {
     m_CubeMaterial->SetBlendMode(
         static_cast<BeEngine::Material::BlendMode>(blendMode));
