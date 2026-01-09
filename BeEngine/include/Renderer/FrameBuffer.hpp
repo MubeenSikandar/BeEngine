@@ -181,8 +181,7 @@ public:
    * @param spec Framebuffer specification
    * @return Shared pointer to the created framebuffer
    */
-  static std::shared_ptr<Framebuffer>
-  Create(const FramebufferSpecification &spec);
+  static Ref<Framebuffer> Create(const FramebufferSpecification &spec);
 };
 
 } // namespace BeEngine

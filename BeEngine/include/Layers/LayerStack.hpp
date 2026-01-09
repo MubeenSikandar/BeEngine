@@ -58,7 +58,7 @@ public:
    * Layers are inserted before overlays and receive events after overlays.
    * OnAttach() is called immediately.
    */
-  void PushLayer(std::shared_ptr<Layer> layer);
+  void PushLayer(Ref<Layer> layer);
 
   /**
    * @brief Push an overlay onto the stack (always on top)
@@ -67,7 +67,7 @@ public:
    * Overlays are always at the top of the stack and receive events first.
    * OnAttach() is called immediately.
    */
-  void PushOverlay(std::shared_ptr<Layer> overlay);
+  void PushOverlay(Ref<Layer> overlay);
 
   /**
    * @brief Remove a layer from the stack
@@ -76,7 +76,7 @@ public:
    * OnDetach() is called immediately.
    * The layer is destroyed when the last shared_ptr reference is released.
    */
-  void PopLayer(const std::shared_ptr<Layer> &layer);
+  void PopLayer(const Ref<Layer> &layer);
 
   /**
    * @brief Remove an overlay from the stack
@@ -84,7 +84,7 @@ public:
    *
    * OnDetach() is called immediately.
    */
-  void PopOverlay(const std::shared_ptr<Layer> &overlay);
+  void PopOverlay(const Ref<Layer> &overlay);
 
   /**
    * @brief Remove all layers and overlays
@@ -100,7 +100,7 @@ public:
    * @param name The debug name of the layer
    * @return Shared pointer to the layer, or nullptr if not found
    */
-  NODISCARD std::shared_ptr<Layer> GetLayer(const std::string &name) const;
+  NODISCARD Ref<Layer> GetLayer(const std::string &name) const;
 
   /**
    * @brief Check if a layer exists in the stack
@@ -132,8 +132,8 @@ public:
   // ===== Iteration Support =====
 
   // Forward iteration (for updates)
-  using iterator = std::vector<std::shared_ptr<Layer>>::iterator;
-  using const_iterator = std::vector<std::shared_ptr<Layer>>::const_iterator;
+  using iterator = std::vector<Ref<Layer>>::iterator;
+  using const_iterator = std::vector<Ref<Layer>>::const_iterator;
 
   iterator begin() { return m_Layers.begin(); }
   iterator end() { return m_Layers.end(); }
@@ -143,10 +143,9 @@ public:
   NODISCARD const_iterator cend() const { return m_Layers.cend(); }
 
   // Reverse iteration (for events)
-  using reverse_iterator =
-      std::vector<std::shared_ptr<Layer>>::reverse_iterator;
+  using reverse_iterator = std::vector<Ref<Layer>>::reverse_iterator;
   using const_reverse_iterator =
-      std::vector<std::shared_ptr<Layer>>::const_reverse_iterator;
+      std::vector<Ref<Layer>>::const_reverse_iterator;
 
   reverse_iterator rbegin() { return m_Layers.rbegin(); }
   reverse_iterator rend() { return m_Layers.rend(); }
@@ -170,7 +169,7 @@ private:
    *                              ^
    *                         m_LayerInsertIndex
    */
-  std::vector<std::shared_ptr<Layer>> m_Layers;
+  std::vector<Ref<Layer>> m_Layers;
 
   /**
    * @brief Index where new layers are inserted (before overlays)

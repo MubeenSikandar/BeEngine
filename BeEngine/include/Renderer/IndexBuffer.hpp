@@ -21,7 +21,6 @@ public:
    * @param indices Pointer to index data
    * @param count Number of indices
    */
-  static std::shared_ptr<IndexBuffer> Create(const uint32_t *indices,
-                                             uint32_t count);
+  static Ref<IndexBuffer> Create(const uint32_t *indices, uint32_t count);
 };
 } // namespace BeEngine

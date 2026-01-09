@@ -36,8 +36,7 @@ struct MaterialProperty {
 
   // Value storage using variant
   std::variant<float, glm::vec2, glm::vec3, glm::vec4, int, bool, glm::mat3,
-               glm::mat4, std::shared_ptr<Texture2D>,
-               std::shared_ptr<TextureCube>>
+               glm::mat4, Ref<Texture2D>, Ref<TextureCube>>
       Value;
 
   // For texture properties, which slot to bind to
@@ -59,7 +58,7 @@ public:
    * @param shader The shader this material uses
    * @param name Optional material name
    */
-  explicit Material(const std::shared_ptr<Shader> &shader,
+  explicit Material(const Ref<Shader> &shader,
                     std::string name = "Unnamed Material");
 
   virtual ~Material() = default;
@@ -67,9 +66,8 @@ public:
   /**
    * @brief Factory method to create a material
    */
-  static std::shared_ptr<Material>
-  Create(const std::shared_ptr<Shader> &shader,
-         const std::string &name = "Unnamed Material");
+  static Ref<Material> Create(const Ref<Shader> &shader,
+                              const std::string &name = "Unnamed Material");
 
   // ===== Property Setters =====
   void SetFloat(const std::string &name, float value);
@@ -80,11 +78,9 @@ public:
   void SetBool(const std::string &name, bool value);
   void SetMat3(const std::string &name, const glm::mat3 &value);
   void SetMat4(const std::string &name, const glm::mat4 &value);
-  void SetTexture2D(const std::string &name,
-                    const std::shared_ptr<Texture2D> &texture,
+  void SetTexture2D(const std::string &name, const Ref<Texture2D> &texture,
                     uint32_t slot = 0);
-  void SetTextureCube(const std::string &name,
-                      const std::shared_ptr<TextureCube> &texture,
+  void SetTextureCube(const std::string &name, const Ref<TextureCube> &texture,
                       uint32_t slot = 0);
 
   // ===== Property Getters =====
@@ -96,10 +92,8 @@ public:
   NODISCARD bool GetBool(const std::string &name) const;
   NODISCARD glm::mat3 GetMat3(const std::string &name) const;
   NODISCARD glm::mat4 GetMat4(const std::string &name) const;
-  NODISCARD std::shared_ptr<Texture2D>
-  GetTexture2D(const std::string &name) const;
-  NODISCARD std::shared_ptr<TextureCube>
-  GetTextureCube(const std::string &name) const;
+  NODISCARD Ref<Texture2D> GetTexture2D(const std::string &name) const;
+  NODISCARD Ref<TextureCube> GetTextureCube(const std::string &name) const;
 
   /**
    * @brief Check if a property exists
@@ -126,8 +120,8 @@ public:
   NODISCARD const std::string &GetName() const { return m_Name; }
   void SetName(const std::string &name) { m_Name = name; }
 
-  NODISCARD std::shared_ptr<Shader> GetShader() const { return m_Shader; }
-  void SetShader(const std::shared_ptr<Shader> &shader) { m_Shader = shader; }
+  NODISCARD Ref<Shader> GetShader() const { return m_Shader; }
+  void SetShader(const Ref<Shader> &shader) { m_Shader = shader; }
 
   // ===== Render State =====
   enum class BlendMode : uint8_t { Opaque, Transparent, Additive, Multiply };
@@ -158,7 +152,7 @@ private:
   T GetProperty(const std::string &name, MaterialPropertyType type) const;
 
   std::string m_Name;
-  std::shared_ptr<Shader> m_Shader;
+  Ref<Shader> m_Shader;
   std::unordered_map<std::string, MaterialProperty> m_Properties;
 
   // Render state

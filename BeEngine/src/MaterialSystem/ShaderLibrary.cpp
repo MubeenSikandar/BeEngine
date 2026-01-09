@@ -2,8 +2,7 @@
 
 namespace BeEngine {
 
-void ShaderLibrary::Add(const std::string &name,
-                        const std::shared_ptr<Shader> &shader) {
+void ShaderLibrary::Add(const std::string &name, const Ref<Shader> &shader) {
   if (Exists(name)) {
     BE_CORE_WARN("ShaderLibrary: Shader '{}' already exists, overwriting",
                  name);
@@ -12,22 +11,20 @@ void ShaderLibrary::Add(const std::string &name,
   BE_CORE_TRACE("ShaderLibrary: Added shader '{}'", name);
 }
 
-void ShaderLibrary::Add(const std::shared_ptr<Shader> &shader) {
+void ShaderLibrary::Add(const Ref<Shader> &shader) {
   // Use a default name based on the shader's address
   std::string name =
       "Shader_" + std::to_string(reinterpret_cast<uintptr_t>(shader.get()));
   Add(name, shader);
 }
 
-std::shared_ptr<Shader>
-ShaderLibrary::Load(const std::filesystem::path &filepath) {
+Ref<Shader> ShaderLibrary::Load(const std::filesystem::path &filepath) {
   std::string name = filepath.stem().string();
   return Load(name, filepath);
 }
 
-std::shared_ptr<Shader>
-ShaderLibrary::Load(const std::string &name,
-                    const std::filesystem::path &filepath) {
+Ref<Shader> ShaderLibrary::Load(const std::string &name,
+                                const std::filesystem::path &filepath) {
   if (!std::filesystem::exists(filepath)) {
     BE_CORE_ERROR("ShaderLibrary: File not found: {}", filepath.string());
     return nullptr;
@@ -104,15 +101,15 @@ ShaderLibrary::Load(const std::string &name,
   return shader;
 }
 
-std::shared_ptr<Shader> ShaderLibrary::Load(const std::string &name,
-                                            const std::string &vertexSrc,
-                                            const std::string &fragmentSrc) {
+Ref<Shader> ShaderLibrary::Load(const std::string &name,
+                                const std::string &vertexSrc,
+                                const std::string &fragmentSrc) {
   auto shader = Shader::Create(vertexSrc, fragmentSrc);
   Add(name, shader);
   return shader;
 }
 
-std::shared_ptr<Shader> ShaderLibrary::Get(const std::string &name) const {
+Ref<Shader> ShaderLibrary::Get(const std::string &name) const {
   auto it = m_Shaders.find(name);
   if (it == m_Shaders.end()) {
     BE_CORE_ERROR("ShaderLibrary: Shader '{}' not found", name);

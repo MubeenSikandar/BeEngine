@@ -157,20 +157,20 @@ public:
 class BE_API Texture2D : public Texture {
 public:
   // Create from file
-  static std::shared_ptr<Texture2D> Create(const std::filesystem::path &path,
-                                           bool sRGB = true);
+  static Ref<Texture2D> Create(const std::filesystem::path &path,
+                               bool sRGB = true);
 
   // Create from specification (empty or with data)
-  static std::shared_ptr<Texture2D> Create(const TextureSpecification &spec,
-                                           const void *data = nullptr);
+  static Ref<Texture2D> Create(const TextureSpecification &spec,
+                               const void *data = nullptr);
 
   // Create solid color texture
-  static std::shared_ptr<Texture2D> CreateSolidColor(const glm::vec4 &color,
-                                                     uint32_t width = 1,
-                                                     uint32_t height = 1);
+  static Ref<Texture2D> CreateSolidColor(const glm::vec4 &color,
+                                         uint32_t width = 1,
+                                         uint32_t height = 1);
 
   // Create checkerboard texture (useful for debugging)
-  static std::shared_ptr<Texture2D>
+  static Ref<Texture2D>
   CreateCheckerboard(uint32_t width = 64, uint32_t height = 64,
                      uint32_t checkSize = 8,
                      const glm::vec4 &color1 = {1, 1, 1, 1},
@@ -184,16 +184,16 @@ class BE_API TextureCube : public Texture {
 public:
   // Create from 6 face images
   // Order: +X, -X, +Y, -Y, +Z, -Z
-  static std::shared_ptr<TextureCube>
+  static Ref<TextureCube>
   Create(const std::array<std::filesystem::path, 6> &facePaths);
 
   // Create from single equirectangular HDR image
-  static std::shared_ptr<TextureCube>
+  static Ref<TextureCube>
   CreateFromEquirectangular(const std::filesystem::path &hdrPath,
                             uint32_t resolution = 512);
 
   // Create from specification
-  static std::shared_ptr<TextureCube> Create(const TextureSpecification &spec);
+  static Ref<TextureCube> Create(const TextureSpecification &spec);
 };
 
 /**

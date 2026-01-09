@@ -14,8 +14,8 @@ static void GLFWErrorCallback(int error, const char *description) {
 // Static Factory Method
 // ============================================================================
 
-std::unique_ptr<Window> Window::Create(const WindowProps &props) {
-  return std::make_unique<Window>(props);
+Scope<Window> Window::Create(const WindowProps &props) {
+  return CreateScope<Window>(props);
 }
 
 // ============================================================================

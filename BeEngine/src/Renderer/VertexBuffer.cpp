@@ -2,12 +2,11 @@
 
 namespace BeEngine {
 
-std::shared_ptr<VertexBuffer> VertexBuffer::Create(const void *vertices,
-                                                   uint32_t size) {
+Ref<VertexBuffer> VertexBuffer::Create(const void *vertices, uint32_t size) {
   switch (RendererAPI::GetAPI()) {
   case RenderAPI::OpenGL:
     BE_CORE_TRACE("Creating OpenGL VertexBuffer");
-    return std::make_shared<OpenGLVertexBuffer>(vertices, size);
+    return CreateRef<OpenGLVertexBuffer>(vertices, size);
 
   case RenderAPI::Vulkan:
     BE_CORE_CRITICAL("Vulkan is not yet supported!");

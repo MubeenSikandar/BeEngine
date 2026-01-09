@@ -13,18 +13,17 @@ public:
   /**
    * @brief Add a material to the library
    */
-  void Add(const std::string &name, const std::shared_ptr<Material> &material);
+  void Add(const std::string &name, const Ref<Material> &material);
 
   /**
    * @brief Create and add a material
    */
-  std::shared_ptr<Material> Create(const std::string &name,
-                                   const std::shared_ptr<Shader> &shader);
+  Ref<Material> Create(const std::string &name, const Ref<Shader> &shader);
 
   /**
    * @brief Get a material by name
    */
-  NODISCARD std::shared_ptr<Material> Get(const std::string &name) const;
+  NODISCARD Ref<Material> Get(const std::string &name) const;
 
   /**
    * @brief Check if material exists
@@ -52,7 +51,7 @@ public:
   NODISCARD size_t Size() const { return m_Materials.size(); }
 
 private:
-  std::unordered_map<std::string, std::shared_ptr<Material>> m_Materials;
+  std::unordered_map<std::string, Ref<Material>> m_Materials;
 };
 
 } // namespace BeEngine

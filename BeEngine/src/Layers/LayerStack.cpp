@@ -15,7 +15,7 @@ LayerStack::~LayerStack() {
   m_Layers.clear();
 }
 
-void LayerStack::PushLayer(std::shared_ptr<Layer> layer) {
+void LayerStack::PushLayer(Ref<Layer> layer) {
   if (!layer) {
     BE_CORE_ERROR("Attempted to push null layer!");
     return;
@@ -33,7 +33,7 @@ void LayerStack::PushLayer(std::shared_ptr<Layer> layer) {
   m_Layers[m_LayerInsertIndex - 1]->OnAttach();
 }
 
-void LayerStack::PushOverlay(std::shared_ptr<Layer> overlay) {
+void LayerStack::PushOverlay(Ref<Layer> overlay) {
   if (!overlay) {
     BE_CORE_ERROR("Attempted to push null overlay!");
     return;
@@ -45,7 +45,7 @@ void LayerStack::PushOverlay(std::shared_ptr<Layer> overlay) {
   m_Layers.back()->OnAttach();
 }
 
-void LayerStack::PopLayer(const std::shared_ptr<Layer> &layer) {
+void LayerStack::PopLayer(const Ref<Layer> &layer) {
   if (!layer) {
     BE_CORE_WARN("Attempted to pop null layer");
     return;
@@ -69,7 +69,7 @@ void LayerStack::PopLayer(const std::shared_ptr<Layer> &layer) {
   }
 }
 
-void LayerStack::PopOverlay(const std::shared_ptr<Layer> &overlay) {
+void LayerStack::PopOverlay(const Ref<Layer> &overlay) {
   if (!overlay) {
     BE_CORE_WARN("Attempted to pull null overlay");
     return;
@@ -106,9 +106,9 @@ void LayerStack::Clear() {
   m_LayerInsertIndex = 0;
 }
 
-std::shared_ptr<Layer> LayerStack::GetLayer(const std::string &name) const {
+Ref<Layer> LayerStack::GetLayer(const std::string &name) const {
   auto it = std::ranges::find_if(m_Layers.begin(), m_Layers.end(),
-                                 [&name](const std::shared_ptr<Layer> &layer) {
+                                 [&name](const Ref<Layer> &layer) {
                                    return layer && layer->GetName() == name;
                                  });
 

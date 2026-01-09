@@ -1,15 +1,14 @@
 #include "PCH/BeEnginePCH.hpp"
 
 namespace BeEngine {
-Material::Material(const std::shared_ptr<Shader> &shader, std::string name)
+Material::Material(const Ref<Shader> &shader, std::string name)
     : m_Name(std::move(name)), m_Shader(shader) {
   BE_CORE_TRACE("Material '{}' created", m_Name);
 }
 
-std::shared_ptr<Material>
-Material::Create(const std::shared_ptr<Shader> &shader,
-                 const std::string &name) {
-  return std::make_shared<Material>(shader, name);
+Ref<Material> Material::Create(const Ref<Shader> &shader,
+                               const std::string &name) {
+  return CreateRef<Material>(shader, name);
 }
 
 // ============================================================================
@@ -59,8 +58,7 @@ void Material::SetMat4(const std::string &name, const glm::mat4 &value) {
 }
 
 void Material::SetTexture2D(const std::string &name,
-                            const std::shared_ptr<Texture2D> &texture,
-                            uint32_t slot) {
+                            const Ref<Texture2D> &texture, uint32_t slot) {
   MaterialProperty prop;
   prop.Name = name;
   prop.Type = MaterialPropertyType::Texture2D;
@@ -73,8 +71,7 @@ void Material::SetTexture2D(const std::string &name,
 }
 
 void Material::SetTextureCube(const std::string &name,
-                              const std::shared_ptr<TextureCube> &texture,
-                              uint32_t slot) {
+                              const Ref<TextureCube> &texture, uint32_t slot) {
   MaterialProperty prop;
   prop.Name = name;
   prop.Type = MaterialPropertyType::TextureCube;
@@ -137,16 +134,12 @@ glm::mat4 Material::GetMat4(const std::string &name) const {
   return GetProperty<glm::mat4>(name, MaterialPropertyType::Mat4);
 }
 
-std::shared_ptr<Texture2D>
-Material::GetTexture2D(const std::string &name) const {
-  return GetProperty<std::shared_ptr<Texture2D>>(
-      name, MaterialPropertyType::Texture2D);
+Ref<Texture2D> Material::GetTexture2D(const std::string &name) const {
+  return GetProperty<Ref<Texture2D>>(name, MaterialPropertyType::Texture2D);
 }
 
-std::shared_ptr<TextureCube>
-Material::GetTextureCube(const std::string &name) const {
-  return GetProperty<std::shared_ptr<TextureCube>>(
-      name, MaterialPropertyType::TextureCube);
+Ref<TextureCube> Material::GetTextureCube(const std::string &name) const {
+  return GetProperty<Ref<TextureCube>>(name, MaterialPropertyType::TextureCube);
 }
 
 bool Material::HasProperty(const std::string &name) const {
@@ -219,7 +212,7 @@ void Material::UploadUniforms() {
       break;
 
     case MaterialPropertyType::Texture2D: {
-      auto texture = std::get<std::shared_ptr<Texture2D>>(prop.Value);
+      auto texture = std::get<Ref<Texture2D>>(prop.Value);
       if (texture) {
         texture->Bind(prop.TextureSlot);
         m_Shader->SetInt(name, static_cast<int>(prop.TextureSlot));
@@ -228,7 +221,7 @@ void Material::UploadUniforms() {
     }
 
     case MaterialPropertyType::TextureCube: {
-      auto texture = std::get<std::shared_ptr<TextureCube>>(prop.Value);
+      auto texture = std::get<Ref<TextureCube>>(prop.Value);
       if (texture) {
         texture->Bind(prop.TextureSlot);
         m_Shader->SetInt(name, static_cast<int>(prop.TextureSlot));

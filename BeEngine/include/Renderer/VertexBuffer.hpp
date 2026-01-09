@@ -32,7 +32,6 @@ public:
    * @param vertices Pointer to vertex data
    * @param size Size in bytes
    */
-  static std::shared_ptr<VertexBuffer> Create(const void *vertices,
-                                              uint32_t size);
+  static Ref<VertexBuffer> Create(const void *vertices, uint32_t size);
 };
 } // namespace BeEngine

@@ -81,7 +81,7 @@ option(BE_BUILD_SHARED "Build BeEngine as shared library" OFF)
 # ============================================
 set(BEENGINE_SOURCES
     BeEngine/src/Application.cpp
-    BeEngine/src/Log.cpp
+    BeEngine/src/Logs/Log.cpp
     BeEngine/src/Events/Event.cpp
     BeEngine/src/Events/EventQueue.cpp
     BeEngine/src/Window.cpp
@@ -115,6 +115,9 @@ set(BEENGINE_SOURCES
     BeEngine/src/MaterialSystem/Material.cpp
     BeEngine/src/MaterialSystem/MaterialLibrary.cpp
     BeEngine/src/MaterialSystem/OpenGL/OpenGLTexture2D.cpp
+    BeEngine/src/MeshSystem/Mesh.cpp
+    BeEngine/src/MeshSystem/MeshFactory.cpp
+
 )
 
 if(BE_BUILD_SHARED)

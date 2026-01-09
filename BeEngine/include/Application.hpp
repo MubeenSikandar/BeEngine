@@ -66,7 +66,7 @@ public:
    * Layers are updated in the order they're pushed.
    * Events are dispatched in reverse order (last pushed receives first).
    */
-  void PushLayer(std::shared_ptr<Layer> layer);
+  void PushLayer(Ref<Layer> layer);
 
   /**
    * @brief Push an overlay onto the stack (always on top)
@@ -75,17 +75,17 @@ public:
    * Overlays are always at the top of the stack and receive events first.
    * Use for UI, debug tools, etc.
    */
-  void PushOverlay(std::shared_ptr<Layer> overlay);
+  void PushOverlay(Ref<Layer> overlay);
 
   /**
    * @brief Remove a layer from the stack
    */
-  void PopLayer(const std::shared_ptr<Layer> &layer);
+  void PopLayer(const Ref<Layer> &layer);
 
   /**
    * @brief Remove an overlay from the stack
    */
-  void PopOverlay(const std::shared_ptr<Layer> &overlay);
+  void PopOverlay(const Ref<Layer> &overlay);
 
   // ===== Getters =====
 
@@ -153,10 +153,10 @@ private:
 
   // ===== Member Variables =====
 
-  std::unique_ptr<Window> m_Window;
+  Scope<Window> m_Window;
   LayerStack m_LayerStack;
   EventQueue m_EventQueue;
-  std::shared_ptr<ImGuiLayer> m_ImGuiLayer;
+  Ref<ImGuiLayer> m_ImGuiLayer;
 
   bool m_Running = true;
   bool m_Minimized = false;

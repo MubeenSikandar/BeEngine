@@ -87,11 +87,10 @@ uint32_t Texture::GetChannelCount(TextureFormat format) {
 // Texture2D Factory
 // ============================================================================
 
-std::shared_ptr<Texture2D> Texture2D::Create(const std::filesystem::path &path,
-                                             bool sRGB) {
+Ref<Texture2D> Texture2D::Create(const std::filesystem::path &path, bool sRGB) {
   switch (RendererAPI::GetAPI()) {
   case RenderAPI::OpenGL:
-    return std::make_shared<OpenGLTexture2D>(path, sRGB);
+    return CreateRef<OpenGLTexture2D>(path, sRGB);
 
   case RenderAPI::Vulkan:
   case RenderAPI::DirectX11:
@@ -107,11 +106,11 @@ std::shared_ptr<Texture2D> Texture2D::Create(const std::filesystem::path &path,
   }
 }
 
-std::shared_ptr<Texture2D> Texture2D::Create(const TextureSpecification &spec,
-                                             const void *data) {
+Ref<Texture2D> Texture2D::Create(const TextureSpecification &spec,
+                                 const void *data) {
   switch (RendererAPI::GetAPI()) {
   case RenderAPI::OpenGL:
-    return std::make_shared<OpenGLTexture2D>(spec, data);
+    return CreateRef<OpenGLTexture2D>(spec, data);
 
   case RenderAPI::Vulkan:
   case RenderAPI::DirectX11:
@@ -127,9 +126,8 @@ std::shared_ptr<Texture2D> Texture2D::Create(const TextureSpecification &spec,
   }
 }
 
-std::shared_ptr<Texture2D> Texture2D::CreateSolidColor(const glm::vec4 &color,
-                                                       uint32_t width,
-                                                       uint32_t height) {
+Ref<Texture2D> Texture2D::CreateSolidColor(const glm::vec4 &color,
+                                           uint32_t width, uint32_t height) {
   TextureSpecification spec;
   spec.Width = width;
   spec.Height = height;
@@ -154,10 +152,10 @@ std::shared_ptr<Texture2D> Texture2D::CreateSolidColor(const glm::vec4 &color,
   return Create(spec, pixels.data());
 }
 
-std::shared_ptr<Texture2D>
-Texture2D::CreateCheckerboard(uint32_t width, uint32_t height,
-                              uint32_t checkSize, const glm::vec4 &color1,
-                              const glm::vec4 &color2) {
+Ref<Texture2D> Texture2D::CreateCheckerboard(uint32_t width, uint32_t height,
+                                             uint32_t checkSize,
+                                             const glm::vec4 &color1,
+                                             const glm::vec4 &color2) {
   TextureSpecification spec;
   spec.Width = width;
   spec.Height = height;

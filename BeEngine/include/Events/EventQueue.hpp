@@ -59,15 +59,15 @@ public:
 
   // Queue Event (Takes Ownersship via unique pointer)
   template <typename T, typename... Args> void QueueEvent(Args &&...args) {
-    auto event = std::make_unique<T>(std::forward<Args>(args)...);
+    auto event = CreateScope<T>(std::forward<Args>(args)...);
     QueueEventInternal(std::move(event));
   }
 
   // Queue existing event
-  void QueueEvent(std::unique_ptr<Event> event);
+  void QueueEvent(Scope<Event> event);
 
   // Queue Immediate Event (Bypass Queue, Process Now)
-  void QueueImmediate(std::unique_ptr<Event> event);
+  void QueueImmediate(Scope<Event> event);
 
   // EVENT PROCESSING
 
@@ -123,13 +123,13 @@ public:
   void SetProfiling(bool enabled) { m_Config.enableProfiling = enabled; }
 
 private:
-  void QueueEventInternal(std::unique_ptr<Event> event);
+  void QueueEventInternal(Scope<Event> event);
   void ProcessEvent(Event &event);
   void NotifyListener(Event &event);
 
   // Event Queue with Priority
   struct QueuedEvent {
-    std::unique_ptr<Event> event;
+    Scope<Event> event;
     EventPriority priority;
 
     bool operator<(const QueuedEvent &other) const {
@@ -170,7 +170,7 @@ public:
   ~ScopedEventListener() { m_Queue.Unsubscribe(m_ListenerID); }
 
   // Non-copyable, movable
-  ScopedEventListener(const ScopedEventListener &) = delete;
+  ScopedEventListener(const ScopedEventListener &);
   ScopedEventListener &operator=(const ScopedEventListener &) = delete;
 
   ScopedEventListener(ScopedEventListener &&other) noexcept

@@ -41,8 +41,7 @@ public:
    * @return Unique pointer to window instance
    */
 
-  static std::unique_ptr<Window>
-  Create(const WindowProps &props = WindowProps());
+  static Scope<Window> Create(const WindowProps &props = WindowProps());
 
   Window(const WindowProps &props);
   ~Window();
@@ -74,16 +73,16 @@ public:
 
   NODISCARD void *GetNativeWindow() const { return m_Window; }
 
-   /**
-    * @brief Get the graphics context
-    * @return Pointer to the graphics context (OpenGL, Vulkan, etc.)
-    */
-   NODISCARD GraphicsContext* GetContext() const { return m_Context.get(); }
+  /**
+   * @brief Get the graphics context
+   * @return Pointer to the graphics context (OpenGL, Vulkan, etc.)
+   */
+  NODISCARD GraphicsContext *GetContext() const { return m_Context.get(); }
 
-   /**
-    * @brief Set callback for window events
-    * @param callback Function to call when events occur
-    */
+  /**
+   * @brief Set callback for window events
+   * @param callback Function to call when events occur
+   */
   void SetEventCallback(const EventCallbackFn &callback) {
     m_Data.eventCallback = callback;
   }
@@ -106,7 +105,7 @@ private:
   void SetupCallbacks();
 
   GLFWwindow *m_Window;
-   std::unique_ptr<GraphicsContext> m_Context;
+  Scope<GraphicsContext> m_Context;
 
   struct WindowData {
     std::string title;

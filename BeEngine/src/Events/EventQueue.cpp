@@ -30,7 +30,7 @@ EventQueue::~EventQueue() {
 // Event Queueing
 // ============================================================================
 
-void EventQueue::QueueEvent(std::unique_ptr<Event> event) {
+void EventQueue::QueueEvent(Scope<Event> event) {
   if (!event) {
     BE_CORE_ERROR("Attempt to queue null event");
     return;
@@ -39,7 +39,7 @@ void EventQueue::QueueEvent(std::unique_ptr<Event> event) {
   QueueEventInternal(std::move(event));
 }
 
-void EventQueue::QueueEventInternal(std::unique_ptr<Event> event) {
+void EventQueue::QueueEventInternal(Scope<Event> event) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
   // Check if queue is full
@@ -99,7 +99,7 @@ void EventQueue::QueueEventInternal(std::unique_ptr<Event> event) {
   }
 }
 
-void EventQueue::QueueImmediate(std::unique_ptr<Event> event) {
+void EventQueue::QueueImmediate(Scope<Event> event) {
   if (!event) {
     BE_CORE_ERROR("Attempted to process null event immediately");
     return;
@@ -117,7 +117,7 @@ void EventQueue::QueueImmediate(std::unique_ptr<Event> event) {
 
 void EventQueue::ProcessEvents() {
   while (!isEmpty()) {
-    std::unique_ptr<Event> event;
+    Scope<Event> event;
 
     {
       std::lock_guard<std::mutex> lock(m_QueueMutex);
@@ -139,7 +139,7 @@ void EventQueue::ProcessEvents() {
 void EventQueue::ProcessEvents(size_t maxEvents) {
   size_t processed{};
   while (processed < maxEvents && !isEmpty()) {
-    std::unique_ptr<Event> event;
+    Scope<Event> event;
 
     {
       std::lock_guard<std::mutex> lock(m_QueueMutex);
@@ -177,7 +177,7 @@ void EventQueue::ProcessEventsWithBudget(double maxTimeMs) {
       break;
     }
 
-    std::unique_ptr<Event> event;
+    Scope<Event> event;
     {
       std::lock_guard<std::mutex> lock(m_QueueMutex);
       if (m_EventQueue.empty()) {

@@ -306,11 +306,11 @@ constexpr size_t operator"" _GB(unsigned long long gb) {
 // DISALLOW COPY/MOVE
 #define BE_DISALLOW_COPY(TypeName)                                             \
   TypeName(const TypeName &) = delete;                                         \
-  (TypeName) &operator=(const TypeName &) = delete;
+  TypeName &operator=(const TypeName &) = delete;
 
 #define BE_DISALLOW_MOVE(TypeName)                                             \
-  TypeName((TypeName) &&) = delete;                                            \
-  (TypeName) &operator=((TypeName) &&) = delete;
+  TypeName(TypeName &&) = delete;                                              \
+  TypeName &operator=(TypeName &&) = delete;
 
 #define BE_DISALLOW_COPY_AND_MOVE(TypeName)                                    \
   BE_DISALLOW_COPY(TypeName)                                                   \

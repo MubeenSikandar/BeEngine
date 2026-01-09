@@ -2,11 +2,11 @@
 
 namespace BeEngine {
 
-std::shared_ptr<VertexArray> VertexArray::Create() {
+Ref<VertexArray> VertexArray::Create() {
   switch (RendererAPI::GetAPI()) {
   case RenderAPI::OpenGL:
     BE_CORE_TRACE("Creating OpenGL VertexArray");
-    return std::make_shared<OpenGLVertexArray>();
+    return CreateRef<OpenGLVertexArray>();
 
   case RenderAPI::Vulkan:
     BE_CORE_CRITICAL("Vulkan is not yet supported!");

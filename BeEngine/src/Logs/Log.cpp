@@ -5,10 +5,9 @@ namespace BeEngine {
 
 // Static Member Initialization
 std::atomic<bool> Log::s_Initialized{false};
-std::shared_ptr<spdlog::logger> Log::s_CoreLogger;
-std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
-std::unordered_map<LogCategory, std::shared_ptr<spdlog::logger>>
-    Log::s_CategoryLogger;
+Ref<spdlog::logger> Log::s_CoreLogger;
+Ref<spdlog::logger> Log::s_ClientLogger;
+std::unordered_map<LogCategory, Ref<spdlog::logger>> Log::s_CategoryLogger;
 
 LogConfig Log::s_Config;
 LogStats Log::s_Stats;
@@ -77,12 +76,12 @@ void Log::init(const LogConfig &config) {
 
     // Create Core Logger
     if (config.enableAsync) {
-      s_CoreLogger = std::make_shared<spdlog::async_logger>(
+      s_CoreLogger = CreateRef<spdlog::async_logger>(
           "BeEngine", coreSinks.begin(), coreSinks.end(), spdlog::thread_pool(),
           spdlog::async_overflow_policy::block);
     } else {
-      s_CoreLogger = std::make_shared<spdlog::logger>(
-          "BeEngine", coreSinks.begin(), coreSinks.end());
+      s_CoreLogger = CreateRef<spdlog::logger>("BeEngine", coreSinks.begin(),
+                                               coreSinks.end());
     }
 
     s_CoreLogger->set_level(config.minLevel);
@@ -91,12 +90,12 @@ void Log::init(const LogConfig &config) {
 
     // Create Client Logger
     if (config.enableAsync) {
-      s_ClientLogger = std::make_shared<spdlog::async_logger>(
+      s_ClientLogger = CreateRef<spdlog::async_logger>(
           "APP", clientSinks.begin(), clientSinks.end(), spdlog::thread_pool(),
           spdlog::async_overflow_policy::block);
     } else {
-      s_ClientLogger = std::make_shared<spdlog::logger>(
-          "APP", clientSinks.begin(), clientSinks.end());
+      s_ClientLogger = CreateRef<spdlog::logger>("APP", clientSinks.begin(),
+                                                 clientSinks.end());
     }
 
     s_ClientLogger->set_level(config.minLevel);
@@ -108,7 +107,7 @@ void Log::init(const LogConfig &config) {
                                                  LogCategory::Events};
 
     for (auto category : categories) {
-      auto logger = std::make_shared<spdlog::logger>(
+      auto logger = CreateRef<spdlog::logger>(
           CategoryToString(category), coreSinks.begin(), coreSinks.end());
 
       logger->set_level(config.minLevel);
@@ -147,27 +146,25 @@ void Log::Shutdown() {
 }
 
 // LOGGER ACCESS
-std::shared_ptr<spdlog::logger> &Log::GetCoreLogger() {
+Ref<spdlog::logger> &Log::GetCoreLogger() {
   if (!s_Initialized.load()) {
     FallbackLog(spdlog::level::err, "GetCoreLogger called before init()");
-    static std::shared_ptr<spdlog::logger> fallback =
-        spdlog::stdout_color_mt("FALLBACK");
+    static Ref<spdlog::logger> fallback = spdlog::stdout_color_mt("FALLBACK");
     return fallback;
   }
   return s_CoreLogger;
 }
 
-std::shared_ptr<spdlog::logger> &Log::GetClientLogger() {
+Ref<spdlog::logger> &Log::GetClientLogger() {
   if (!s_Initialized.load()) {
     FallbackLog(spdlog::level::err, "GetClientLogger called before init()");
-    static std::shared_ptr<spdlog::logger> fallback =
-        spdlog::stdout_color_mt("FALLBACK");
+    static Ref<spdlog::logger> fallback = spdlog::stdout_color_mt("FALLBACK");
     return fallback;
   }
   return s_ClientLogger;
 }
 
-std::shared_ptr<spdlog::logger> &Log::GetLogger(LogCategory category) {
+Ref<spdlog::logger> &Log::GetLogger(LogCategory category) {
   if (!s_Initialized.load()) {
     return GetCoreLogger();
   }
@@ -254,7 +251,7 @@ void Log::CreateSinks(const LogConfig &config,
 
 void Log::CreateConsoleSinks(std::vector<spdlog::sink_ptr> &sinks,
                              const LogConfig &config) {
-  auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+  auto consoleSink = CreateRef<spdlog::sinks::stdout_color_sink_mt>();
   consoleSink->set_level(config.consoleLevel);
   sinks.push_back(consoleSink);
 }
@@ -266,25 +263,24 @@ void Log::CreateFileSinks(std::vector<spdlog::sink_ptr> &coreSinks,
   std::string timestamp = GetTimestamps();
 
   if (config.enableRotating) {
-    auto coreFileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+    auto coreFileSink = CreateRef<spdlog::sinks::rotating_file_sink_mt>(
         config.logDirectory + "BeEngine_" + timestamp + ".log",
         config.maxFileSize, config.maxFiles);
     coreFileSink->set_level(config.fileLevel);
     coreSinks.push_back(coreFileSink);
 
-    auto clientFileSink =
-        std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-            config.logDirectory + "App_" + timestamp + ".log",
-            config.maxFileSize, config.maxFiles);
+    auto clientFileSink = CreateRef<spdlog::sinks::rotating_file_sink_mt>(
+        config.logDirectory + "App_" + timestamp + ".log", config.maxFileSize,
+        config.maxFiles);
     clientFileSink->set_level(config.fileLevel);
     clientSinks.push_back(clientFileSink);
   } else {
-    auto coreFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+    auto coreFileSink = CreateRef<spdlog::sinks::basic_file_sink_mt>(
         config.logDirectory + "BeEngine_" + timestamp + ".log");
     coreFileSink->set_level(config.fileLevel);
     coreSinks.push_back(coreFileSink);
 
-    auto clientFileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+    auto clientFileSink = CreateRef<spdlog::sinks::basic_file_sink_mt>(
         config.logDirectory + "App_" + timestamp + ".log");
     clientFileSink->set_level(config.fileLevel);
     clientSinks.push_back(clientFileSink);

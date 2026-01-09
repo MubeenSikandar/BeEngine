@@ -22,8 +22,8 @@ public:
    * @param vertexSrc Vertex shader source code
    * @param fragmentSrc Fragment shader source code
    */
-  static std::shared_ptr<Shader> Create(const std::string &vertexSrc,
-                                        const std::string &fragmentSrc);
+  static Ref<Shader> Create(const std::string &vertexSrc,
+                            const std::string &fragmentSrc);
 
   // Uniform Setters
   virtual void SetInt(const std::string &name, int value) = 0;

@@ -3,7 +3,7 @@
 namespace BeEngine {
 
 void MaterialLibrary::Add(const std::string &name,
-                          const std::shared_ptr<Material> &material) {
+                          const Ref<Material> &material) {
   if (Exists(name)) {
     BE_CORE_WARN("MaterialLibrary: Material '{}' already exists, overwriting",
                  name);
@@ -13,15 +13,14 @@ void MaterialLibrary::Add(const std::string &name,
   BE_CORE_TRACE("MaterialLibrary: Added material '{}'", name);
 }
 
-std::shared_ptr<Material>
-MaterialLibrary::Create(const std::string &name,
-                        const std::shared_ptr<Shader> &shader) {
+Ref<Material> MaterialLibrary::Create(const std::string &name,
+                                      const Ref<Shader> &shader) {
   auto material = Material::Create(shader, name);
   Add(name, material);
   return material;
 }
 
-std::shared_ptr<Material> MaterialLibrary::Get(const std::string &name) const {
+Ref<Material> MaterialLibrary::Get(const std::string &name) const {
   auto it = m_Materials.find(name);
   if (it == m_Materials.end()) {
     BE_CORE_ERROR("MaterialLibrary: Material '{}' not found", name);

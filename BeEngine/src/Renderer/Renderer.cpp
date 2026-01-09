@@ -6,19 +6,19 @@ namespace BeEngine {
 RendererAPI::~RendererAPI() = default;
 
 // Static member initialization
-std::unique_ptr<RendererAPI> Renderer::s_RendererAPI = nullptr;
+Scope<RendererAPI> Renderer::s_RendererAPI = nullptr;
 RenderAPI RendererAPI::s_CurrentAPI = RenderAPI::OpenGL;
 
 // ===== RendererAPI Factory =====
 
-std::unique_ptr<RendererAPI> RendererAPI::Create() {
+Scope<RendererAPI> RendererAPI::Create() {
   switch (s_CurrentAPI) {
   case RenderAPI::None:
     BE_CORE_CRITICAL("RendererAPI::None is not supported!");
     return nullptr;
 
   case RenderAPI::OpenGL:
-    return std::make_unique<OpenGLRendererAPI>();
+    return CreateScope<OpenGLRendererAPI>();
 
   case RenderAPI::Vulkan:
     BE_CORE_CRITICAL("Vulkan renderer not implemented yet!");

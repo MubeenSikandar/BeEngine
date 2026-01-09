@@ -17,19 +17,19 @@ public:
    * @param name Unique identifier for the shader
    * @param shader The shader to add
    */
-  void Add(const std::string &name, const std::shared_ptr<Shader> &shader);
+  void Add(const std::string &name, const Ref<Shader> &shader);
 
   /**
    * @brief Add a shader using its file name as the identifier
    */
-  void Add(const std::shared_ptr<Shader> &shader);
+  void Add(const Ref<Shader> &shader);
 
   /**
    * @brief Load shader from file and add to library
    * @param filepath Path to shader file (.glsl)
    * @return The loaded shader
    */
-  std::shared_ptr<Shader> Load(const std::filesystem::path &filepath);
+  Ref<Shader> Load(const std::filesystem::path &filepath);
 
   /**
    * @brief Load shader from file with custom name
@@ -37,8 +37,8 @@ public:
    * @param filepath Path to shader file
    * @return The loaded shader
    */
-  std::shared_ptr<Shader> Load(const std::string &name,
-                               const std::filesystem::path &filepath);
+  Ref<Shader> Load(const std::string &name,
+                   const std::filesystem::path &filepath);
 
   /**
    * @brief Load shader from source strings
@@ -47,16 +47,15 @@ public:
    * @param fragmentSrc Fragment shader source
    * @return The created shader
    */
-  std::shared_ptr<Shader> Load(const std::string &name,
-                               const std::string &vertexSrc,
-                               const std::string &fragmentSrc);
+  Ref<Shader> Load(const std::string &name, const std::string &vertexSrc,
+                   const std::string &fragmentSrc);
 
   /**
    * @brief Get a shader by name
    * @param name Shader identifier
    * @return The shader, or nullptr if not found
    */
-  NODISCARD std::shared_ptr<Shader> Get(const std::string &name) const;
+  NODISCARD Ref<Shader> Get(const std::string &name) const;
 
   /**
    * @brief Check if shader exists in library
@@ -84,6 +83,6 @@ public:
   NODISCARD size_t Size() const { return m_Shaders.size(); }
 
 private:
-  std::unordered_map<std::string, std::shared_ptr<Shader>> m_Shaders;
+  std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 };
 } // namespace BeEngine

@@ -156,7 +156,7 @@ public:
   /**
    * @brief Create a RendererAPI instance for the current API
    */
-  static std::unique_ptr<RendererAPI> Create();
+  static Scope<RendererAPI> Create();
 
 private:
   static RenderAPI s_CurrentAPI;

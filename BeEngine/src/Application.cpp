@@ -35,7 +35,7 @@ Application::Application()
   Renderer::SetViewport(0, 0, 1280, 720);
 
   // Create and push ImGui layer
-  m_ImGuiLayer = std::make_shared<ImGuiLayer>();
+  m_ImGuiLayer = CreateRef<ImGuiLayer>();
   PushOverlay(m_ImGuiLayer);
 
   m_Window->SetEventCallback([this](Event &e) {
@@ -149,19 +149,19 @@ void Application::OnEvent(Event &event) {
   // Derived classes can override this
 }
 
-void Application::PushLayer(std::shared_ptr<Layer> layer) {
+void Application::PushLayer(Ref<Layer> layer) {
   m_LayerStack.PushLayer(std::move(layer));
 }
 
-void Application::PushOverlay(std::shared_ptr<Layer> overlay) {
+void Application::PushOverlay(Ref<Layer> overlay) {
   m_LayerStack.PushOverlay(std::move(overlay));
 }
 
-void Application::PopLayer(const std::shared_ptr<Layer> &layer) {
+void Application::PopLayer(const Ref<Layer> &layer) {
   m_LayerStack.PopLayer(layer);
 }
 
-void Application::PopOverlay(const std::shared_ptr<Layer> &overlay) {
+void Application::PopOverlay(const Ref<Layer> &overlay) {
   m_LayerStack.PopOverlay(overlay);
 }
 

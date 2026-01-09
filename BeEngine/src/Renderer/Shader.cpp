@@ -2,12 +2,12 @@
 
 namespace BeEngine {
 
-std::shared_ptr<Shader> Shader::Create(const std::string &vertexSrc,
-                                       const std::string &fragmentSrc) {
+Ref<Shader> Shader::Create(const std::string &vertexSrc,
+                           const std::string &fragmentSrc) {
   switch (RendererAPI::GetAPI()) {
   case RenderAPI::OpenGL:
     BE_CORE_TRACE("Creating OpenGL Shader");
-    return std::make_shared<OpenGLShader>(vertexSrc, fragmentSrc);
+    return CreateRef<OpenGLShader>(vertexSrc, fragmentSrc);
 
   case RenderAPI::Vulkan:
     BE_CORE_CRITICAL("Vulkan is not yet supported!");

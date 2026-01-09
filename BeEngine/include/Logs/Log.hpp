@@ -3,7 +3,6 @@
 #include "LogConfig.hpp"
 #include "spdlog/common.h"
 #include "spdlog/logger.h"
-#include <memory>
 #include <mutex>
 #include <regex>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -22,9 +21,9 @@ public:
   static bool IsInitialized() { return s_Initialized.load(); }
 
   // Logger Access
-  static std::shared_ptr<spdlog::logger> &GetCoreLogger();
-  static std::shared_ptr<spdlog::logger> &GetClientLogger();
-  static std::shared_ptr<spdlog::logger> &GetLogger(LogCategory category);
+  static Ref<spdlog::logger> &GetCoreLogger();
+  static Ref<spdlog::logger> &GetClientLogger();
+  static Ref<spdlog::logger> &GetLogger(LogCategory category);
 
   // Runtime Configuration
   static void SetGlobalLevel(spdlog::level::level_enum level);
@@ -63,10 +62,9 @@ private:
 
   // Static Members
   static std::atomic<bool> s_Initialized;
-  static std::shared_ptr<spdlog::logger> s_CoreLogger;
-  static std::shared_ptr<spdlog::logger> s_ClientLogger;
-  static std::unordered_map<LogCategory, std::shared_ptr<spdlog::logger>>
-      s_CategoryLogger;
+  static Ref<spdlog::logger> s_CoreLogger;
+  static Ref<spdlog::logger> s_ClientLogger;
+  static std::unordered_map<LogCategory, Ref<spdlog::logger>> s_CategoryLogger;
 
   static LogConfig s_Config;
   static LogStats s_Stats;
