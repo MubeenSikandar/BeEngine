@@ -82,6 +82,21 @@ void SandboxLayer3D::OnAttach() {
   m_UnlitMat = BeEngine::CreateScope<BeEngine::UnlitMaterial>("Ground");
   m_UnlitMat->SetColor(glm::vec4(0.25F, 0.25F, 0.28F, 1.0F));
 
+  m_LoadedModel = BeEngine::Model::Load("BeEngine/Assets/DamagedHelmet.glb");
+
+  if (m_LoadedModel && m_LoadedModel->IsValid()) {
+    BE_INFO("Loaded model: {}", m_LoadedModel->GetName());
+    BE_INFO("  Meshes: {}", m_LoadedModel->GetMeshCount());
+    BE_INFO("  Vertices: {}", m_LoadedModel->GetTotalVertexCount());
+    BE_INFO("  Triangles: {}", m_LoadedModel->GetTotalTriangleCount());
+
+    // Position the model
+    m_ModelTransform.SetPosition(0.0F, 1.0F, 0.0F);
+    m_ModelTransform.SetScale(glm::vec3(0.5F)); // Scale down if too big
+  } else {
+    BE_WARN("Failed to load model!");
+  }
+
   BE_INFO("Scene initialized!");
 }
 
@@ -117,8 +132,9 @@ void SandboxLayer3D::OnEvent(BeEngine::Event &event) {
 }
 
 void SandboxLayer3D::OnRender() {
-  if (!m_Framebuffer)
+  if (!m_Framebuffer) {
     return;
+  }
 
   m_Framebuffer->Bind();
 
@@ -196,6 +212,11 @@ void SandboxLayer3D::OnRender() {
     m_SphereMesh->Bind();
     glDrawElements(GL_TRIANGLES, m_SphereMesh->GetIndexCount(), GL_UNSIGNED_INT,
                    nullptr);
+  }
+
+  if (m_LoadedModel && m_LoadedModel->IsValid()) {
+    BeEngine::ModelRenderer::Render(m_LoadedModel, m_ModelTransform, viewProj,
+                                    camPos, m_LightManager);
   }
 
   m_Framebuffer->Unbind();

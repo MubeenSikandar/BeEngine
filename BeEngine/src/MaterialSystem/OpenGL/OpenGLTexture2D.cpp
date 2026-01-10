@@ -233,6 +233,71 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path &path, bool sRGB) {
                imageData.Channels);
 }
 
+OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, bool hasAlpha,
+                                 bool sRGB)
+    : m_HasAlpha(hasAlpha) {
+
+  // Store in specification for consistency
+  m_Specification.Width = width;
+  m_Specification.Height = height;
+  m_Specification.Format =
+      hasAlpha ? TextureFormat::RGBA8 : TextureFormat::RGB8;
+  m_Specification.sRGB = sRGB;
+  m_Specification.GenerateMipmaps = true;
+  m_Specification.DebugName = "Embedded Texture";
+
+  m_IsLoaded = false;
+
+  // Determine formats
+  GLenum internalFormat;
+  GLenum dataFormat;
+
+  if (hasAlpha) {
+    internalFormat = sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+    dataFormat = GL_RGBA;
+  } else {
+    internalFormat = sRGB ? GL_SRGB8 : GL_RGB8;
+    dataFormat = GL_RGB;
+  }
+
+  m_InternalFormat = internalFormat;
+  m_DataFormat = dataFormat;
+  m_DataType = GL_UNSIGNED_BYTE;
+
+  // Create texture using DSA
+  if (GLAD_GL_VERSION_4_5) {
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+
+    // Calculate mip levels
+    uint32_t mipLevels = CalculateMipMapCount(width, height);
+
+    glTextureStorage2D(m_RendererID, mipLevels, internalFormat, width, height);
+
+    // Set parameters
+    glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER,
+                        GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  } else {
+    // Fallback for OpenGL 4.1 (macOS!)
+    glGenTextures(1, &m_RendererID);
+    glBindTexture(GL_TEXTURE_2D, m_RendererID);
+
+    // Don't allocate storage yet - SetData will do it
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+  BE_CORE_TRACE("Created empty texture {}x{} (hasAlpha={}, sRGB={}, ID={})",
+                width, height, hasAlpha, sRGB, m_RendererID);
+}
+
 OpenGLTexture2D::OpenGLTexture2D(const TextureSpecification &spec,
                                  const void *data)
     : m_Specification(spec) {
@@ -385,31 +450,42 @@ void OpenGLTexture2D::Bind(uint32_t slot) const {
 void OpenGLTexture2D::Unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
 
 void OpenGLTexture2D::SetData(const void *data, uint32_t size) {
-  uint32_t bpp = GetBytesPerPixel(m_Specification.Format);
-  uint32_t expectedSize = m_Specification.Width * m_Specification.Height * bpp;
+  uint32_t width = m_Specification.Width;
+  uint32_t height = m_Specification.Height;
+  uint32_t bpp = m_HasAlpha ? 4 : 3;
+  uint32_t expectedSize = width * height * bpp;
 
-  BE_CORE_ASSERT(size == expectedSize,
-                 "Data size must match texture dimensions!");
+  if (size != expectedSize) {
+    BE_CORE_ERROR("Texture SetData size mismatch! Expected {} bytes "
+                  "({}x{}x{}), got {} bytes",
+                  expectedSize, width, height, bpp, size);
+    return;
+  }
+
+  GLenum dataFormat = m_HasAlpha ? GL_RGBA : GL_RGB;
 
   if (GLAD_GL_VERSION_4_5) {
-    glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width,
-                        m_Specification.Height, m_DataFormat, m_DataType, data);
-
-    if (m_Specification.GenerateMipmaps) {
-      glGenerateTextureMipmap(m_RendererID);
-    }
+    glTextureSubImage2D(m_RendererID, 0, 0, 0, width, height, dataFormat,
+                        GL_UNSIGNED_BYTE, data);
+    glGenerateTextureMipmap(m_RendererID);
   } else {
+    // Fallback for OpenGL 4.1 (macOS!)
     glBindTexture(GL_TEXTURE_2D, m_RendererID);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Specification.Width,
-                    m_Specification.Height, m_DataFormat, m_DataType, data);
 
-    if (m_Specification.GenerateMipmaps) {
-      glGenerateMipmap(GL_TEXTURE_2D);
-    }
+    // Use glTexImage2D to allocate and upload in one call
+    GLenum internalFormat = m_Specification.sRGB
+                                ? (m_HasAlpha ? GL_SRGB8_ALPHA8 : GL_SRGB8)
+                                : (m_HasAlpha ? GL_RGBA8 : GL_RGB8);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
   m_IsLoaded = true;
+  BE_CORE_TRACE("Uploaded texture data: {}x{} ({} bytes)", width, height, size);
 }
 
 void OpenGLTexture2D::SetSubData(const void *data, uint32_t xOffset,

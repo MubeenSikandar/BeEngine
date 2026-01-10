@@ -70,13 +70,13 @@ public:
   // ===== Matrices =====
 
   /// Get local transformation matrix (relative to parent)
-  NODISCARD const glm::mat4 &GetLocalMatrix();
+  NODISCARD const glm::mat4 &GetLocalMatrix() const;
 
   /// Get world transformation matrix (absolute)
-  NODISCARD const glm::mat4 &GetWorldMatrix();
+  NODISCARD const glm::mat4 &GetWorldMatrix() const;
 
   /// Get inverse world matrix (useful for view matrices)
-  NODISCARD glm::mat4 GetInverseWorldMatrix();
+  NODISCARD glm::mat4 GetInverseWorldMatrix() const;
 
   // ===== Hierarchy =====
 
@@ -119,8 +119,8 @@ public:
 
 private:
   void MarkDirty();
-  void RecalculateLocalMatrix();
-  void RecalculateWorldMatrix();
+  void RecalculateLocalMatrix() const;
+  void RecalculateWorldMatrix() const;
 
   // Transform data
   glm::vec3 m_Position{0.0F, 0.0F, 0.0F};
@@ -128,12 +128,12 @@ private:
   glm::vec3 m_Scale{1.0F, 1.0F, 1.0F};
 
   // Cached matrices
-  glm::mat4 m_LocalMatrix{1.0F};
-  glm::mat4 m_WorldMatrix{1.0F};
+  mutable glm::mat4 m_LocalMatrix{1.0F};
+  mutable glm::mat4 m_WorldMatrix{1.0F};
 
   // Dirty flags for lazy recalculation
-  bool m_LocalDirty{true};
-  bool m_WorldDirty{true};
+  mutable bool m_LocalDirty{true};
+  mutable bool m_WorldDirty{true};
 
   // Hierarchy
   Transform *m_Parent{nullptr};

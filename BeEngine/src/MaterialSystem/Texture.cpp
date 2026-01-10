@@ -126,6 +126,11 @@ Ref<Texture2D> Texture2D::Create(const TextureSpecification &spec,
   }
 }
 
+Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, bool hasAlpha,
+                                 bool sRGB) {
+  return CreateRef<OpenGLTexture2D>(width, height, hasAlpha, sRGB);
+}
+
 Ref<Texture2D> Texture2D::CreateSolidColor(const glm::vec4 &color,
                                            uint32_t width, uint32_t height) {
   TextureSpecification spec;

@@ -69,6 +69,7 @@ add_subdirectory(BeEngine/vendor/Glad)
 add_subdirectory(BeEngine/vendor/GLM)
 add_subdirectory(BeEngine/vendor/imgui)
 add_subdirectory(BeEngine/vendor/STB)
+add_subdirectory(BeEngine/vendor/tinygltf)
 
 
 # ============================================
@@ -121,7 +122,9 @@ set(BEENGINE_SOURCES
     BeEngine/src/BuiltInShaders/UnlitMaterial.cpp
     BeEngine/src/BuiltInShaders/PhongMaterial.cpp
     BeEngine/src/BuiltInShaders/PBRMaterial.cpp
-
+    BeEngine/src/ModelLoader/GLTFLoader.cpp
+    BeEngine/src/ModelLoader/Model.cpp
+    BeEngine/src/ModelLoader/ModelRenderer.cpp
 )
 
 if(BE_BUILD_SHARED)
@@ -159,6 +162,7 @@ target_link_libraries(BeEngine
         glm
         imgui
         stb
+        tinygltf
 )
 
 

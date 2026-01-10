@@ -1,6 +1,7 @@
 #pragma once
 
 #include <MaterialSystem/Texture.hpp>
+#include <cstdint>
 #include <glad/glad.h>
 
 namespace BeEngine {
@@ -15,6 +16,8 @@ public:
 
   // Create from specification
   OpenGLTexture2D(const TextureSpecification &spec, const void *data = nullptr);
+
+  OpenGLTexture2D(uint32_t width, uint32_t height, bool hasAlpha, bool sRGB);
 
   ~OpenGLTexture2D() override;
 
@@ -75,6 +78,11 @@ private:
   GLenum m_InternalFormat = GL_RGBA8;
   GLenum m_DataFormat = GL_RGBA;
   GLenum m_DataType = GL_UNSIGNED_BYTE;
+
+  bool m_HasAlpha{};
+  uint32_t m_Width{};
+  uint32_t m_Height{};
+  bool m_sRGB{true};
 };
 
 /**

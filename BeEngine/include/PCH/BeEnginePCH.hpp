@@ -1,5 +1,6 @@
 #pragma once
 
+#define GLM_ENABLE_EXPERIMENTAL
 // clang-format off
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -44,6 +45,9 @@
 #include <MeshSystem/Mesh.hpp>
 #include <MeshSystem/MeshFactory.hpp>
 #include <MeshSystem/Vertex.hpp>
+#include <ModelLoader/GLTFLoader.hpp>
+#include <ModelLoader/Model.hpp>
+#include <ModelLoader/ModelRenderer.hpp>
 #include <Renderer/BufferLayout.hpp>
 #include <Renderer/FrameBuffer.hpp>
 #include <Renderer/GraphicsContext.hpp>
@@ -69,6 +73,8 @@
 #include <exception>
 #include <format>
 #include <fstream>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -84,4 +90,5 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <string>
+#include <tiny_gltf.h>
 #include <unordered_map>

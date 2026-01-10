@@ -164,6 +164,23 @@ public:
   static Ref<Texture2D> Create(const TextureSpecification &spec,
                                const void *data = nullptr);
 
+  /**
+   * @brief Create an empty texture with given dimensions
+   * @param width Texture width
+   * @param height Texture height
+   * @param hasAlpha Whether texture has alpha channel
+   * @param sRGB Whether to use sRGB color space
+   */
+  static Ref<Texture2D> Create(uint32_t width, uint32_t height, bool hasAlpha,
+                               bool sRGB);
+
+  /**
+   * @brief Upload raw pixel data to texture
+   * @param data Pointer to pixel data (RGB or RGBA bytes)
+   * @param size Size of data in bytes
+   */
+  virtual void SetData(const void *data, uint32_t size) = 0;
+
   // Create solid color texture
   static Ref<Texture2D> CreateSolidColor(const glm::vec4 &color,
                                          uint32_t width = 1,

@@ -121,25 +121,25 @@ glm::vec3 Transform::GetUp() const {
 
 // ===== Matrices =====
 
-const glm::mat4 &Transform::GetLocalMatrix() {
+const glm::mat4 &Transform::GetLocalMatrix() const {
   if (m_LocalDirty) {
     RecalculateLocalMatrix();
   }
   return m_LocalMatrix;
 }
 
-const glm::mat4 &Transform::GetWorldMatrix() {
+const glm::mat4 &Transform::GetWorldMatrix() const {
   if (m_WorldDirty || m_LocalDirty) {
     RecalculateWorldMatrix();
   }
   return m_WorldMatrix;
 }
 
-glm::mat4 Transform::GetInverseWorldMatrix() {
+glm::mat4 Transform::GetInverseWorldMatrix() const {
   return glm::inverse(GetWorldMatrix());
 }
 
-void Transform::RecalculateLocalMatrix() {
+void Transform::RecalculateLocalMatrix() const {
   // Order: Scale -> Rotate -> Translate
   // M = T * R * S
   m_LocalMatrix = glm::translate(glm::mat4(1.0F), m_Position) *
@@ -148,7 +148,7 @@ void Transform::RecalculateLocalMatrix() {
   m_LocalDirty = false;
 }
 
-void Transform::RecalculateWorldMatrix() {
+void Transform::RecalculateWorldMatrix() const {
   if (m_LocalDirty) {
     RecalculateLocalMatrix();
   }

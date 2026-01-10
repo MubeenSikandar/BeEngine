@@ -53,4 +53,7 @@ private:
   BeEngine::Scope<BeEngine::UnlitMaterial> m_UnlitMat;
   BeEngine::Scope<BeEngine::PhongMaterial> m_PhongMat;
   BeEngine::Scope<BeEngine::PBRMaterial> m_PBRMat;
+
+  BeEngine::Ref<BeEngine::Model> m_LoadedModel;
+  BeEngine::Transform m_ModelTransform;
 };
