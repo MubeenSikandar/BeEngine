@@ -1,13 +1,12 @@
 // EventQueue.hpp
 #pragma once
 
-#include "Core.hpp"
-#include "Events/Event.hpp"
+#include <Core.hpp>
+#include <Events/Event.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <memory>
 #include <mutex>
 #include <queue>
 #include <unordered_map>

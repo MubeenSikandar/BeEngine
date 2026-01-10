@@ -1,6 +1,6 @@
 #pragma once
-#include "Core.hpp"
-#include "Renderer/GraphicsContext.hpp"
+#include <Core.hpp>
+#include <Renderer/GraphicsContext.hpp>
 
 // Forward declare GLFWwindow to avoid including GLFW in header
 struct GLFWwindow;

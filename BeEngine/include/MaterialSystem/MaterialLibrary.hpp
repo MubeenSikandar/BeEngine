@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core.hpp"
-#include "MaterialSystem/Material.hpp"
+#include <Core.hpp>
+#include <MaterialSystem/Material.hpp>
 
 namespace BeEngine {
 /**

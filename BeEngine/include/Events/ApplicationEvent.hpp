@@ -1,11 +1,12 @@
 // ApplicationEvent.hpp
 #pragma once
 
-#include "Core.hpp"
-#include "Events/Event.hpp"
+#include <Core.hpp>
+#include <Events/Event.hpp>
 #include <cstdint>
 #include <format>
 #include <string>
+
 namespace BeEngine {
 /**
  * @brief Event fired when window dimensions change

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Texture.hpp"
+#include <MaterialSystem/Texture.hpp>
 #include <glad/glad.h>
 
 namespace BeEngine {

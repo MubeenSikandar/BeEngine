@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Core.hpp"
-#include "MeshSystem/Vertex.hpp"
-#include "Renderer/VertexArray.hpp"
+#include <Core.hpp>
+#include <MeshSystem/Vertex.hpp>
+#include <Renderer/VertexArray.hpp>
 #include <glm/glm.hpp>
 #include <string>
+
 namespace BeEngine {
 
 /**

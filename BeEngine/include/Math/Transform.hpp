@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Core.hpp"
-#include "glm/fwd.hpp"
+#include <Core.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <vector>

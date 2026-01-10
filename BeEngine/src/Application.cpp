@@ -1,5 +1,11 @@
 // src/Application.cpp
-#include "Application.hpp"
+#include <Application.hpp>
+#include <Core.hpp>
+#include <Input/Input.hpp>
+#include <Logs/Log.hpp>
+#include <Renderer/Renderer.hpp>
+#include <Renderer/RendererAPI.hpp>
+#include <Time/Time.hpp>
 
 namespace BeEngine {
 

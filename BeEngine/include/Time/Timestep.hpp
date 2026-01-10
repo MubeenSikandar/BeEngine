@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Core.hpp"
+#include <Core.hpp>
 #include <chrono>
+
 namespace BeEngine {
 /**
  * @brief Represents the time elapsed between frames

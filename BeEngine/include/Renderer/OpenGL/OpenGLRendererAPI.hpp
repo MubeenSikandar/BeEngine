@@ -1,7 +1,7 @@
 // OpenGLRendererAPI.hpp
 #pragma once
 
-#include "Renderer/RendererAPI.hpp"
+#include <Renderer/RendererAPI.hpp>
 #include <cstdint>
 #include <glm/glm.hpp>
 namespace BeEngine {

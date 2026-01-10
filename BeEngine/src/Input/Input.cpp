@@ -1,4 +1,5 @@
-#include "Application.hpp"
+#include <Application.hpp>
+#include <PCH/BeEnginePCH.hpp>
 
 namespace BeEngine {
 

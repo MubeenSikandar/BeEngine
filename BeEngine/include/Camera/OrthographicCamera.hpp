@@ -1,7 +1,7 @@
 // Camera/OrthographicCamera.hpp
 #pragma once
 
-#include "Camera.hpp"
+#include <Camera/Camera.hpp>
 
 namespace BeEngine {
 

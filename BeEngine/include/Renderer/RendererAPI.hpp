@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core.hpp"
-#include "glm/fwd.hpp"
+#include <Core.hpp>
 #include <cstdint>
-#include <memory>
+#include <glm/glm.hpp>
+
 namespace BeEngine {
 
 /**

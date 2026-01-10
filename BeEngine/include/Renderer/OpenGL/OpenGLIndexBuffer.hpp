@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core.hpp"
-#include "Renderer/IndexBuffer.hpp"
+#include <Core.hpp>
+#include <Renderer/IndexBuffer.hpp>
 #include <cstdint>
 namespace BeEngine {
 /**

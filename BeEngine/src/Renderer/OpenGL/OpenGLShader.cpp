@@ -1,6 +1,6 @@
 // Renderer/OpenGL/OpenGLShader.cpp
-#include "PCH/BeEnginePCH.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include <PCH/BeEnginePCH.hpp>
 
 namespace BeEngine {
 

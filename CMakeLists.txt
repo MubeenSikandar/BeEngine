@@ -117,6 +117,10 @@ set(BEENGINE_SOURCES
     BeEngine/src/MaterialSystem/OpenGL/OpenGLTexture2D.cpp
     BeEngine/src/MeshSystem/Mesh.cpp
     BeEngine/src/MeshSystem/MeshFactory.cpp
+    BeEngine/src/BuiltInShaders/LightManager.cpp
+    BeEngine/src/BuiltInShaders/UnlitMaterial.cpp
+    BeEngine/src/BuiltInShaders/PhongMaterial.cpp
+    BeEngine/src/BuiltInShaders/PBRMaterial.cpp
 
 )
 

@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Core.hpp"
-#include "Events/Event.hpp"
-#include "Time/Timestep.hpp"
+#include <Core.hpp>
+#include <Events/Event.hpp>
+#include <Time/Timestep.hpp>
 #include <string>
+
 namespace BeEngine {
 /**
  * @brief Base class for application layers

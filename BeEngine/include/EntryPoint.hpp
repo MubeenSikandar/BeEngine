@@ -1,9 +1,9 @@
-//EntryPoint.hpp
+// EntryPoint.hpp
 #pragma once
-#include "../include/Logs/Log.hpp"
-#include "Application.hpp"
-#include "Core.hpp"
-#include "Logs/LogConfig.hpp"
+#include <Application.hpp>
+#include <Core.hpp>
+#include <Logs/Log.hpp>
+#include <Logs/LogConfig.hpp>
 #include <cstddef>
 #include <exception>
 

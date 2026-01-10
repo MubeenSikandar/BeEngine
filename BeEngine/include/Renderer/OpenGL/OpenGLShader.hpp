@@ -1,7 +1,7 @@
 // Renderer/OpenGL/OpenGLShader.hpp
 #pragma once
 
-#include "Renderer/Shader.hpp"
+#include <Renderer/Shader.hpp>
 #include <unordered_map>
 namespace BeEngine {
 

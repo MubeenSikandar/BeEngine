@@ -1,8 +1,7 @@
 #pragma once
-#include "Core.hpp"
-#include "Renderer/IndexBuffer.hpp"
-#include "Renderer/VertexBuffer.hpp"
-#include <memory>
+#include <Core.hpp>
+#include <Renderer/IndexBuffer.hpp>
+#include <Renderer/VertexBuffer.hpp>
 
 namespace BeEngine {
 

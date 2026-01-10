@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer/VertexBuffer.hpp"
+#include <Renderer/VertexBuffer.hpp>
 #include <cstdint>
 
 namespace BeEngine {

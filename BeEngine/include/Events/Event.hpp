@@ -1,7 +1,7 @@
 // Event.hpp
 #pragma once
 
-#include "Core.hpp"
+#include <Core.hpp>
 #include <atomic>
 #include <chrono>
 #include <cstdint>

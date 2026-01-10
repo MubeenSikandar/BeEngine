@@ -1,7 +1,7 @@
 // Renderer/BufferLayout.hpp
 #pragma once
 
-#include "Core.hpp"
+#include <Core.hpp>
 #include <cstdint>
 #include <string>
 #include <vector>

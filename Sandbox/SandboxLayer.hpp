@@ -1,8 +1,7 @@
 // SandboxLayer.hpp
 #pragma once
-#include "Application.hpp"
-#include "Camera/PerspectiveCameraController.hpp"
-#include "PCH/BeEnginePCH.hpp"
+#include <Application.hpp>
+#include <PCH/BeEnginePCH.hpp>
 #include <memory>
 
 class SandboxLayer : public BeEngine::Layer {

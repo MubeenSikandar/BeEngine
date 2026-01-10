@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core.hpp"
-#include "Renderer/Shader.hpp"
+#include <Core.hpp>
+#include <Renderer/Shader.hpp>
 #include <filesystem>
 #include <unordered_map>
 #include <vector>

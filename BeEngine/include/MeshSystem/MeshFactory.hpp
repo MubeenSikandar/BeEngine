@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core.hpp"
-#include "Mesh.hpp"
+#include <Core.hpp>
+#include <MeshSystem/Mesh.hpp>
 #include <cstdint>
 
 namespace BeEngine {

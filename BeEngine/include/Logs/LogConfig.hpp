@@ -1,9 +1,9 @@
 #pragma once
-#include "../Core.hpp"
-#include "spdlog/common.h"
+#include <Core.hpp>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <spdlog/common.h>
 #include <string>
 #include <unordered_map>
 

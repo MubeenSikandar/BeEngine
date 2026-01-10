@@ -1,9 +1,9 @@
 // KeyEvent.hpp
 #pragma once
 
-#include "Codes/KeyCodes.hpp"
-#include "Core.hpp"
-#include "Events/Event.hpp"
+#include <Codes/KeyCodes.hpp>
+#include <Core.hpp>
+#include <Events/Event.hpp>
 #include <format> // C++20, or use <string> for older standards
 #include <string>
 

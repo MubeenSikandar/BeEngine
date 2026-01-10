@@ -1,7 +1,7 @@
 // Camera/PerspectiveCamera.hpp
 #pragma once
 
-#include "Camera.hpp"
+#include <Camera/Camera.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 

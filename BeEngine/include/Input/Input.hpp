@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Codes/GamepadCodes.hpp"
-#include "Codes/KeyCodes.hpp"
-#include "Codes/MouseCodes.hpp"
-#include "glm/fwd.hpp"
+#include <Codes/GamepadCodes.hpp>
+#include <Codes/KeyCodes.hpp>
+#include <Codes/MouseCodes.hpp>
 #include <array>
 #include <cstdint>
 #include <functional>
+#include <glm/glm.hpp>
 #include <string>
 
 namespace BeEngine {

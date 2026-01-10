@@ -1,4 +1,4 @@
-#include "PCH/BeEnginePCH.hpp"
+#include <PCH/BeEnginePCH.hpp>
 
 namespace BeEngine {
 Ref<Mesh> MeshFactory::CreateCube(bool invertNormals) {

@@ -1,5 +1,5 @@
 // Renderer/OpenGL/OpenGLVertexArray.cpp
-#include "PCH/BeEnginePCH.hpp"
+#include <PCH/BeEnginePCH.hpp>
 #include <glad/glad.h>
 
 namespace BeEngine {

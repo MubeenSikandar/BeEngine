@@ -1,10 +1,10 @@
 // Renderer/OpenGL/OpenGLVertexArray.hpp
 #pragma once
 
-#include "Core.hpp"
-#include "Renderer/IndexBuffer.hpp"
-#include "Renderer/VertexArray.hpp"
-#include "Renderer/VertexBuffer.hpp"
+#include <Core.hpp>
+#include <Renderer/IndexBuffer.hpp>
+#include <Renderer/VertexArray.hpp>
+#include <Renderer/VertexBuffer.hpp>
 #include <vector>
 
 namespace BeEngine {

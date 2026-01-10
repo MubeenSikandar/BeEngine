@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Camera/PerspectiveCamera.hpp"
-#include "Core.hpp"
-#include "Events/Event.hpp"
 #include "Time/Timestep.hpp"
+#include <Camera/PerspectiveCamera.hpp>
+#include <Core.hpp>
+#include <Events/Event.hpp>
 namespace BeEngine {
 
 /**

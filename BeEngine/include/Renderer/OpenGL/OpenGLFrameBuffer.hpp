@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core.hpp"
-#include "Renderer/FrameBuffer.hpp"
+#include <Core.hpp>
+#include <Renderer/FrameBuffer.hpp>
 
 namespace BeEngine {
 /**

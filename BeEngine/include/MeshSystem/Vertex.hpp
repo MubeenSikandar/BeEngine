@@ -1,8 +1,8 @@
 // MeshSystem/Vertex.hpp
 #pragma once
 
-#include "Core.hpp"
-#include "Renderer/BufferLayout.hpp"
+#include <Core.hpp>
+#include <Renderer/BufferLayout.hpp>
 #include <glm/glm.hpp>
 
 namespace BeEngine {

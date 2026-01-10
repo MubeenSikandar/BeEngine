@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Codes/GamepadCodes.hpp"
-#include "Core.hpp"
 #include "Events/Event.hpp"
+#include <Codes/GamepadCodes.hpp>
+#include <Core.hpp>
 #include <format>
 #include <string>
 #include <sys/stat.h>

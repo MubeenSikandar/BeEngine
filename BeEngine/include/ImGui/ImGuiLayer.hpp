@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core.hpp"
-#include "Layers/Layer.hpp"
+#include <Core.hpp>
+#include <Layers/Layer.hpp>
 
 namespace BeEngine {
 class BE_API ImGuiLayer : public Layer {

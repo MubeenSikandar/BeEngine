@@ -1,8 +1,8 @@
 // SandboxLayer3D.hpp
 #pragma once
 
-#include "Application.hpp"
-#include "PCH/BeEnginePCH.hpp"
+#include <Application.hpp>
+#include <PCH/BeEnginePCH.hpp>
 
 class SandboxLayer3D : public BeEngine::Layer {
 public:
@@ -40,13 +40,17 @@ private:
   bool m_AutoRotate = true;
   glm::vec3 m_CubeEulerAngles = {0.0F, 0.0F, 0.0F};
   BeEngine::Transform m_CubeTransform;
+  BeEngine::Transform m_SphereTransform;
 
   // Textures
   BeEngine::Ref<BeEngine::Texture2D> m_CheckerTexture;
   BeEngine::Ref<BeEngine::Texture2D> m_CubeTexture;
 
-  // Material System
-  BeEngine::ShaderLibrary m_ShaderLibrary;
-  BeEngine::MaterialLibrary m_MaterialLibrary;
-  BeEngine::Ref<BeEngine::Material> m_CubeMaterial;
+  // Lighting
+  BeEngine::LightManager m_LightManager;
+
+  // Materials (using built-in material types)
+  BeEngine::Scope<BeEngine::UnlitMaterial> m_UnlitMat;
+  BeEngine::Scope<BeEngine::PhongMaterial> m_PhongMat;
+  BeEngine::Scope<BeEngine::PBRMaterial> m_PBRMat;
 };

@@ -1,8 +1,12 @@
 #pragma once
 
-#include "PCH/BeEnginePCH.hpp"
+#include <Core.hpp>
+#include <Events/Event.hpp>
+#include <Renderer/GraphicsContext.hpp>
+#include <cstdint>
+#include <functional>
+#include <string>
 
-// Forward declare GLFW types to avoid including GLFW in header
 struct GLFWwindow;
 
 namespace BeEngine {

@@ -1,8 +1,7 @@
 #pragma once
-#include "Core.hpp"
-#include "Renderer/BufferLayout.hpp"
+#include <Core.hpp>
+#include <Renderer/BufferLayout.hpp>
 #include <cstdint>
-#include <memory>
 
 namespace BeEngine {
 /**

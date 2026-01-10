@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Core.hpp"
-#include "MaterialSystem/Texture.hpp"
-#include "Renderer/Shader.hpp"
-#include "glm/fwd.hpp"
+#include <Core.hpp>
+#include <MaterialSystem/Texture.hpp>
+#include <Renderer/Shader.hpp>
 #include <cstdint>
+#include <glm/glm.hpp>
 #include <string>
 #include <variant>
 

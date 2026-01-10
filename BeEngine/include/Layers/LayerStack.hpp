@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core.hpp"
-#include "Layers/Layer.hpp"
-#include <memory>
+#include <Core.hpp>
+#include <Layers/Layer.hpp>
 #include <vector>
+
 namespace BeEngine {
 /**
  * @brief Manages a stack of application layers

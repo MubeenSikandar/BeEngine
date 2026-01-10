@@ -1,9 +1,9 @@
 // Sandbox/SandboxApp.cpp
-#include "Application.hpp"
-#include "EntryPoint.hpp"
-#include "PCH/BeEnginePCH.hpp"
 #include "SandboxLayer.hpp"
 #include "SandboxLayer3D.hpp"
+#include <Application.hpp>
+#include <EntryPoint.hpp>
+#include <PCH/BeEnginePCH.hpp>
 
 class Sandbox : public BeEngine::Application {
 public:

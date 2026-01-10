@@ -1,8 +1,7 @@
 // Renderer/Shader.hpp
 #pragma once
-#include "Core.hpp"
-#include "glm/fwd.hpp"
-#include <memory>
+#include <Core.hpp>
+#include <glm/fwd.hpp>
 #include <string>
 
 namespace BeEngine {

@@ -8,140 +8,81 @@ void SandboxLayer3D::OnAttach() {
 
   float aspectRatio = 1280.0F / 720.0F;
 
-  BE_INFO("Creating camera controller...");
+  // Camera setup
   m_CameraController = std::make_unique<BeEngine::PerspectiveCameraController>(
       aspectRatio, 45.0F, 0.1F, 1000.0F);
-
   m_CameraController->SetPosition({3.0F, 2.0F, 5.0F});
   m_CameraController->SetYaw(-120.0F);
   m_CameraController->SetPitch(-15.0F);
-  BE_INFO("Camera controller created!");
 
+  // Transforms
   m_CubeTransform.SetPosition(0.0F, 0.5F, 0.0F);
+  m_SphereTransform.SetPosition(-2.0F, 0.5F, 0.0F);
   m_CubeEulerAngles = {0.0F, 0.0F, 0.0F};
 
-  BE_INFO("Creating framebuffer...");
+  // Framebuffer
   BeEngine::FramebufferSpecification fbSpec;
   fbSpec.Width = 1280;
   fbSpec.Height = 720;
   fbSpec.Attachments = {BeEngine::FramebufferTextureFormat::RGBA8,
                         BeEngine::FramebufferTextureFormat::Depth};
   m_Framebuffer = BeEngine::Framebuffer::Create(fbSpec);
-  BE_INFO("Framebuffer created!");
 
-  BE_INFO("Loading textures...");
+  // Textures
   m_CheckerTexture = BeEngine::Texture2D::CreateCheckerboard(256, 256, 32);
-  BE_INFO("Checker texture created!");
-
   m_CubeTexture = BeEngine::Texture2D::Create("BeEngine/Assets/Brick.jpeg");
   if (!m_CubeTexture->IsLoaded()) {
     BE_WARN("Failed to load brick texture, using checkerboard");
-    m_CubeTexture = BeEngine::Texture2D::CreateCheckerboard(256, 256, 32);
+    m_CubeTexture = m_CheckerTexture;
   }
-  BE_INFO("Textures loaded!");
 
-  BE_INFO("Creating cube mesh...");
+  // Meshes
   m_CubeMesh = BeEngine::MeshFactory::CreateCube();
-  if (!m_CubeMesh) {
-    BE_CRITICAL("Failed to create cube mesh!");
-    return;
-  }
-  BE_INFO("Cube mesh created: {} vertices, {} indices",
-          m_CubeMesh->GetVertexCount(), m_CubeMesh->GetIndexCount());
-
-  BE_INFO("Creating sphere mesh...");
   m_SphereMesh = BeEngine::MeshFactory::CreateSphere(0.5F, 32, 16);
-  if (!m_SphereMesh) {
-    BE_CRITICAL("Failed to create sphere mesh!");
-    return;
-  }
-  BE_INFO("Sphere mesh created!");
-
-  BE_INFO("Creating plane mesh...");
   m_PlaneMesh = BeEngine::MeshFactory::CreatePlane(10.0F, 10.0F, 1);
-  if (!m_PlaneMesh) {
-    BE_CRITICAL("Failed to create plane mesh!");
-    return;
-  }
-  BE_INFO("Plane mesh created!");
 
-  BE_INFO("Setting up grid...");
+  // Grid (separate VAO with simple vertex format)
   SetupGrid();
-  BE_INFO("Grid setup complete!");
 
   // =====================================================
-  // MATERIAL SYSTEM - COULD ALSO CRASH HERE
+  // LIGHTING SETUP
   // =====================================================
-  BE_INFO("Creating shader...");
+  m_LightManager.GetAmbientLight().Color = glm::vec3(0.15F, 0.15F, 0.18F);
 
-  std::string vertexSrc = R"(
-      #version 410 core
-      layout(location = 0) in vec3 a_Position;
-      layout(location = 1) in vec3 a_Normal;
-      layout(location = 2) in vec4 a_Tangent;
-      layout(location = 3) in vec2 a_TexCoord;
-      layout(location = 4) in vec4 a_Color;
+  auto &dirLight = m_LightManager.GetDirectionalLight();
+  dirLight.Direction = glm::vec3(-0.5F, -1.0F, -0.3F);
+  dirLight.Color = glm::vec3(1.0F, 0.98F, 0.95F);
+  dirLight.Intensity = 1.2F;
 
-      uniform mat4 u_ViewProjection;
-      uniform mat4 u_Model;
+  BeEngine::PointLight pointLight;
+  pointLight.Position = glm::vec3(2.0F, 2.0F, 2.0F);
+  pointLight.Color = glm::vec3(1.0F, 0.7F, 0.4F);
+  pointLight.Intensity = 3.0F;
+  pointLight.Range = 10.0F;
+  m_LightManager.AddPointLight(pointLight);
 
-      out vec3 v_Position;
-      out vec3 v_Normal;
-      out vec2 v_TexCoord;
-      out vec4 v_Color;
+  // =====================================================
+  // MATERIALS - Each object gets ONE material
+  // =====================================================
 
-      void main() {
-          v_Position = vec3(u_Model * vec4(a_Position, 1.0));
-          v_Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
-          v_TexCoord = a_TexCoord;
-          v_Color = a_Color;
-          gl_Position = u_ViewProjection * u_Model * vec4(a_Position, 1.0);
-      }
-  )";
+  // PBR Material for the cube (metallic brick)
+  m_PBRMat = BeEngine::CreateScope<BeEngine::PBRMaterial>("Brick PBR");
+  m_PBRMat->SetAlbedoMap(m_CubeTexture);
+  m_PBRMat->SetAlbedoColor(glm::vec4(1.0F));
+  m_PBRMat->SetMetallic(0.1F);  // Brick is not metallic
+  m_PBRMat->SetRoughness(0.8F); // Brick is rough
 
-  std::string fragmentSrc = R"(
-      #version 410 core
-      in vec3 v_Position;
-      in vec3 v_Normal;
-      in vec2 v_TexCoord;
-      in vec4 v_Color;
+  // Phong Material for the sphere (shiny red)
+  m_PhongMat = BeEngine::CreateScope<BeEngine::PhongMaterial>("Shiny Red");
+  m_PhongMat->SetDiffuseColor(glm::vec4(0.8F, 0.2F, 0.2F, 1.0F));
+  m_PhongMat->SetSpecularColor(glm::vec4(1.0F));
+  m_PhongMat->SetShininess(64.0F);
 
-      uniform sampler2D u_Texture;
-      uniform bool u_UseTexture;
-      uniform vec4 u_TintColor;
+  // Unlit Material for ground plane (flat gray)
+  m_UnlitMat = BeEngine::CreateScope<BeEngine::UnlitMaterial>("Ground");
+  m_UnlitMat->SetColor(glm::vec4(0.25F, 0.25F, 0.28F, 1.0F));
 
-      layout(location = 0) out vec4 o_Color;
-
-      void main() {
-          vec4 texColor = u_UseTexture ? texture(u_Texture, v_TexCoord) : v_Color;
-          o_Color = texColor * u_TintColor;
-      }
-  )";
-
-  auto cubeShader =
-      m_ShaderLibrary.Load("TexturedShader", vertexSrc, fragmentSrc);
-  if (!cubeShader) {
-    BE_CRITICAL("Failed to create shader!");
-    return;
-  }
-  BE_INFO("Shader created!");
-
-  BE_INFO("Creating material...");
-  m_CubeMaterial = m_MaterialLibrary.Create("BrickMaterial", cubeShader);
-  if (!m_CubeMaterial) {
-    BE_CRITICAL("Failed to create material!");
-    return;
-  }
-
-  m_CubeMaterial->SetTexture2D("u_Texture", m_CubeTexture);
-  m_CubeMaterial->SetBool("u_UseTexture", true);
-  m_CubeMaterial->SetFloat4("u_TintColor", glm::vec4(1.0F, 1.0F, 1.0F, 1.0F));
-  m_CubeMaterial->SetCullMode(BeEngine::Material::CullMode::Back);
-  m_CubeMaterial->SetDepthTest(true);
-  m_CubeMaterial->SetDepthWrite(true);
-  m_CubeMaterial->SetBlendMode(BeEngine::Material::BlendMode::Opaque);
-
-  BE_INFO("Material system initialized!");
+  BE_INFO("Scene initialized!");
 }
 
 void SandboxLayer3D::OnDetach() { BE_INFO("SandboxLayer3D detached"); }
@@ -176,23 +117,23 @@ void SandboxLayer3D::OnEvent(BeEngine::Event &event) {
 }
 
 void SandboxLayer3D::OnRender() {
-  // Check for material and mesh instead of old shader/VAO
-  if (!m_CubeMaterial || !m_CubeMesh || !m_Framebuffer) {
+  if (!m_Framebuffer)
     return;
-  }
 
   m_Framebuffer->Bind();
 
-  glClearColor(0.15F, 0.15F, 0.2F, 1.0F);
+  glClearColor(0.1F, 0.1F, 0.12F, 1.0F);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glEnable(GL_DEPTH_TEST);
 
   auto viewProj = m_CameraController->GetCamera().GetViewProjectionMatrix();
+  auto camPos = m_CameraController->GetPosition();
 
-  // Draw Grid
+  // =====================================================
+  // 1. DRAW GRID (uses its own simple shader)
+  // =====================================================
   if (m_GridShader && m_GridVAO) {
-    glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-
     m_GridShader->Bind();
     m_GridShader->SetMat4("u_ViewProjection", viewProj);
     m_GridShader->SetMat4("u_Model", glm::mat4(1.0F));
@@ -201,63 +142,60 @@ void SandboxLayer3D::OnRender() {
   }
 
   // =====================================================
-  // DRAW CUBE USING MESH + MATERIAL SYSTEM
+  // 2. DRAW GROUND PLANE (Unlit - no lighting)
   // =====================================================
-  {
-    glm::mat4 model = m_CubeTransform.GetWorldMatrix();
+  if (m_UnlitMat && m_PlaneMesh) {
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
-    // Material::Bind() handles:
-    // - Shader binding
-    // - Uniform uploads
-    // - Render state (cull, blend, depth)
-    m_CubeMaterial->Bind();
+    m_UnlitMat->Bind();
+    m_UnlitMat->GetShader()->SetMat4("u_ViewProjection", viewProj);
 
-    // Set per-object uniforms
-    m_CubeMaterial->GetShader()->SetMat4("u_ViewProjection", viewProj);
-    m_CubeMaterial->GetShader()->SetMat4("u_Model", model);
-
-    // Bind mesh and draw
-    m_CubeMesh->Bind();
-    glDrawElements(GL_TRIANGLES,
-                   static_cast<GLsizei>(m_CubeMesh->GetIndexCount()),
-                   GL_UNSIGNED_INT, nullptr);
-  }
-
-  // =====================================================
-  // DRAW SPHERE (to the right of the cube)
-  // =====================================================
-  {
     glm::mat4 model =
-        glm::translate(glm::mat4(1.0F), glm::vec3(2.0F, 0.5F, 0.0F));
-    m_CubeMaterial->GetShader()->SetMat4("u_Model", model);
-
-    m_SphereMesh->Bind();
-    glDrawElements(GL_TRIANGLES,
-                   static_cast<GLsizei>(m_SphereMesh->GetIndexCount()),
-                   GL_UNSIGNED_INT, nullptr);
-  }
-
-  // =====================================================
-  // DRAW PLANE (as ground - already have grid, but this shows it works)
-  // =====================================================
-  {
-    glm::mat4 model =
-        glm::translate(glm::mat4(1.0F), glm::vec3(0.0F, -0.01F, 0.0F));
-    m_CubeMaterial->GetShader()->SetMat4("u_Model", model);
-
-    // Temporarily disable texture for plane to see it differently
-    m_CubeMaterial->GetShader()->SetBool("u_UseTexture", false);
-    m_CubeMaterial->GetShader()->SetFloat4("u_TintColor",
-                                           glm::vec4(0.3F, 0.3F, 0.35F, 1.0F));
+        glm::translate(glm::mat4(1.0F), glm::vec3(0.0F, 0.0F, 0.0F));
+    m_UnlitMat->GetShader()->SetMat4("u_Model", model);
 
     m_PlaneMesh->Bind();
-    glDrawElements(GL_TRIANGLES,
-                   static_cast<GLsizei>(m_PlaneMesh->GetIndexCount()),
-                   GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, m_PlaneMesh->GetIndexCount(), GL_UNSIGNED_INT,
+                   nullptr);
+  }
 
-    // Restore for next frame
-    m_CubeMaterial->GetShader()->SetBool("u_UseTexture", true);
-    m_CubeMaterial->GetShader()->SetFloat4("u_TintColor", glm::vec4(1.0F));
+  // =====================================================
+  // 3. DRAW CUBE (PBR - realistic lighting)
+  // =====================================================
+  if (m_PBRMat && m_CubeMesh) {
+    m_PBRMat->Bind();
+    m_LightManager.UploadToShader(m_PBRMat->GetShader(), camPos);
+
+    glm::mat4 model = m_CubeTransform.GetWorldMatrix();
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
+
+    m_PBRMat->GetShader()->SetMat4("u_ViewProjection", viewProj);
+    m_PBRMat->GetShader()->SetMat4("u_Model", model);
+    m_PBRMat->GetShader()->SetMat3("u_NormalMatrix", normalMatrix);
+
+    m_CubeMesh->Bind();
+    glDrawElements(GL_TRIANGLES, m_CubeMesh->GetIndexCount(), GL_UNSIGNED_INT,
+                   nullptr);
+  }
+
+  // =====================================================
+  // 4. DRAW SPHERE (Phong - classic lighting)
+  // =====================================================
+  if (m_PhongMat && m_SphereMesh) {
+    m_PhongMat->Bind();
+    m_LightManager.UploadToShader(m_PhongMat->GetShader(), camPos);
+
+    glm::mat4 model = m_SphereTransform.GetWorldMatrix();
+    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
+
+    m_PhongMat->GetShader()->SetMat4("u_ViewProjection", viewProj);
+    m_PhongMat->GetShader()->SetMat4("u_Model", model);
+    m_PhongMat->GetShader()->SetMat3("u_NormalMatrix", normalMatrix);
+
+    m_SphereMesh->Bind();
+    glDrawElements(GL_TRIANGLES, m_SphereMesh->GetIndexCount(), GL_UNSIGNED_INT,
+                   nullptr);
   }
 
   m_Framebuffer->Unbind();
@@ -288,7 +226,7 @@ void SandboxLayer3D::OnImGuiRender() {
   ImGui::Begin("Camera");
   auto camPos = m_CameraController->GetPosition();
   ImGui::Text("Position: (%.2f, %.2f, %.2f)", camPos.x, camPos.y, camPos.z);
-  ImGui::Text("Yaw: %.1f°  Pitch: %.1f°", m_CameraController->GetYaw(),
+  ImGui::Text("Yaw: %.1f  Pitch: %.1f", m_CameraController->GetYaw(),
               m_CameraController->GetPitch());
 
   float speed = m_CameraController->GetMoveSpeed();
@@ -301,91 +239,171 @@ void SandboxLayer3D::OnImGuiRender() {
     ImGui::Text("Speed: %.1f", speed);
   }
 
-  ImGui::Text("FOV: %.1f°", m_CameraController->GetCamera().GetFOV());
+  ImGui::Text("FOV: %.1f", m_CameraController->GetCamera().GetFOV());
   ImGui::End();
 
-  // Material Properties Window
-  ImGui::Begin("Material");
+  // =====================================================
+  // PBR MATERIAL PROPERTIES (Cube)
+  // =====================================================
+  ImGui::Begin("PBR Material (Cube)");
 
-  ImGui::Text("Material: %s", m_CubeMaterial->GetName().c_str());
+  if (m_PBRMat) {
+    ImGui::Text("Material: %s", m_PBRMat->GetName().c_str());
+    ImGui::Separator();
+
+    // Albedo color
+    static glm::vec4 albedoColor = m_PBRMat->GetAlbedoColor();
+    if (ImGui::ColorEdit4("Albedo Color", &albedoColor.x)) {
+      m_PBRMat->SetAlbedoColor(albedoColor);
+    }
+
+    // Metallic slider
+    static float metallic = m_PBRMat->GetMetallic();
+    if (ImGui::SliderFloat("Metallic", &metallic, 0.0F, 1.0F)) {
+      m_PBRMat->SetMetallic(metallic);
+    }
+
+    // Roughness slider
+    static float roughness = m_PBRMat->GetRoughness();
+    if (ImGui::SliderFloat("Roughness", &roughness, 0.04F, 1.0F)) {
+      m_PBRMat->SetRoughness(roughness);
+    }
+
+    // AO slider
+    static float ao = m_PBRMat->GetAO();
+    if (ImGui::SliderFloat("Ambient Occlusion", &ao, 0.0F, 1.0F)) {
+      m_PBRMat->SetAO(ao);
+    }
+  }
+
+  ImGui::End();
+
+  // =====================================================
+  // PHONG MATERIAL PROPERTIES (Sphere)
+  // =====================================================
+  ImGui::Begin("Phong Material (Sphere)");
+
+  if (m_PhongMat) {
+    ImGui::Text("Material: %s", m_PhongMat->GetName().c_str());
+    ImGui::Separator();
+
+    // Diffuse color
+    static glm::vec4 diffuseColor = m_PhongMat->GetDiffuseColor();
+    if (ImGui::ColorEdit4("Diffuse Color", &diffuseColor.x)) {
+      m_PhongMat->SetDiffuseColor(diffuseColor);
+    }
+
+    // Specular color
+    static glm::vec4 specularColor = m_PhongMat->GetSpecularColor();
+    if (ImGui::ColorEdit4("Specular Color", &specularColor.x)) {
+      m_PhongMat->SetSpecularColor(specularColor);
+    }
+
+    // Shininess slider
+    static float shininess = m_PhongMat->GetShininess();
+    if (ImGui::SliderFloat("Shininess", &shininess, 1.0F, 256.0F)) {
+      m_PhongMat->SetShininess(shininess);
+    }
+  }
+
+  ImGui::End();
+
+  // =====================================================
+  // LIGHTING
+  // =====================================================
+  ImGui::Begin("Lighting");
+
+  // Ambient
+  ImGui::Text("Ambient Light");
+  auto &ambient = m_LightManager.GetAmbientLight();
+  ImGui::ColorEdit3("Ambient Color", &ambient.Color.x);
+
   ImGui::Separator();
 
-  // Tint color picker
-  static auto tintColor = glm::vec4(1.0F);
-  if (ImGui::ColorEdit4("Tint Color", &tintColor.x)) {
-    m_CubeMaterial->SetFloat4("u_TintColor", tintColor);
-  }
+  // Directional Light
+  ImGui::Text("Directional Light");
+  auto &dirLight = m_LightManager.GetDirectionalLight();
+  ImGui::Checkbox("Dir Light Enabled", &dirLight.Enabled);
+  ImGui::DragFloat3("Direction", &dirLight.Direction.x, 0.01F);
+  ImGui::ColorEdit3("Dir Color", &dirLight.Color.x);
+  ImGui::SliderFloat("Dir Intensity", &dirLight.Intensity, 0.0F, 5.0F);
 
-  // Toggle texture on/off
-  static bool useTexture = true;
-  if (ImGui::Checkbox("Use Texture", &useTexture)) {
-    m_CubeMaterial->SetBool("u_UseTexture", useTexture);
-  }
+  ImGui::Separator();
 
-  // Cull mode selector
-  static int cullMode = 0;
-  std::array<const char *, 3> cullModes = {"Back", "Front", "None"};
-  if (ImGui::Combo("Cull Mode", &cullMode, cullModes.data(), 3)) {
-    m_CubeMaterial->SetCullMode(
-        static_cast<BeEngine::Material::CullMode>(cullMode));
-  }
-
-  // Blend mode selector
-  static int blendMode = 0;
-  std::array<const char *, 4> blendModes = {"Opaque", "Transparent", "Additive",
-                                            "Multiply"};
-  if (ImGui::Combo("Blend Mode", &blendMode, blendModes.data(), 4)) {
-    m_CubeMaterial->SetBlendMode(
-        static_cast<BeEngine::Material::BlendMode>(blendMode));
+  // Point Lights
+  ImGui::Text("Point Lights (%d)", m_LightManager.GetPointLightCount());
+  auto &pointLights = m_LightManager.GetPointLights();
+  for (size_t i = 0; i < pointLights.size(); i++) {
+    ImGui::PushID(static_cast<int>(i));
+    if (ImGui::TreeNode("Point Light", "Point Light %zu", i)) {
+      ImGui::Checkbox("Enabled", &pointLights[i].Enabled);
+      ImGui::DragFloat3("Position", &pointLights[i].Position.x, 0.1F);
+      ImGui::ColorEdit3("Color", &pointLights[i].Color.x);
+      ImGui::SliderFloat("Intensity", &pointLights[i].Intensity, 0.0F, 10.0F);
+      ImGui::SliderFloat("Range", &pointLights[i].Range, 1.0F, 50.0F);
+      ImGui::TreePop();
+    }
+    ImGui::PopID();
   }
 
   ImGui::End();
 
-  // Scene window
+  // =====================================================
+  // SCENE (Transforms)
+  // =====================================================
   ImGui::Begin("Scene");
 
   ImGui::Text("Cube Transform");
-
   glm::vec3 cubePos = m_CubeTransform.GetPosition();
-  if (ImGui::DragFloat3("Position", &cubePos.x, 0.1F)) {
+  if (ImGui::DragFloat3("Cube Position", &cubePos.x, 0.1F)) {
     m_CubeTransform.SetPosition(cubePos);
   }
 
-  if (ImGui::DragFloat3("Rotation", &m_CubeEulerAngles.x, 1.0F)) {
+  if (ImGui::DragFloat3("Cube Rotation", &m_CubeEulerAngles.x, 1.0F)) {
     m_CubeTransform.SetRotation(m_CubeEulerAngles);
   }
 
-  glm::vec3 scale = m_CubeTransform.GetScale();
-  if (ImGui::DragFloat3("Scale", &scale.x, 0.1F, 0.1F, 10.0F)) {
-    m_CubeTransform.SetScale(scale);
+  glm::vec3 cubeScale = m_CubeTransform.GetScale();
+  if (ImGui::DragFloat3("Cube Scale", &cubeScale.x, 0.1F, 0.1F, 10.0F)) {
+    m_CubeTransform.SetScale(cubeScale);
   }
 
   ImGui::Checkbox("Auto Rotate", &m_AutoRotate);
 
-  if (ImGui::Button("Reset Cube")) {
+  ImGui::Separator();
+
+  ImGui::Text("Sphere Transform");
+  glm::vec3 spherePos = m_SphereTransform.GetPosition();
+  if (ImGui::DragFloat3("Sphere Position", &spherePos.x, 0.1F)) {
+    m_SphereTransform.SetPosition(spherePos);
+  }
+
+  ImGui::Separator();
+
+  if (ImGui::Button("Reset Scene")) {
     m_CubeTransform.Reset();
     m_CubeTransform.SetPosition(0.0F, 0.5F, 0.0F);
     m_CubeEulerAngles = {0.0F, 0.0F, 0.0F};
+
+    m_SphereTransform.Reset();
+    m_SphereTransform.SetPosition(-2.0F, 0.5F, 0.0F);
+
+    m_CameraController->SetPosition({3.0F, 2.0F, 5.0F});
+    m_CameraController->SetYaw(-120.0F);
+    m_CameraController->SetPitch(-15.0F);
   }
 
   ImGui::Separator();
 
   // Mesh info
-  ImGui::Text("Mesh Info");
-  ImGui::Text("  Vertices: %u", m_CubeMesh->GetVertexCount());
-  ImGui::Text("  Triangles: %u", m_CubeMesh->GetTriangleCount());
-
-  auto bounds = m_CubeMesh->GetBoundingBox();
-  ImGui::Text("  Bounds: (%.2f, %.2f, %.2f) - (%.2f, %.2f, %.2f)", bounds.Min.x,
-              bounds.Min.y, bounds.Min.z, bounds.Max.x, bounds.Max.y,
-              bounds.Max.z);
-
-  ImGui::Separator();
-
-  if (ImGui::Button("Reset Camera")) {
-    m_CameraController->SetPosition({3.0F, 2.0F, 5.0F});
-    m_CameraController->SetYaw(-120.0F);
-    m_CameraController->SetPitch(-15.0F);
+  if (m_CubeMesh) {
+    ImGui::Text("Cube Mesh: %u verts, %u tris", m_CubeMesh->GetVertexCount(),
+                m_CubeMesh->GetTriangleCount());
+  }
+  if (m_SphereMesh) {
+    ImGui::Text("Sphere Mesh: %u verts, %u tris",
+                m_SphereMesh->GetVertexCount(),
+                m_SphereMesh->GetTriangleCount());
   }
 
   ImGui::End();

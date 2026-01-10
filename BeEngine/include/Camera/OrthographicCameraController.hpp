@@ -1,9 +1,9 @@
 // Camera/OrthographicCameraController.hpp
 #pragma once
 
-#include "Events/Event.hpp"
-#include "OrthographicCamera.hpp"
-#include "Time/Timestep.hpp"
+#include <Camera/OrthographicCamera.hpp>
+#include <Events/Event.hpp>
+#include <Time/Timestep.hpp>
 
 namespace BeEngine {
 

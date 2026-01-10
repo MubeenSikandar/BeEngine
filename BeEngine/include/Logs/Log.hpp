@@ -1,10 +1,10 @@
 #pragma once
-#include "../Core.hpp"
-#include "LogConfig.hpp"
-#include "spdlog/common.h"
-#include "spdlog/logger.h"
+#include <Core.hpp>
+#include <Logs/LogConfig.hpp>
 #include <mutex>
 #include <regex>
+#include <spdlog/common.h>
+#include <spdlog/logger.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <string>
