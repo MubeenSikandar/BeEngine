@@ -17,3 +17,9 @@
 [submodule "BeEngine/vendor/tinygltf"]
 	path = BeEngine/vendor/tinygltf
 	url = https://github.com/syoyo/tinygltf.git
+[submodule "BeEngine/vendor/json"]
+	path = BeEngine/vendor/json
+	url = https://github.com/nlohmann/json.git
+[submodule "BeEngine/vendor/nlohmann_json"]
+	path = BeEngine/vendor/nlohmann_json
+	url = https://github.com/nlohmann/json.git

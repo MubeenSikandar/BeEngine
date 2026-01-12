@@ -15,6 +15,20 @@ void LightManager::RemovePointLight(uint32_t index) {
   }
 }
 
+void LightManager::AddSpotLight(const SpotLight &light) {
+  if (m_SpotLights.size() >= MAX_SPOT_LIGHTS) {
+    BE_CORE_WARN("Maximum spot lights ({}) reached!", MAX_SPOT_LIGHTS);
+    return;
+  }
+  m_SpotLights.push_back(light);
+}
+
+void LightManager::RemoveSpotLight(uint32_t index) {
+  if (index < m_SpotLights.size()) {
+    m_SpotLights.erase(m_SpotLights.begin() + index);
+  }
+}
+
 void LightManager::UploadToShader(const Ref<Shader> &shader,
                                   const glm::vec3 &cameraPos) const {
   if (!shader) {
@@ -64,5 +78,24 @@ void LightManager::UploadToShader(const Ref<Shader> &shader,
   }
 
   shader->SetInt("u_PointLightCount", activeCount);
+
+  // Spot lights
+  shader->SetInt("u_SpotLightCount", static_cast<int>(m_SpotLights.size()));
+  for (size_t i = 0; i < m_SpotLights.size() && i < MAX_SPOT_LIGHTS; i++) {
+    std::string prefix = "u_SpotLights[" + std::to_string(i) + "].";
+    const auto &light = m_SpotLights[i];
+
+    shader->SetBool(prefix + "enabled", light.Enabled);
+    shader->SetFloat3(prefix + "position", light.Position);
+    shader->SetFloat3(prefix + "direction", glm::normalize(light.Direction));
+    shader->SetFloat3(prefix + "color", light.Color);
+    shader->SetFloat(prefix + "intensity", light.Intensity);
+    shader->SetFloat(prefix + "range", light.Range);
+    // Convert degrees to cosine for shader
+    shader->SetFloat(prefix + "innerCutoff",
+                     glm::cos(glm::radians(light.InnerCone)));
+    shader->SetFloat(prefix + "outerCutoff",
+                     glm::cos(glm::radians(light.OuterCone)));
+  }
 }
 } // namespace BeEngine

@@ -46,6 +46,18 @@ public:
     return static_cast<uint32_t>(m_PointLights.size());
   }
 
+  // Spot Lights
+  void AddSpotLight(const SpotLight &light);
+  void RemoveSpotLight(uint32_t index);
+  void ClearSpotLights() { m_SpotLights.clear(); }
+  NODISCARD std::vector<SpotLight> &GetSpotLights() { return m_SpotLights; }
+  NODISCARD const std::vector<SpotLight> &GetSpotLights() const {
+    return m_SpotLights;
+  }
+  NODISCARD uint32_t GetSpotLightCount() const {
+    return static_cast<uint32_t>(m_SpotLights.size());
+  }
+
   /**
    * @brief Upload all light data to a shader
    * @param shader The shader to upload to
@@ -58,5 +70,6 @@ private:
   DirectionalLight m_DirectionalLight;
   AmbientLight m_AmbientLight;
   std::vector<PointLight> m_PointLights;
+  std::vector<SpotLight> m_SpotLights;
 };
 } // namespace BeEngine

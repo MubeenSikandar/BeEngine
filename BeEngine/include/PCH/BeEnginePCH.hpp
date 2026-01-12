@@ -10,12 +10,11 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 
+#include "Scene/SceneSerializer.hpp"
 #include <BuiltInShaders/Light.hpp>
 #include <BuiltInShaders/LightManager.hpp>
-#include <BuiltInShaders/PBRMaterial.hpp>
-#include <BuiltInShaders/PhongMaterial.hpp>
+#include <BuiltInShaders/ShaderLibrary.hpp>
 #include <BuiltInShaders/ShaderSources.hpp>
-#include <BuiltInShaders/UnlitMaterial.hpp>
 #include <Camera/Camera.hpp>
 #include <Camera/OrthographicCamera.hpp>
 #include <Camera/OrthographicCameraController.hpp>
@@ -39,8 +38,10 @@
 #include <MaterialSystem/Material.hpp>
 #include <MaterialSystem/MaterialLibrary.hpp>
 #include <MaterialSystem/OpenGL/OpenGLTexture2D.hpp>
-#include <MaterialSystem/ShaderLibrary.hpp>
+#include <MaterialSystem/PBRMaterial.hpp>
+#include <MaterialSystem/PhongMaterial.hpp>
 #include <MaterialSystem/Texture.hpp>
+#include <MaterialSystem/UnlitMaterial.hpp>
 #include <Math/Transform.hpp>
 #include <MeshSystem/Mesh.hpp>
 #include <MeshSystem/MeshFactory.hpp>
@@ -63,6 +64,11 @@
 #include <Renderer/Shader.hpp>
 #include <Renderer/VertexArray.hpp>
 #include <Renderer/VertexBuffer.hpp>
+#include <Scene/ECS/Component.hpp>
+#include <Scene/ECS/Entity.hpp>
+#include <Scene/Scene.hpp>
+#include <Scene/SceneManager.hpp>
+#include <Scene/SceneRenderer.hpp>
 #include <Time/Time.hpp>
 #include <Time/Timestep.hpp>
 #include <Window.hpp>

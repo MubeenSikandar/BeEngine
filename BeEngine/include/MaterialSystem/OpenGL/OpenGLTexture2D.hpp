@@ -80,9 +80,6 @@ private:
   GLenum m_DataType = GL_UNSIGNED_BYTE;
 
   bool m_HasAlpha{};
-  uint32_t m_Width{};
-  uint32_t m_Height{};
-  bool m_sRGB{true};
 };
 
 /**

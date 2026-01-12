@@ -1,119 +1,255 @@
 // SandboxLayer3D.cpp
 #include "SandboxLayer3D.hpp"
-#include "MaterialSystem/Texture.hpp"
-#include <vector>
+
+// ============================================================================
+// Lifecycle
+// ============================================================================
 
 void SandboxLayer3D::OnAttach() {
-  BE_INFO("SandboxLayer3D attached - setting up 3D scene");
+  BE_INFO("SandboxLayer3D attached - initializing Scene System");
 
-  float aspectRatio = 1280.0F / 720.0F;
-
-  // Camera setup
-  m_CameraController = std::make_unique<BeEngine::PerspectiveCameraController>(
+  // Editor camera for navigating the scene
+  float aspectRatio = m_ViewportSize.x / m_ViewportSize.y;
+  m_EditorCamera = BeEngine::CreateScope<BeEngine::PerspectiveCameraController>(
       aspectRatio, 45.0F, 0.1F, 1000.0F);
-  m_CameraController->SetPosition({3.0F, 2.0F, 5.0F});
-  m_CameraController->SetYaw(-120.0F);
-  m_CameraController->SetPitch(-15.0F);
+  m_EditorCamera->SetPosition({5.0F, 4.0F, 8.0F});
+  m_EditorCamera->SetYaw(-145.0F);
+  m_EditorCamera->SetPitch(-20.0F);
 
-  // Transforms
-  m_CubeTransform.SetPosition(0.0F, 0.5F, 0.0F);
-  m_SphereTransform.SetPosition(-2.0F, 0.5F, 0.0F);
-  m_CubeEulerAngles = {0.0F, 0.0F, 0.0F};
-
-  // Framebuffer
+  // Framebuffer for viewport rendering
   BeEngine::FramebufferSpecification fbSpec;
-  fbSpec.Width = 1280;
-  fbSpec.Height = 720;
+  fbSpec.Width = static_cast<uint32_t>(m_ViewportSize.x);
+  fbSpec.Height = static_cast<uint32_t>(m_ViewportSize.y);
   fbSpec.Attachments = {BeEngine::FramebufferTextureFormat::RGBA8,
                         BeEngine::FramebufferTextureFormat::Depth};
   m_Framebuffer = BeEngine::Framebuffer::Create(fbSpec);
 
-  // Textures
-  m_CheckerTexture = BeEngine::Texture2D::CreateCheckerboard(256, 256, 32);
-  m_CubeTexture = BeEngine::Texture2D::Create("BeEngine/Assets/Brick.jpeg");
-  if (!m_CubeTexture->IsLoaded()) {
-    BE_WARN("Failed to load brick texture, using checkerboard");
-    m_CubeTexture = m_CheckerTexture;
-  }
-
-  // Meshes
-  m_CubeMesh = BeEngine::MeshFactory::CreateCube();
-  m_SphereMesh = BeEngine::MeshFactory::CreateSphere(0.5F, 32, 16);
-  m_PlaneMesh = BeEngine::MeshFactory::CreatePlane(10.0F, 10.0F, 1);
-
-  // Grid (separate VAO with simple vertex format)
+  // Setup editor grid
   SetupGrid();
 
-  // =====================================================
-  // LIGHTING SETUP
-  // =====================================================
-  m_LightManager.GetAmbientLight().Color = glm::vec3(0.15F, 0.15F, 0.18F);
+  // Setup the demo scene
+  SetupScene();
 
-  auto &dirLight = m_LightManager.GetDirectionalLight();
-  dirLight.Direction = glm::vec3(-0.5F, -1.0F, -0.3F);
-  dirLight.Color = glm::vec3(1.0F, 0.98F, 0.95F);
-  dirLight.Intensity = 1.2F;
-
-  BeEngine::PointLight pointLight;
-  pointLight.Position = glm::vec3(2.0F, 2.0F, 2.0F);
-  pointLight.Color = glm::vec3(1.0F, 0.7F, 0.4F);
-  pointLight.Intensity = 3.0F;
-  pointLight.Range = 10.0F;
-  m_LightManager.AddPointLight(pointLight);
-
-  // =====================================================
-  // MATERIALS - Each object gets ONE material
-  // =====================================================
-
-  // PBR Material for the cube (metallic brick)
-  m_PBRMat = BeEngine::CreateScope<BeEngine::PBRMaterial>("Brick PBR");
-  m_PBRMat->SetAlbedoMap(m_CubeTexture);
-  m_PBRMat->SetAlbedoColor(glm::vec4(1.0F));
-  m_PBRMat->SetMetallic(0.1F);  // Brick is not metallic
-  m_PBRMat->SetRoughness(0.8F); // Brick is rough
-
-  // Phong Material for the sphere (shiny red)
-  m_PhongMat = BeEngine::CreateScope<BeEngine::PhongMaterial>("Shiny Red");
-  m_PhongMat->SetDiffuseColor(glm::vec4(0.8F, 0.2F, 0.2F, 1.0F));
-  m_PhongMat->SetSpecularColor(glm::vec4(1.0F));
-  m_PhongMat->SetShininess(64.0F);
-
-  // Unlit Material for ground plane (flat gray)
-  m_UnlitMat = BeEngine::CreateScope<BeEngine::UnlitMaterial>("Ground");
-  m_UnlitMat->SetColor(glm::vec4(0.25F, 0.25F, 0.28F, 1.0F));
-
-  m_LoadedModel = BeEngine::Model::Load("BeEngine/Assets/DamagedHelmet.glb");
-
-  if (m_LoadedModel && m_LoadedModel->IsValid()) {
-    BE_INFO("Loaded model: {}", m_LoadedModel->GetName());
-    BE_INFO("  Meshes: {}", m_LoadedModel->GetMeshCount());
-    BE_INFO("  Vertices: {}", m_LoadedModel->GetTotalVertexCount());
-    BE_INFO("  Triangles: {}", m_LoadedModel->GetTotalTriangleCount());
-
-    // Position the model
-    m_ModelTransform.SetPosition(0.0F, 1.0F, 0.0F);
-    m_ModelTransform.SetScale(glm::vec3(0.5F)); // Scale down if too big
-  } else {
-    BE_WARN("Failed to load model!");
-  }
-
-  BE_INFO("Scene initialized!");
+  BE_INFO("Scene System initialized with {} entities",
+          m_ActiveScene ? m_ActiveScene->GetEntityCount() : 0);
 }
 
 void SandboxLayer3D::OnDetach() { BE_INFO("SandboxLayer3D detached"); }
 
-void SandboxLayer3D::OnUpdate(BeEngine::Timestep ts) {
-  if (m_ViewportFocused) {
-    m_CameraController->OnUpdate(ts);
+// ============================================================================
+// Scene Setup
+// ============================================================================
+
+void SandboxLayer3D::SetupScene() {
+  // Create a new scene
+  m_ActiveScene = &m_SceneManager.CreateScene("Demo Scene");
+
+  // Configure scene renderer's ambient light
+  auto &lightManager = m_SceneRenderer.GetLightManager();
+  lightManager.GetAmbientLight().Color = glm::vec3(0.15F, 0.15F, 0.18F);
+
+  // ===== Camera Entity =====
+  {
+    BeEngine::Entity camera = m_ActiveScene->CreateEntity("Main Camera");
+    auto &transform = camera.GetComponent<BeEngine::TransformComponent>();
+    transform.SetPosition({0.0F, 3.0F, 10.0F});
+    transform.SetRotation({-10.0F, 0.0F, 0.0F});
+
+    auto &cam = camera.AddComponent<BeEngine::CameraComponent>();
+    cam.Primary = true;
+    cam.FOV = 60.0F;
+    cam.NearClip = 0.1F;
+    cam.FarClip = 1000.0F;
   }
 
-  // Auto-rotate cube
-  if (m_AutoRotate) {
-    m_CubeEulerAngles.y += 45.0F * ts.GetSeconds();
-    if (m_CubeEulerAngles.y > 360.0F) {
-      m_CubeEulerAngles.y -= 360.0F;
+  // ===== Sun (Directional Light) =====
+  {
+    BeEngine::Entity sun = m_ActiveScene->CreateEntity("Sun");
+    auto &transform = sun.GetComponent<BeEngine::TransformComponent>();
+    transform.SetRotation({-50.0F, 30.0F, 0.0F});
+
+    auto &light = sun.AddComponent<BeEngine::DirectionalLightComponent>();
+    light.Color = glm::vec3(1.0F, 0.98F, 0.95F);
+    light.Intensity = 1.2F;
+    light.CastShadows = true;
+  }
+
+  // ===== Point Light =====
+  {
+    BeEngine::Entity pointLight = m_ActiveScene->CreateEntity("Point Light");
+    auto &transform = pointLight.GetComponent<BeEngine::TransformComponent>();
+    transform.SetPosition({3.0F, 2.0F, 2.0F});
+
+    auto &light = pointLight.AddComponent<BeEngine::PointLightComponent>();
+    light.Color = glm::vec3(1.0F, 0.6F, 0.3F);
+    light.Intensity = 4.0F;
+    light.Range = 15.0F;
+  }
+
+  // ===== Ground Plane =====
+  {
+    BeEngine::Entity ground = m_ActiveScene->CreateEntity("Ground");
+    auto &transform = ground.GetComponent<BeEngine::TransformComponent>();
+    transform.SetPosition({0.0F, 0.0F, 0.0F});
+    transform.SetScale({20.0F, 1.0F, 20.0F});
+
+    auto &renderer = ground.AddComponent<BeEngine::MeshRendererComponent>();
+    renderer.MeshData = BeEngine::MeshFactory::CreatePlane(1.0F, 1.0F, 1);
+
+    // Create and configure material
+    auto unlitMat =
+        BeEngine::CreateRef<BeEngine::UnlitMaterial>("Ground Material");
+    unlitMat->SetColor(glm::vec4(0.18F, 0.18F, 0.2F, 1.0F));
+    renderer.MaterialData = unlitMat->GetMaterial();
+    m_Materials.push_back(unlitMat); // Keep alive!
+  }
+
+  // ===== Red Cube =====
+  {
+    BeEngine::Entity cube = m_ActiveScene->CreateEntity("Red Cube");
+    auto &transform = cube.GetComponent<BeEngine::TransformComponent>();
+    transform.SetPosition({-2.0F, 0.5F, 0.0F});
+
+    auto &renderer = cube.AddComponent<BeEngine::MeshRendererComponent>();
+    renderer.MeshData = BeEngine::MeshFactory::CreateCube();
+
+    auto pbrMat = BeEngine::CreateRef<BeEngine::PBRMaterial>("Red PBR");
+    pbrMat->SetAlbedoColor(glm::vec4(0.9F, 0.2F, 0.2F, 1.0F));
+    pbrMat->SetMetallic(0.1F);
+    pbrMat->SetRoughness(0.6F);
+    renderer.MaterialData = pbrMat->GetMaterial();
+    m_Materials.push_back(pbrMat);
+  }
+
+  // ===== Green Sphere =====
+  {
+    BeEngine::Entity sphere = m_ActiveScene->CreateEntity("Green Sphere");
+    auto &transform = sphere.GetComponent<BeEngine::TransformComponent>();
+    transform.SetPosition({0.0F, 0.5F, 0.0F});
+
+    auto &renderer = sphere.AddComponent<BeEngine::MeshRendererComponent>();
+    renderer.MeshData = BeEngine::MeshFactory::CreateSphere(0.5F, 32, 16);
+
+    auto pbrMat = BeEngine::CreateRef<BeEngine::PBRMaterial>("Green PBR");
+    pbrMat->SetAlbedoColor(glm::vec4(0.2F, 0.9F, 0.3F, 1.0F));
+    pbrMat->SetMetallic(0.8F);
+    pbrMat->SetRoughness(0.2F);
+    renderer.MaterialData = pbrMat->GetMaterial();
+    m_Materials.push_back(pbrMat);
+  }
+
+  // ===== Blue Cube =====
+  {
+    BeEngine::Entity cube = m_ActiveScene->CreateEntity("Blue Cube");
+    auto &transform = cube.GetComponent<BeEngine::TransformComponent>();
+    transform.SetPosition({2.0F, 0.5F, 0.0F});
+
+    auto &renderer = cube.AddComponent<BeEngine::MeshRendererComponent>();
+    renderer.MeshData = BeEngine::MeshFactory::CreateCube();
+
+    auto pbrMat = BeEngine::CreateRef<BeEngine::PBRMaterial>("Blue PBR");
+    pbrMat->SetAlbedoColor(glm::vec4(0.2F, 0.3F, 0.9F, 1.0F));
+    pbrMat->SetMetallic(0.5F);
+    pbrMat->SetRoughness(0.4F);
+    renderer.MaterialData = pbrMat->GetMaterial();
+    m_Materials.push_back(pbrMat);
+  }
+
+  // ===== Damaged Helmet (glTF Model) =====
+  {
+    BeEngine::Entity helmet = m_ActiveScene->CreateEntity("Damaged Helmet");
+    auto &transform = helmet.GetComponent<BeEngine::TransformComponent>();
+    transform.SetPosition({0.0F, 1.5F, -3.0F});
+    transform.SetScale({0.8F, 0.8F, 0.8F});
+
+    auto &renderer = helmet.AddComponent<BeEngine::ModelRendererComponent>();
+    renderer.ModelData =
+        BeEngine::Model::Load("BeEngine/Assets/DamagedHelmet.glb");
+
+    if (!renderer.ModelData || !renderer.ModelData->IsValid()) {
+      BE_WARN("Failed to load DamagedHelmet.glb");
     }
-    m_CubeTransform.SetRotation(m_CubeEulerAngles); // Apply euler to transform
+  }
+
+  // ===== Entity Hierarchy Example =====
+  {
+    // Parent
+    BeEngine::Entity parent = m_ActiveScene->CreateEntity("Rotating Platform");
+    auto &parentTransform = parent.GetComponent<BeEngine::TransformComponent>();
+    parentTransform.SetPosition({-5.0F, 0.5F, -3.0F});
+
+    auto &parentRenderer =
+        parent.AddComponent<BeEngine::MeshRendererComponent>();
+    parentRenderer.MeshData = BeEngine::MeshFactory::CreateCube();
+
+    auto platformMat = BeEngine::CreateRef<BeEngine::PBRMaterial>("Platform");
+    platformMat->SetAlbedoColor(glm::vec4(0.5F, 0.5F, 0.5F, 1.0F));
+    platformMat->SetMetallic(0.3F);
+    platformMat->SetRoughness(0.7F);
+    parentRenderer.MaterialData = platformMat->GetMaterial();
+    m_Materials.push_back(platformMat);
+
+    // Child 1 - Left sphere
+    BeEngine::Entity child1 = m_ActiveScene->CreateEntity("Orbiting Sphere 1");
+    auto &child1Transform = child1.GetComponent<BeEngine::TransformComponent>();
+    child1Transform.SetPosition({-1.5F, 1.0F, 0.0F});
+    child1Transform.SetScale({0.3F, 0.3F, 0.3F});
+    m_ActiveScene->SetParent(child1, parent);
+
+    auto &child1Renderer =
+        child1.AddComponent<BeEngine::MeshRendererComponent>();
+    child1Renderer.MeshData = BeEngine::MeshFactory::CreateSphere(1.0F, 16, 8);
+
+    auto orbit1Mat = BeEngine::CreateRef<BeEngine::PBRMaterial>("Orbit1");
+    orbit1Mat->SetAlbedoColor(glm::vec4(1.0F, 0.8F, 0.2F, 1.0F));
+    orbit1Mat->SetMetallic(0.9F);
+    orbit1Mat->SetRoughness(0.1F);
+    child1Renderer.MaterialData = orbit1Mat->GetMaterial();
+    m_Materials.push_back(orbit1Mat);
+
+    // Child 2 - Right sphere
+    BeEngine::Entity child2 = m_ActiveScene->CreateEntity("Orbiting Sphere 2");
+    auto &child2Transform = child2.GetComponent<BeEngine::TransformComponent>();
+    child2Transform.SetPosition({1.5F, 1.0F, 0.0F});
+    child2Transform.SetScale({0.3F, 0.3F, 0.3F});
+    m_ActiveScene->SetParent(child2, parent);
+
+    auto &child2Renderer =
+        child2.AddComponent<BeEngine::MeshRendererComponent>();
+    child2Renderer.MeshData = BeEngine::MeshFactory::CreateSphere(1.0F, 16, 8);
+
+    auto orbit2Mat = BeEngine::CreateRef<BeEngine::PBRMaterial>("Orbit2");
+    orbit2Mat->SetAlbedoColor(glm::vec4(0.2F, 0.8F, 1.0F, 1.0F));
+    orbit2Mat->SetMetallic(0.9F);
+    orbit2Mat->SetRoughness(0.1F);
+    child2Renderer.MaterialData = orbit2Mat->GetMaterial();
+    m_Materials.push_back(orbit2Mat);
+  }
+}
+
+// ============================================================================
+// Update
+// ============================================================================
+
+void SandboxLayer3D::OnUpdate(BeEngine::Timestep ts) {
+  // Update editor camera
+  if (m_ViewportFocused && m_UseEditorCamera) {
+    m_EditorCamera->OnUpdate(ts);
+  }
+
+  // Update scene (transforms, scripts, etc.)
+  if (m_ActiveScene) {
+    m_ActiveScene->OnUpdate(ts.GetSeconds());
+
+    // Example: Rotate the platform entity
+    BeEngine::Entity platform =
+        m_ActiveScene->FindEntityByName("Rotating Platform");
+    if (platform.IsValid()) {
+      auto &transform = platform.GetComponent<BeEngine::TransformComponent>();
+      glm::vec3 rotation = glm::eulerAngles(transform.GetRotation());
+      rotation.y += glm::radians(30.0F) * ts.GetSeconds();
+      transform.SetRotation(glm::quat(rotation));
+    }
   }
 
   // Handle viewport resize
@@ -123,31 +259,54 @@ void SandboxLayer3D::OnUpdate(BeEngine::Timestep ts) {
        static_cast<uint32_t>(m_ViewportSize.y) != spec.Height)) {
     m_Framebuffer->Resize(static_cast<uint32_t>(m_ViewportSize.x),
                           static_cast<uint32_t>(m_ViewportSize.y));
-    m_CameraController->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+    m_EditorCamera->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+    m_SceneRenderer.SetViewport(static_cast<uint32_t>(m_ViewportSize.x),
+                                static_cast<uint32_t>(m_ViewportSize.y));
   }
 }
 
 void SandboxLayer3D::OnEvent(BeEngine::Event &event) {
-  m_CameraController->OnEvent(event);
+  if (m_UseEditorCamera) {
+    m_EditorCamera->OnEvent(event);
+  }
 }
 
+// ============================================================================
+// Rendering
+// ============================================================================
+
 void SandboxLayer3D::OnRender() {
-  if (!m_Framebuffer) {
+  if (!m_Framebuffer || !m_ActiveScene) {
     return;
   }
 
   m_Framebuffer->Bind();
 
-  glClearColor(0.1F, 0.1F, 0.12F, 1.0F);
+  glClearColor(0.08F, 0.08F, 0.1F, 1.0F);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
 
-  auto viewProj = m_CameraController->GetCamera().GetViewProjectionMatrix();
-  auto camPos = m_CameraController->GetPosition();
+  // Get camera matrices
+  glm::mat4 viewProj;
+  glm::vec3 camPos;
 
-  // =====================================================
-  // 1. DRAW GRID (uses its own simple shader)
-  // =====================================================
+  if (m_UseEditorCamera) {
+    viewProj = m_EditorCamera->GetCamera().GetViewProjectionMatrix();
+    camPos = m_EditorCamera->GetPosition();
+  } else {
+    BeEngine::Entity primaryCam = m_ActiveScene->GetPrimaryCamera();
+    if (primaryCam.IsValid()) {
+      auto &cam = primaryCam.GetComponent<BeEngine::CameraComponent>();
+      viewProj = cam.ViewProjectionMatrix;
+      auto &transform = primaryCam.GetComponent<BeEngine::TransformComponent>();
+      camPos = glm::vec3(transform.WorldMatrix[3]);
+    } else {
+      m_Framebuffer->Unbind();
+      return;
+    }
+  }
+
+  // Draw editor grid
   if (m_GridShader && m_GridVAO) {
     glDisable(GL_CULL_FACE);
     m_GridShader->Bind();
@@ -157,79 +316,31 @@ void SandboxLayer3D::OnRender() {
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(m_GridVertexCount));
   }
 
-  // =====================================================
-  // 2. DRAW GROUND PLANE (Unlit - no lighting)
-  // =====================================================
-  if (m_UnlitMat && m_PlaneMesh) {
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-
-    m_UnlitMat->Bind();
-    m_UnlitMat->GetShader()->SetMat4("u_ViewProjection", viewProj);
-
-    glm::mat4 model =
-        glm::translate(glm::mat4(1.0F), glm::vec3(0.0F, 0.0F, 0.0F));
-    m_UnlitMat->GetShader()->SetMat4("u_Model", model);
-
-    m_PlaneMesh->Bind();
-    glDrawElements(GL_TRIANGLES, m_PlaneMesh->GetIndexCount(), GL_UNSIGNED_INT,
-                   nullptr);
-  }
-
-  // =====================================================
-  // 3. DRAW CUBE (PBR - realistic lighting)
-  // =====================================================
-  if (m_PBRMat && m_CubeMesh) {
-    m_PBRMat->Bind();
-    m_LightManager.UploadToShader(m_PBRMat->GetShader(), camPos);
-
-    glm::mat4 model = m_CubeTransform.GetWorldMatrix();
-    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
-
-    m_PBRMat->GetShader()->SetMat4("u_ViewProjection", viewProj);
-    m_PBRMat->GetShader()->SetMat4("u_Model", model);
-    m_PBRMat->GetShader()->SetMat3("u_NormalMatrix", normalMatrix);
-
-    m_CubeMesh->Bind();
-    glDrawElements(GL_TRIANGLES, m_CubeMesh->GetIndexCount(), GL_UNSIGNED_INT,
-                   nullptr);
-  }
-
-  // =====================================================
-  // 4. DRAW SPHERE (Phong - classic lighting)
-  // =====================================================
-  if (m_PhongMat && m_SphereMesh) {
-    m_PhongMat->Bind();
-    m_LightManager.UploadToShader(m_PhongMat->GetShader(), camPos);
-
-    glm::mat4 model = m_SphereTransform.GetWorldMatrix();
-    glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
-
-    m_PhongMat->GetShader()->SetMat4("u_ViewProjection", viewProj);
-    m_PhongMat->GetShader()->SetMat4("u_Model", model);
-    m_PhongMat->GetShader()->SetMat3("u_NormalMatrix", normalMatrix);
-
-    m_SphereMesh->Bind();
-    glDrawElements(GL_TRIANGLES, m_SphereMesh->GetIndexCount(), GL_UNSIGNED_INT,
-                   nullptr);
-  }
-
-  if (m_LoadedModel && m_LoadedModel->IsValid()) {
-    BeEngine::ModelRenderer::Render(m_LoadedModel, m_ModelTransform, viewProj,
-                                    camPos, m_LightManager);
-  }
+  // Render scene
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+  m_SceneRenderer.RenderScene(*m_ActiveScene, viewProj, camPos);
 
   m_Framebuffer->Unbind();
 }
 
+// ============================================================================
+// ImGui
+// ============================================================================
+
 void SandboxLayer3D::OnImGuiRender() {
-  // Viewport window
+  DrawViewportPanel();
+  DrawSceneHierarchyPanel();
+  DrawInspectorPanel();
+  DrawSceneSettingsPanel();
+}
+
+void SandboxLayer3D::DrawViewportPanel() {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-  ImGui::Begin("Viewport");
+  ImGui::Begin("3D Viewport");
 
   m_ViewportFocused = ImGui::IsWindowFocused();
   m_ViewportHovered = ImGui::IsWindowHovered();
-
   BeEngine::Application::Get().SetBlockEvents(!m_ViewportHovered);
 
   ImVec2 viewportSize = ImGui::GetContentRegionAvail();
@@ -242,235 +353,242 @@ void SandboxLayer3D::OnImGuiRender() {
 
   ImGui::End();
   ImGui::PopStyleVar();
+}
 
-  // Camera info window
-  ImGui::Begin("Camera");
-  auto camPos = m_CameraController->GetPosition();
-  ImGui::Text("Position: (%.2f, %.2f, %.2f)", camPos.x, camPos.y, camPos.z);
-  ImGui::Text("Yaw: %.1f  Pitch: %.1f", m_CameraController->GetYaw(),
-              m_CameraController->GetPitch());
+void SandboxLayer3D::DrawSceneHierarchyPanel() {
+  ImGui::Begin("Scene Hierarchy");
 
-  float speed = m_CameraController->GetMoveSpeed();
-  bool sprinting = m_CameraController->IsSprinting();
-  if (sprinting) {
-    ImGui::TextColored(ImVec4(1.0F, 0.5F, 0.0F, 1.0F),
-                       "Speed: %.1f (SPRINTING)",
-                       speed * m_CameraController->GetSprintMultiplier());
-  } else {
-    ImGui::Text("Speed: %.1f", speed);
-  }
-
-  ImGui::Text("FOV: %.1f", m_CameraController->GetCamera().GetFOV());
-  ImGui::End();
-
-  // =====================================================
-  // PBR MATERIAL PROPERTIES (Cube)
-  // =====================================================
-  ImGui::Begin("PBR Material (Cube)");
-
-  if (m_PBRMat) {
-    ImGui::Text("Material: %s", m_PBRMat->GetName().c_str());
+  if (m_ActiveScene) {
+    ImGui::Text("Scene: %s", m_ActiveScene->GetName().c_str());
+    ImGui::Text("Entities: %zu", m_ActiveScene->GetEntityCount());
     ImGui::Separator();
 
-    // Albedo color
-    static glm::vec4 albedoColor = m_PBRMat->GetAlbedoColor();
-    if (ImGui::ColorEdit4("Albedo Color", &albedoColor.x)) {
-      m_PBRMat->SetAlbedoColor(albedoColor);
+    // Draw root entities
+    for (BeEngine::Entity entity : m_ActiveScene->GetRootEntities()) {
+      DrawEntityNode(entity);
     }
 
-    // Metallic slider
-    static float metallic = m_PBRMat->GetMetallic();
-    if (ImGui::SliderFloat("Metallic", &metallic, 0.0F, 1.0F)) {
-      m_PBRMat->SetMetallic(metallic);
+    // Right-click context menu for creating entities
+    if (ImGui::BeginPopupContextWindow(nullptr,
+                                       ImGuiPopupFlags_NoOpenOverItems |
+                                           ImGuiPopupFlags_MouseButtonRight)) {
+      if (ImGui::MenuItem("Create Empty Entity")) {
+        m_ActiveScene->CreateEntity("New Entity");
+      }
+      if (ImGui::MenuItem("Create Cube")) {
+        auto entity = m_ActiveScene->CreateEntity("Cube");
+        auto &renderer = entity.AddComponent<BeEngine::MeshRendererComponent>();
+        renderer.MeshData = BeEngine::MeshFactory::CreateCube();
+
+        auto pbrMat = BeEngine::CreateRef<BeEngine::PBRMaterial>("Default");
+        renderer.MaterialData = pbrMat->GetMaterial();
+        m_Materials.push_back(pbrMat);
+      }
+      if (ImGui::MenuItem("Create Sphere")) {
+        auto entity = m_ActiveScene->CreateEntity("Sphere");
+        auto &renderer = entity.AddComponent<BeEngine::MeshRendererComponent>();
+        renderer.MeshData = BeEngine::MeshFactory::CreateSphere(0.5F, 32, 16);
+
+        auto pbrMat = BeEngine::CreateRef<BeEngine::PBRMaterial>("Default");
+        renderer.MaterialData = pbrMat->GetMaterial();
+        m_Materials.push_back(pbrMat);
+      }
+      ImGui::EndPopup();
     }
-
-    // Roughness slider
-    static float roughness = m_PBRMat->GetRoughness();
-    if (ImGui::SliderFloat("Roughness", &roughness, 0.04F, 1.0F)) {
-      m_PBRMat->SetRoughness(roughness);
-    }
-
-    // AO slider
-    static float ao = m_PBRMat->GetAO();
-    if (ImGui::SliderFloat("Ambient Occlusion", &ao, 0.0F, 1.0F)) {
-      m_PBRMat->SetAO(ao);
-    }
-  }
-
-  ImGui::End();
-
-  // =====================================================
-  // PHONG MATERIAL PROPERTIES (Sphere)
-  // =====================================================
-  ImGui::Begin("Phong Material (Sphere)");
-
-  if (m_PhongMat) {
-    ImGui::Text("Material: %s", m_PhongMat->GetName().c_str());
-    ImGui::Separator();
-
-    // Diffuse color
-    static glm::vec4 diffuseColor = m_PhongMat->GetDiffuseColor();
-    if (ImGui::ColorEdit4("Diffuse Color", &diffuseColor.x)) {
-      m_PhongMat->SetDiffuseColor(diffuseColor);
-    }
-
-    // Specular color
-    static glm::vec4 specularColor = m_PhongMat->GetSpecularColor();
-    if (ImGui::ColorEdit4("Specular Color", &specularColor.x)) {
-      m_PhongMat->SetSpecularColor(specularColor);
-    }
-
-    // Shininess slider
-    static float shininess = m_PhongMat->GetShininess();
-    if (ImGui::SliderFloat("Shininess", &shininess, 1.0F, 256.0F)) {
-      m_PhongMat->SetShininess(shininess);
-    }
-  }
-
-  ImGui::End();
-
-  // =====================================================
-  // LIGHTING
-  // =====================================================
-  ImGui::Begin("Lighting");
-
-  // Ambient
-  ImGui::Text("Ambient Light");
-  auto &ambient = m_LightManager.GetAmbientLight();
-  ImGui::ColorEdit3("Ambient Color", &ambient.Color.x);
-
-  ImGui::Separator();
-
-  // Directional Light
-  ImGui::Text("Directional Light");
-  auto &dirLight = m_LightManager.GetDirectionalLight();
-  ImGui::Checkbox("Dir Light Enabled", &dirLight.Enabled);
-  ImGui::DragFloat3("Direction", &dirLight.Direction.x, 0.01F);
-  ImGui::ColorEdit3("Dir Color", &dirLight.Color.x);
-  ImGui::SliderFloat("Dir Intensity", &dirLight.Intensity, 0.0F, 5.0F);
-
-  ImGui::Separator();
-
-  // Point Lights
-  ImGui::Text("Point Lights (%d)", m_LightManager.GetPointLightCount());
-  auto &pointLights = m_LightManager.GetPointLights();
-  for (size_t i = 0; i < pointLights.size(); i++) {
-    ImGui::PushID(static_cast<int>(i));
-    if (ImGui::TreeNode("Point Light", "Point Light %zu", i)) {
-      ImGui::Checkbox("Enabled", &pointLights[i].Enabled);
-      ImGui::DragFloat3("Position", &pointLights[i].Position.x, 0.1F);
-      ImGui::ColorEdit3("Color", &pointLights[i].Color.x);
-      ImGui::SliderFloat("Intensity", &pointLights[i].Intensity, 0.0F, 10.0F);
-      ImGui::SliderFloat("Range", &pointLights[i].Range, 1.0F, 50.0F);
-      ImGui::TreePop();
-    }
-    ImGui::PopID();
-  }
-
-  ImGui::End();
-
-  // =====================================================
-  // SCENE (Transforms)
-  // =====================================================
-  ImGui::Begin("Scene");
-
-  ImGui::Text("Cube Transform");
-  glm::vec3 cubePos = m_CubeTransform.GetPosition();
-  if (ImGui::DragFloat3("Cube Position", &cubePos.x, 0.1F)) {
-    m_CubeTransform.SetPosition(cubePos);
-  }
-
-  if (ImGui::DragFloat3("Cube Rotation", &m_CubeEulerAngles.x, 1.0F)) {
-    m_CubeTransform.SetRotation(m_CubeEulerAngles);
-  }
-
-  glm::vec3 cubeScale = m_CubeTransform.GetScale();
-  if (ImGui::DragFloat3("Cube Scale", &cubeScale.x, 0.1F, 0.1F, 10.0F)) {
-    m_CubeTransform.SetScale(cubeScale);
-  }
-
-  ImGui::Checkbox("Auto Rotate", &m_AutoRotate);
-
-  ImGui::Separator();
-
-  ImGui::Text("Sphere Transform");
-  glm::vec3 spherePos = m_SphereTransform.GetPosition();
-  if (ImGui::DragFloat3("Sphere Position", &spherePos.x, 0.1F)) {
-    m_SphereTransform.SetPosition(spherePos);
-  }
-
-  ImGui::Separator();
-
-  if (ImGui::Button("Reset Scene")) {
-    m_CubeTransform.Reset();
-    m_CubeTransform.SetPosition(0.0F, 0.5F, 0.0F);
-    m_CubeEulerAngles = {0.0F, 0.0F, 0.0F};
-
-    m_SphereTransform.Reset();
-    m_SphereTransform.SetPosition(-2.0F, 0.5F, 0.0F);
-
-    m_CameraController->SetPosition({3.0F, 2.0F, 5.0F});
-    m_CameraController->SetYaw(-120.0F);
-    m_CameraController->SetPitch(-15.0F);
-  }
-
-  ImGui::Separator();
-
-  // Mesh info
-  if (m_CubeMesh) {
-    ImGui::Text("Cube Mesh: %u verts, %u tris", m_CubeMesh->GetVertexCount(),
-                m_CubeMesh->GetTriangleCount());
-  }
-  if (m_SphereMesh) {
-    ImGui::Text("Sphere Mesh: %u verts, %u tris",
-                m_SphereMesh->GetVertexCount(),
-                m_SphereMesh->GetTriangleCount());
   }
 
   ImGui::End();
 }
 
+void SandboxLayer3D::DrawEntityNode(BeEngine::Entity entity) {
+  auto &tag = entity.GetComponent<BeEngine::TagComponent>();
+  auto children = m_ActiveScene->GetChildren(entity);
+
+  ImGuiTreeNodeFlags flags =
+      ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+  if (children.empty()) {
+    flags |= ImGuiTreeNodeFlags_Leaf;
+  }
+  if (m_SelectedEntity == entity) {
+    flags |= ImGuiTreeNodeFlags_Selected;
+  }
+
+  bool opened = ImGui::TreeNodeEx(
+      reinterpret_cast<void *>(static_cast<uint64_t>(entity.GetUUID())), flags,
+      "%s", tag.Tag.c_str());
+
+  if (ImGui::IsItemClicked()) {
+    m_SelectedEntity = entity;
+  }
+
+  // Context menu
+  if (ImGui::BeginPopupContextItem()) {
+    if (ImGui::MenuItem("Delete Entity")) {
+      if (m_SelectedEntity == entity) {
+        m_SelectedEntity = BeEngine::Entity();
+      }
+      m_ActiveScene->DestroyEntity(entity);
+    }
+    ImGui::EndPopup();
+  }
+
+  if (opened) {
+    for (BeEngine::Entity child : children) {
+      DrawEntityNode(child);
+    }
+    ImGui::TreePop();
+  }
+}
+
+void SandboxLayer3D::DrawInspectorPanel() {
+  ImGui::Begin("Inspector");
+
+  if (m_SelectedEntity.IsValid()) {
+    auto &tag = m_SelectedEntity.GetComponent<BeEngine::TagComponent>();
+
+    // Tag/Name
+    char buffer[256];
+    strncpy(buffer, tag.Tag.c_str(), sizeof(buffer));
+    if (ImGui::InputText("Name", buffer, sizeof(buffer))) {
+      tag.Tag = std::string(buffer);
+    }
+
+    ImGui::Separator();
+
+    // Transform
+    if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+      auto &transform =
+          m_SelectedEntity.GetComponent<BeEngine::TransformComponent>();
+
+      glm::vec3 position = transform.GetPosition();
+      if (ImGui::DragFloat3("Position", &position.x, 0.1F)) {
+        transform.SetPosition(position);
+      }
+
+      glm::vec3 rotation =
+          glm::degrees(glm::eulerAngles(transform.GetRotation()));
+      if (ImGui::DragFloat3("Rotation", &rotation.x, 1.0F)) {
+        transform.SetRotation(glm::radians(rotation));
+      }
+
+      glm::vec3 scale = transform.GetScale();
+      if (ImGui::DragFloat3("Scale", &scale.x, 0.1F)) {
+        transform.SetScale(scale);
+      }
+    }
+
+    // Camera Component
+    if (m_SelectedEntity.HasComponent<BeEngine::CameraComponent>()) {
+      if (ImGui::CollapsingHeader("Camera")) {
+        auto &camera =
+            m_SelectedEntity.GetComponent<BeEngine::CameraComponent>();
+        ImGui::Checkbox("Primary", &camera.Primary);
+        ImGui::SliderFloat("FOV", &camera.FOV, 1.0F, 120.0F);
+        ImGui::DragFloat("Near Clip", &camera.NearClip, 0.01F, 0.001F, 10.0F);
+        ImGui::DragFloat("Far Clip", &camera.FarClip, 1.0F, 10.0F, 10000.0F);
+      }
+    }
+
+    // Mesh Renderer Component
+    if (m_SelectedEntity.HasComponent<BeEngine::MeshRendererComponent>()) {
+      if (ImGui::CollapsingHeader("Mesh Renderer")) {
+        auto &renderer =
+            m_SelectedEntity.GetComponent<BeEngine::MeshRendererComponent>();
+        ImGui::Checkbox("Visible", &renderer.Visible);
+        ImGui::Checkbox("Cast Shadows", &renderer.CastShadows);
+        ImGui::Checkbox("Receive Shadows", &renderer.ReceiveShadows);
+      }
+    }
+
+    // Point Light Component
+    if (m_SelectedEntity.HasComponent<BeEngine::PointLightComponent>()) {
+      if (ImGui::CollapsingHeader("Point Light")) {
+        auto &light =
+            m_SelectedEntity.GetComponent<BeEngine::PointLightComponent>();
+        ImGui::ColorEdit3("Color", &light.Color.x);
+        ImGui::SliderFloat("Intensity", &light.Intensity, 0.0F, 20.0F);
+        ImGui::SliderFloat("Range", &light.Range, 0.1F, 100.0F);
+      }
+    }
+
+    // Directional Light Component
+    if (m_SelectedEntity.HasComponent<BeEngine::DirectionalLightComponent>()) {
+      if (ImGui::CollapsingHeader("Directional Light")) {
+        auto &light = m_SelectedEntity
+                          .GetComponent<BeEngine::DirectionalLightComponent>();
+        ImGui::ColorEdit3("Color", &light.Color.x);
+        ImGui::SliderFloat("Intensity", &light.Intensity, 0.0F, 10.0F);
+        ImGui::Checkbox("Cast Shadows", &light.CastShadows);
+      }
+    }
+
+  } else {
+    ImGui::TextDisabled("Select an entity to inspect");
+  }
+
+  ImGui::End();
+}
+
+void SandboxLayer3D::DrawSceneSettingsPanel() {
+  ImGui::Begin("Scene Settings");
+
+  // Camera mode
+  ImGui::Checkbox("Use Editor Camera", &m_UseEditorCamera);
+
+  if (m_UseEditorCamera) {
+    auto camPos = m_EditorCamera->GetPosition();
+    ImGui::Text("Camera: (%.1f, %.1f, %.1f)", camPos.x, camPos.y, camPos.z);
+  }
+
+  ImGui::Separator();
+
+  // Lighting
+  auto &lightManager = m_SceneRenderer.GetLightManager();
+  auto &ambient = lightManager.GetAmbientLight();
+  ImGui::ColorEdit3("Ambient Light", &ambient.Color.x);
+
+  ImGui::Separator();
+
+  // Save/Load
+  if (ImGui::Button("Save Scene")) {
+    m_SceneManager.SaveScene("Assets/Scenes/DemoScene.scene");
+  }
+  ImGui::SameLine();
+  if (ImGui::Button("Load Scene")) {
+    m_SceneManager.LoadScene("Assets/Scenes/DemoScene.scene");
+    m_ActiveScene = m_SceneManager.GetActiveScene();
+    m_SelectedEntity = BeEngine::Entity();
+  }
+
+  ImGui::End();
+}
+
+// ============================================================================
+// Grid Setup
+// ============================================================================
+
 void SandboxLayer3D::SetupGrid() {
-  BE_INFO("Setting up grid...");
-
   std::vector<float> gridVertices;
-  const int gridSize = 10;
+  const int gridSize = 20;
   const float gridStep = 1.0F;
-  const float gridY = 0.0F;
 
-  // Generate grid lines
   for (int i = -gridSize; i <= gridSize; ++i) {
     float pos = static_cast<float>(i) * gridStep;
+    float alpha = (i == 0) ? 0.6F : 0.25F;
 
-    // Lines parallel to Z axis
-    gridVertices.push_back(pos);
-    gridVertices.push_back(gridY);
-    gridVertices.push_back(static_cast<float>(-gridSize) * gridStep);
-    gridVertices.push_back(0.4F); // Color
-    gridVertices.push_back(0.4F);
-    gridVertices.push_back(0.4F);
+    // Z-parallel lines
+    gridVertices.insert(gridVertices.end(),
+                        {pos, 0.0F, static_cast<float>(-gridSize) * gridStep,
+                         alpha, alpha, alpha, pos, 0.0F,
+                         static_cast<float>(gridSize) * gridStep, alpha, alpha,
+                         alpha});
 
-    gridVertices.push_back(pos);
-    gridVertices.push_back(gridY);
-    gridVertices.push_back(static_cast<float>(gridSize) * gridStep);
-    gridVertices.push_back(0.4F);
-    gridVertices.push_back(0.4F);
-    gridVertices.push_back(0.4F);
-
-    // Lines parallel to X axis
-    gridVertices.push_back(static_cast<float>(-gridSize) * gridStep);
-    gridVertices.push_back(gridY);
-    gridVertices.push_back(pos);
-    gridVertices.push_back(0.4F);
-    gridVertices.push_back(0.4F);
-    gridVertices.push_back(0.4F);
-
-    gridVertices.push_back(static_cast<float>(gridSize) * gridStep);
-    gridVertices.push_back(gridY);
-    gridVertices.push_back(pos);
-    gridVertices.push_back(0.4F);
-    gridVertices.push_back(0.4F);
-    gridVertices.push_back(0.4F);
+    // X-parallel lines
+    gridVertices.insert(gridVertices.end(),
+                        {static_cast<float>(-gridSize) * gridStep, 0.0F, pos,
+                         alpha, alpha, alpha,
+                         static_cast<float>(gridSize) * gridStep, 0.0F, pos,
+                         alpha, alpha, alpha});
   }
 
   m_GridVertexCount = static_cast<uint32_t>(gridVertices.size() / 6);
@@ -484,17 +602,13 @@ void SandboxLayer3D::SetupGrid() {
                  {BeEngine::ShaderDataType::Float3, "a_Color"}});
   m_GridVAO->AddVertexBuffer(vb);
 
-  // Use same shader as cube (position + color)
   std::string vertexSrc = R"(
     #version 410 core
     layout(location = 0) in vec3 a_Position;
     layout(location = 1) in vec3 a_Color;
-
     uniform mat4 u_ViewProjection;
     uniform mat4 u_Model;
-
     out vec3 v_Color;
-
     void main() {
       v_Color = a_Color;
       gl_Position = u_ViewProjection * u_Model * vec4(a_Position, 1.0);
@@ -505,13 +619,10 @@ void SandboxLayer3D::SetupGrid() {
     #version 410 core
     in vec3 v_Color;
     layout(location = 0) out vec4 o_Color;
-
     void main() {
       o_Color = vec4(v_Color, 1.0);
     }
   )";
 
   m_GridShader = BeEngine::Shader::Create(vertexSrc, fragmentSrc);
-
-  BE_INFO("Grid setup complete with {} vertices", m_GridVertexCount);
 }

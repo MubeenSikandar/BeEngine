@@ -1,13 +1,11 @@
 // SandboxLayer3D.hpp
 #pragma once
-
 #include <Application.hpp>
 #include <PCH/BeEnginePCH.hpp>
 
 class SandboxLayer3D : public BeEngine::Layer {
 public:
   SandboxLayer3D() : Layer("SandboxLayer3D") {}
-
   void OnAttach() override;
   void OnDetach() override;
   void OnUpdate(BeEngine::Timestep ts) override;
@@ -16,44 +14,41 @@ public:
   void OnImGuiRender() override;
 
 private:
+  // Scene setup
+  void SetupScene();
   void SetupGrid();
 
-  BeEngine::Scope<BeEngine::PerspectiveCameraController> m_CameraController;
+  // ImGui panels
+  void DrawViewportPanel();
+  void DrawSceneHierarchyPanel();
+  void DrawInspectorPanel();
+  void DrawSceneSettingsPanel();
 
-  // Meshes (using Ref<Mesh>, NOT MeshFactory)
-  BeEngine::Ref<BeEngine::Mesh> m_CubeMesh;
-  BeEngine::Ref<BeEngine::Mesh> m_SphereMesh;
-  BeEngine::Ref<BeEngine::Mesh> m_PlaneMesh;
+  // Recursive hierarchy drawing
+  void DrawEntityNode(BeEngine::Entity entity);
 
-  // Grid (floor) - still using raw VAO since it's simple lines
+private:
+  // ===== Scene System =====
+  BeEngine::SceneManager m_SceneManager;
+  BeEngine::SceneRenderer m_SceneRenderer;
+  BeEngine::Scene *m_ActiveScene = nullptr;
+
+  // ===== Materials (keep specific material types alive) =====
+  std::vector<std::shared_ptr<void>> m_Materials; // Type-erased storage
+
+  // ===== Editor State =====
+  BeEngine::Scope<BeEngine::PerspectiveCameraController> m_EditorCamera;
+  BeEngine::Entity m_SelectedEntity;
+  bool m_UseEditorCamera = true;
+
+  // ===== Rendering =====
+  BeEngine::Ref<BeEngine::Framebuffer> m_Framebuffer;
   BeEngine::Ref<BeEngine::VertexArray> m_GridVAO;
   BeEngine::Ref<BeEngine::Shader> m_GridShader;
   uint32_t m_GridVertexCount = 0;
 
-  // Framebuffer
-  BeEngine::Ref<BeEngine::Framebuffer> m_Framebuffer;
-  glm::vec2 m_ViewportSize = {1280, 720};
+  // ===== Viewport State =====
+  glm::vec2 m_ViewportSize = {1280.0F, 720.0F};
   bool m_ViewportFocused = false;
   bool m_ViewportHovered = false;
-
-  // Transform
-  bool m_AutoRotate = true;
-  glm::vec3 m_CubeEulerAngles = {0.0F, 0.0F, 0.0F};
-  BeEngine::Transform m_CubeTransform;
-  BeEngine::Transform m_SphereTransform;
-
-  // Textures
-  BeEngine::Ref<BeEngine::Texture2D> m_CheckerTexture;
-  BeEngine::Ref<BeEngine::Texture2D> m_CubeTexture;
-
-  // Lighting
-  BeEngine::LightManager m_LightManager;
-
-  // Materials (using built-in material types)
-  BeEngine::Scope<BeEngine::UnlitMaterial> m_UnlitMat;
-  BeEngine::Scope<BeEngine::PhongMaterial> m_PhongMat;
-  BeEngine::Scope<BeEngine::PBRMaterial> m_PBRMat;
-
-  BeEngine::Ref<BeEngine::Model> m_LoadedModel;
-  BeEngine::Transform m_ModelTransform;
 };

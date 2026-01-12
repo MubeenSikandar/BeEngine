@@ -1,10 +1,21 @@
 // Sandbox/SandboxApp.cpp
-#include "SandboxLayer.hpp"
+#include "SandboxLayer2D.hpp"
 #include "SandboxLayer3D.hpp"
 #include <Application.hpp>
 #include <EntryPoint.hpp>
 #include <PCH/BeEnginePCH.hpp>
 
+/**
+ * @brief Main Sandbox Application
+ *
+ * Demonstrates BeEngine features:
+ * - Scene/ECS System
+ * - 2D and 3D rendering
+ * - glTF model loading
+ * - Material system (PBR, Phong, Unlit)
+ * - Lighting (Directional, Point, Spot)
+ * - Scene serialization
+ */
 class Sandbox : public BeEngine::Application {
 public:
   Sandbox() {
@@ -13,9 +24,19 @@ public:
     BE_INFO("╚════════════════════════════════════════╝");
 
     // Push your layers
-    PushLayer(std::make_shared<SandboxLayer3D>());
+    m_Layer3D = BeEngine::CreateRef<SandboxLayer3D>();
+    m_Layer2D = BeEngine::CreateRef<SandboxLayer2D>();
 
     BE_INFO("Sandbox Application created!");
+
+    // Start with 3D mode
+    m_CurrentMode = Mode::Mode3D;
+    PushLayer(m_Layer3D);
+
+    SetupEventListeners();
+
+    BE_INFO("Sandbox initialized in 3D mode");
+    BE_INFO("Press F1 to switch to 2D mode, F2 for 3D mode");
 
     SetupEventListeners();
   }
@@ -27,32 +48,32 @@ public:
   }
 
   void OnImGuiRender() {
-    // Example dockable windows
+    // Main menu bar
+    if (ImGui::BeginMainMenuBar()) {
+      if (ImGui::BeginMenu("Mode")) {
+        if (ImGui::MenuItem("2D Mode", "F1", m_CurrentMode == Mode::Mode2D)) {
+          SwitchTo2D();
+        }
+        if (ImGui::MenuItem("3D Mode", "F2", m_CurrentMode == Mode::Mode3D)) {
+          SwitchTo3D();
+        }
+        ImGui::EndMenu();
+      }
+      ImGui::EndMainMenuBar();
+    }
 
-    // Statistics window
+    // Statistics panel
     ImGui::Begin("Statistics");
+    ImGui::Text("Mode: %s", m_CurrentMode == Mode::Mode3D ? "3D" : "2D");
+    ImGui::Separator();
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("Frame Time: %.3f ms", 1000.0F / ImGui::GetIO().Framerate);
-    ImGui::Text("Tick Count: %llu",
-                static_cast<long long unsigned>(m_TickCount));
-    ImGui::Text("Total Time: %.2f s", m_TotalTime);
-    ImGui::End();
 
-    // Controls window
-    ImGui::Begin("Controls");
-    ImGui::Text("Press ESC to close");
-    ImGui::Text("Press Space to do something");
-    if (ImGui::Button("Queue Close Event")) {
-      GetEventQueue().QueueEvent<BeEngine::WindowCloseEvent>();
-    }
-    ImGui::End();
-
-    // Debug window
-    ImGui::Begin("Debug Info");
-    ImGui::Text("Application: BeEngine Sandbox");
-    ImGui::Text("Renderer: OpenGL");
     ImGui::Separator();
-    ImGui::Checkbox("VSync", &m_VSync);
+    ImGui::Text("Controls:");
+    ImGui::Text("  F1 - Switch to 2D");
+    ImGui::Text("  F2 - Switch to 3D");
+    ImGui::Text("  ESC - Exit");
     ImGui::End();
   }
 
@@ -72,6 +93,30 @@ public:
   }
 
 private:
+  enum class Mode : uint8_t { Mode2D, Mode3D };
+
+  void SwitchTo2D() {
+    if (m_CurrentMode == Mode::Mode2D) {
+      return;
+    }
+
+    PopLayer(m_Layer3D);
+    PushLayer(m_Layer2D);
+    m_CurrentMode = Mode::Mode2D;
+    BE_INFO("Switched to 2D mode");
+  }
+
+  void SwitchTo3D() {
+    if (m_CurrentMode == Mode::Mode3D) {
+      return;
+    }
+
+    PopLayer(m_Layer2D);
+    PushLayer(m_Layer3D);
+    m_CurrentMode = Mode::Mode3D;
+    BE_INFO("Switched to 3D mode");
+  }
+
   void SetupEventListeners() {
     BE_INFO("Setting up event listeners...");
 
@@ -210,6 +255,9 @@ private:
   float m_TotalTime = 0.0F;
   bool m_HasRequestedClose{false};
   bool m_VSync{true};
+  BeEngine::Ref<SandboxLayer2D> m_Layer2D;
+  BeEngine::Ref<SandboxLayer3D> m_Layer3D;
+  Mode m_CurrentMode = Mode::Mode3D;
 };
 
 BeEngine::Application *BeEngine::CreateApplication() { return new Sandbox(); }

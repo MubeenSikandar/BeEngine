@@ -1,8 +1,8 @@
 // ModelLoader/Model.hpp
 #pragma once
 
-#include <BuiltInShaders/PBRMaterial.hpp>
 #include <Core.hpp>
+#include <MaterialSystem/PBRMaterial.hpp>
 #include <Math/Transform.hpp>
 #include <MeshSystem/Mesh.hpp>
 

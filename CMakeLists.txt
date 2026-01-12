@@ -70,6 +70,7 @@ add_subdirectory(BeEngine/vendor/GLM)
 add_subdirectory(BeEngine/vendor/imgui)
 add_subdirectory(BeEngine/vendor/STB)
 add_subdirectory(BeEngine/vendor/tinygltf)
+add_subdirectory(BeEngine/vendor/nlohmann_json)
 
 
 # ============================================
@@ -125,6 +126,11 @@ set(BEENGINE_SOURCES
     BeEngine/src/ModelLoader/GLTFLoader.cpp
     BeEngine/src/ModelLoader/Model.cpp
     BeEngine/src/ModelLoader/ModelRenderer.cpp
+    BeEngine/src/Scene/Scene.cpp
+    BeEngine/src/Scene/SceneManager.cpp
+    BeEngine/src/Scene/SceneRenderer.cpp
+    BeEngine/src/Scene/SceneSerializer.cpp
+    BeEngine/src/Scene/SceneSerializerDeserializer.cpp
 )
 
 if(BE_BUILD_SHARED)
@@ -163,6 +169,7 @@ target_link_libraries(BeEngine
         imgui
         stb
         tinygltf
+        nlohmann_json
 )
 
 
