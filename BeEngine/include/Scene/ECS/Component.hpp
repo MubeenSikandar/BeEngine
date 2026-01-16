@@ -1,3 +1,4 @@
+// Component.hpp
 #pragma once
 
 #include <Core.hpp>

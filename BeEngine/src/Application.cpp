@@ -1,11 +1,6 @@
 // src/Application.cpp
 #include <Application.hpp>
-#include <Core.hpp>
-#include <Input/Input.hpp>
-#include <Logs/Log.hpp>
-#include <Renderer/Renderer.hpp>
-#include <Renderer/RendererAPI.hpp>
-#include <Time/Time.hpp>
+#include <PCH/BeEnginePCH.hpp>
 
 namespace BeEngine {
 
@@ -68,6 +63,8 @@ Application::Application()
 Application::~Application() {
   BE_CORE_INFO("Cleaning Up application...");
 
+  ScriptAPI::Shutdown();
+
   // Shutdown renderer
   Renderer::Shutdown();
 
@@ -98,12 +95,22 @@ void Application::Run() {
     if (!m_Minimized) {
       // Fixed timestep updates (for physics/simulation)
       while (Time::ShouldRunFixedUpdate()) {
+
+        // Script fixed update
+        ScriptAPI::FixedUpdateScripts(Time::GetFixedDeltaTime());
+
         FixedUpdateLayers(Time::GetFixedDeltaTime());
         Time::ConsumeFixedTime();
       }
 
       // Variable timestep updates (for game logic)
       UpdateLayers(Timestep(Time::GetDeltaTime()));
+
+      // Script update
+      ScriptAPI::UpdateScripts(Time::GetDeltaTime());
+
+      // Script late update (after all other updates)
+      ScriptAPI::LateUpdateScripts(Time::GetDeltaTime());
     }
 
     if (!m_Minimized) {

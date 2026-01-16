@@ -106,6 +106,12 @@ private:
       ::BeEngine::Log::GetCoreLogger()->trace(__VA_ARGS__);                    \
   } while (0)
 
+#define BE_CORE_DEBUG(...)                                                     \
+  do {                                                                         \
+    if (BE_LOG_CHECK())                                                        \
+      ::BeEngine::Log::GetCoreLogger()->debug(__VA_ARGS__);                    \
+  } while (0)
+
 #define BE_CORE_INFO(...)                                                      \
   do {                                                                         \
     if (BE_LOG_CHECK())                                                        \
@@ -180,6 +186,7 @@ private:
 #else
   // Logging disabled
 #define BE_CORE_TRACE(...) ((void)0)
+#define BE_CORE_DEBUG(...) ((void)0)
 #define BE_CORE_INFO(...) ((void)0)
 #define BE_CORE_WARN(...) ((void)0)
 #define BE_CORE_ERROR(...) ((void)0)

@@ -1,5 +1,6 @@
 // Log.cpp
 #include <PCH/BeEnginePCH.hpp>
+#include <iostream>
 
 namespace BeEngine {
 

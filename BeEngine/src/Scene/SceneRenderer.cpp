@@ -33,12 +33,22 @@ void SceneRenderer::RenderScene(Scene &scene, Entity overrideCamera) {
 
 void SceneRenderer::RenderScene(Scene &scene, const glm::mat4 &viewProjection,
                                 const glm::vec3 &cameraPosition) {
+  // Reset stats at start of frame
+  ResetStats();
+
+  auto startTime = std::chrono::high_resolution_clock::now();
+
   // Collect lights from scene
   CollectLights(scene);
 
   // Render all renderable objects
   RenderMeshes(scene, viewProjection, cameraPosition);
   RenderModels(scene, viewProjection, cameraPosition);
+
+  // Calculate render time
+  auto endTime = std::chrono::high_resolution_clock::now();
+  m_Stats.RenderTimeMs =
+      std::chrono::duration<float, std::milli>(endTime - startTime).count();
 }
 
 void SceneRenderer::CollectLights(Scene &scene) {
@@ -108,6 +118,12 @@ void SceneRenderer::RenderMeshes(Scene &scene, const glm::mat4 &viewProjection,
           return;
         }
 
+        // TODO: Frustum culling would go here
+        // if (m_FrustumCullingEnabled && !IsInFrustum(transform,
+        // viewProjection)) {
+        //   return;
+        // }
+
         // Bind material
         meshRenderer.MaterialData->Bind();
         auto shader = meshRenderer.MaterialData->GetShader();
@@ -128,10 +144,14 @@ void SceneRenderer::RenderMeshes(Scene &scene, const glm::mat4 &viewProjection,
 
         // Draw
         meshRenderer.MeshData->Bind();
-        glDrawElements(
-            GL_TRIANGLES,
-            static_cast<GLsizei>(meshRenderer.MeshData->GetIndexCount()),
-            GL_UNSIGNED_INT, nullptr);
+        uint32_t indexCount = meshRenderer.MeshData->GetIndexCount();
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexCount),
+                       GL_UNSIGNED_INT, nullptr);
+
+        // Track stats
+        m_Stats.DrawCalls++;
+        m_Stats.TrianglesRendered += indexCount / 3;
+        m_Stats.EntitiesRendered++;
       });
 }
 
@@ -152,6 +172,31 @@ void SceneRenderer::RenderModels(Scene &scene, const glm::mat4 &viewProjection,
         // Use ModelRenderer to render the model
         ModelRenderer::Render(modelRenderer.ModelData, transform.WorldMatrix,
                               viewProjection, cameraPosition, m_LightManager);
+
+        // Track stats (approximate - ModelRenderer might do multiple draw
+        // calls)
+        m_Stats.DrawCalls++;
+        m_Stats.EntitiesRendered++;
+        // Note: Triangle count from models would need ModelRenderer to report
+        // back
       });
 }
+
+void SceneRenderer::ResetStats() {
+  m_Stats.DrawCalls = 0;
+  m_Stats.TrianglesRendered = 0;
+  m_Stats.EntitiesRendered = 0;
+  m_Stats.RenderTimeMs = 0.0F;
+}
+
+void SceneRenderer::SetFrustumCulling(bool enabled) {
+  m_FrustumCullingEnabled = enabled;
+}
+
+void SceneRenderer::SetDebugMode(bool enabled) { m_DebugMode = enabled; }
+
+void SceneRenderer::DrawDebugBounds(bool enabled) {
+  // TODO: Implement when debug rendering system is ready
+}
+
 } // namespace BeEngine

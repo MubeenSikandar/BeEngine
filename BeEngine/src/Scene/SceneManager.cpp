@@ -32,6 +32,12 @@ bool SceneManager::SaveScene(const std::string &filepath) {
 }
 
 bool SceneManager::SaveScene(Scene &scene, const std::string &filepath) {
+  // Create parent directories if they don't exist
+  std::filesystem::path path(filepath);
+  if (path.has_parent_path()) {
+    std::filesystem::create_directories(path.parent_path());
+  }
+
   SceneSerializer serializer(scene);
   if (!serializer.Serialize(filepath)) {
     BE_CORE_ERROR("Failed to save scene '{}' to: {}", scene.GetName(),
@@ -118,8 +124,8 @@ std::vector<std::string> SceneManager::GetSceneNames() const {
 
 Scene *SceneManager::LoadScene(const std::string &filepath) {
   auto scene = CreateScope<Scene>();
-
   SceneSerializer serializer(*scene);
+
   if (!serializer.Deserialize(filepath)) {
     BE_CORE_ERROR("Failed to load scene from: {}", filepath);
     return nullptr;
@@ -130,9 +136,7 @@ Scene *SceneManager::LoadScene(const std::string &filepath) {
   // Remove existing scene with same name if any
   if (m_Scenes.find(name) != m_Scenes.end()) {
     BE_CORE_WARN("Replacing existing scene: '{}'", name);
-    if (m_ActiveScene == m_Scenes[name].get()) {
-      m_ActiveScene = nullptr;
-    }
+    RemoveScene(name);
   }
 
   Scene *scenePtr = scene.get();
@@ -140,11 +144,79 @@ Scene *SceneManager::LoadScene(const std::string &filepath) {
 
   BE_CORE_INFO("Loaded scene: '{}' from {}", name, filepath);
 
-  // Set as active if no active scene
-  if (m_ActiveScene == nullptr) {
-    SetActiveScene(scenePtr);
+  // Set as active
+  SetActiveScene(scenePtr);
+
+  return scenePtr;
+}
+
+void SceneManager::LoadSceneAsync(const std::string &filepath,
+                                  std::function<void(Scene *)> onComplete) {
+  m_IsLoading = true;
+
+  std::thread([this, filepath, onComplete]() {
+    auto scene = CreateScope<Scene>();
+    SceneSerializer serializer(*scene);
+
+    if (serializer.Deserialize(filepath)) {
+      std::lock_guard<std::mutex> lock(m_PendingMutex);
+      m_PendingLoads.push_back({std::move(scene), onComplete});
+    } else {
+      BE_CORE_ERROR("Failed to async load scene from: {}", filepath);
+      if (onComplete) {
+        onComplete(nullptr);
+      }
+    }
+
+    m_IsLoading = false;
+  }).detach();
+}
+
+void SceneManager::ProcessPendingLoads() {
+  std::lock_guard<std::mutex> lock(m_PendingMutex);
+
+  for (auto &pending : m_PendingLoads) {
+    const std::string &name = pending.LoadedScene->GetName();
+    Scene *scenePtr = pending.LoadedScene.get();
+    m_Scenes[name] = std::move(pending.LoadedScene);
+
+    if (pending.Callback) {
+      pending.Callback(scenePtr);
+    }
   }
 
+  m_PendingLoads.clear();
+}
+
+Scene *SceneManager::LoadSceneAdditive(const std::string &filepath) {
+  auto scene = CreateScope<Scene>();
+  SceneSerializer serializer(*scene);
+
+  if (!serializer.Deserialize(filepath)) {
+    BE_CORE_ERROR("Failed to load scene additively from: {}", filepath);
+    return nullptr;
+  }
+
+  const std::string &name = scene->GetName();
+
+  // If scene with same name exists, generate unique name
+  std::string uniqueName = name;
+  int counter = 1;
+  while (m_Scenes.find(uniqueName) != m_Scenes.end()) {
+    uniqueName = name + "_" + std::to_string(counter++);
+  }
+
+  if (uniqueName != name) {
+    scene->SetName(uniqueName);
+    BE_CORE_WARN("Scene '{}' already exists, loaded as '{}'", name, uniqueName);
+  }
+
+  Scene *scenePtr = scene.get();
+  m_Scenes[uniqueName] = std::move(scene);
+
+  BE_CORE_INFO("Loaded scene additively: '{}' from {}", uniqueName, filepath);
+
+  // Note: Does NOT change active scene
   return scenePtr;
 }
 

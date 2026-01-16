@@ -34,13 +34,6 @@ void Transform::Translate(float dx, float dy, float dz) {
   Translate({dx, dy, dz});
 }
 
-glm::vec3 Transform::GetWorldPosition() const {
-  if (m_Parent) {
-    return glm::vec3(m_Parent->GetWorldMatrix() * glm::vec4(m_Position, 1.0F));
-  }
-  return m_Position;
-}
-
 // ===== Rotation =====
 
 void Transform::SetRotation(const glm::vec3 &eulerDegrees) {
@@ -78,13 +71,6 @@ glm::vec3 Transform::GetEulerAngles() const {
   return glm::degrees(glm::eulerAngles(m_Rotation));
 }
 
-glm::quat Transform::GetWorldRotation() const {
-  if (m_Parent) {
-    return m_Parent->GetWorldRotation() * m_Rotation;
-  }
-  return m_Rotation;
-}
-
 // ===== Scale =====
 
 void Transform::SetScale(const glm::vec3 &scale) {
@@ -97,13 +83,6 @@ void Transform::SetScale(float uniformScale) {
 }
 
 void Transform::SetScale(float x, float y, float z) { SetScale({x, y, z}); }
-
-glm::vec3 Transform::GetWorldScale() const {
-  if (m_Parent) {
-    return m_Parent->GetWorldScale() * m_Scale;
-  }
-  return m_Scale;
-}
 
 // ===== Direction Vectors =====
 
@@ -122,103 +101,41 @@ glm::vec3 Transform::GetUp() const {
 // ===== Matrices =====
 
 const glm::mat4 &Transform::GetLocalMatrix() const {
-  if (m_LocalDirty) {
-    RecalculateLocalMatrix();
+  if (m_Dirty) {
+    RecalculateMatrix();
   }
   return m_LocalMatrix;
 }
 
-const glm::mat4 &Transform::GetWorldMatrix() const {
-  if (m_WorldDirty || m_LocalDirty) {
-    RecalculateWorldMatrix();
-  }
-  return m_WorldMatrix;
-}
-
-glm::mat4 Transform::GetInverseWorldMatrix() const {
-  return glm::inverse(GetWorldMatrix());
-}
-
-void Transform::RecalculateLocalMatrix() const {
-  // Order: Scale -> Rotate -> Translate
-  // M = T * R * S
-  m_LocalMatrix = glm::translate(glm::mat4(1.0F), m_Position) *
+void Transform::RecalculateMatrix() const {
+  // Order: Scale -> Rotate -> Translate (M = T * R * S)
+  m_LocalMatrix = glm::translate(glm::mat4(1.0f), m_Position) *
                   glm::mat4_cast(m_Rotation) *
-                  glm::scale(glm::mat4(1.0F), m_Scale);
-  m_LocalDirty = false;
-}
-
-void Transform::RecalculateWorldMatrix() const {
-  if (m_LocalDirty) {
-    RecalculateLocalMatrix();
-  }
-
-  if (m_Parent) {
-    m_WorldMatrix = m_Parent->GetWorldMatrix() * m_LocalMatrix;
-  } else {
-    m_WorldMatrix = m_LocalMatrix;
-  }
-  m_WorldDirty = false;
-}
-
-// ===== Hierarchy =====
-
-void Transform::SetParent(Transform *parent) {
-  // Remove from old parent
-  if (m_Parent) {
-    m_Parent->RemoveChild(this);
-  }
-
-  m_Parent = parent;
-
-  // Add to new parent
-  if (m_Parent) {
-    m_Parent->AddChild(this);
-  }
-
-  MarkDirty();
-}
-
-void Transform::AddChild(Transform *child) {
-  if (child && std::ranges::find(m_Children.begin(), m_Children.end(), child) ==
-                   m_Children.end()) {
-    m_Children.push_back(child);
-  }
-}
-
-void Transform::RemoveChild(Transform *child) {
-  auto it = std::ranges::find(m_Children.begin(), m_Children.end(), child);
-  if (it != m_Children.end()) {
-    m_Children.erase(it);
-  }
+                  glm::scale(glm::mat4(1.0f), m_Scale);
+  m_Dirty = false;
 }
 
 // ===== Utility =====
 
 void Transform::LookAt(const glm::vec3 &target, const glm::vec3 &up) {
   glm::vec3 direction = glm::normalize(target - m_Position);
-  m_Rotation = glm::quatLookAt(direction, up);
+
+  // Handle edge case where direction is parallel to up
+  if (glm::abs(glm::dot(direction, up)) > 0.999f) {
+    m_Rotation = glm::quatLookAt(direction, glm::vec3(0.0f, 0.0f, 1.0f));
+  } else {
+    m_Rotation = glm::quatLookAt(direction, up);
+  }
   MarkDirty();
 }
 
 void Transform::Reset() {
-  m_Position = glm::vec3(0.0F);
+  m_Position = glm::vec3(0.0f);
   m_Rotation = glm::identity<glm::quat>();
-  m_Scale = glm::vec3(1.0F);
+  m_Scale = glm::vec3(1.0f);
   MarkDirty();
 }
 
-void Transform::MarkDirty() {
-  m_LocalDirty = true;
-  m_WorldDirty = true;
-
-  // Propagate to children
-  for (auto *child : m_Children) {
-    if (child) {
-      child->m_WorldDirty = true;
-      child->MarkDirty(); // Recursively mark children dirty
-    }
-  }
-}
+void Transform::MarkDirty() { m_Dirty = true; }
 
 } // namespace BeEngine

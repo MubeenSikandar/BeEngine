@@ -1,3 +1,4 @@
+// SceneRenderer.hpp
 #pragma once
 
 #include <BuiltInShaders/LightManager.hpp>
@@ -41,6 +42,24 @@ public:
     return m_LightManager;
   }
 
+  // Render statistics
+  struct RenderStats {
+    uint32_t DrawCalls = 0;
+    uint32_t TrianglesRendered = 0;
+    uint32_t EntitiesRendered = 0;
+    float RenderTimeMs = 0.0f;
+  };
+
+  NODISCARD const RenderStats &GetStats() const { return m_Stats; }
+  void ResetStats();
+
+  // Culling (for optimization)
+  void SetFrustumCulling(bool enabled);
+
+  // Debug rendering
+  void SetDebugMode(bool enabled);
+  void DrawDebugBounds(bool enabled);
+
 private:
   /**
    * @brief Collect lights from the scene into the light manager
@@ -62,5 +81,9 @@ private:
   LightManager m_LightManager;
   uint32_t m_ViewportWidth = 1280;
   uint32_t m_ViewportHeight = 720;
+
+  RenderStats m_Stats;
+  bool m_FrustumCullingEnabled = true;
+  bool m_DebugMode = false;
 };
 } // namespace BeEngine

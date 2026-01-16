@@ -1,3 +1,4 @@
+#include "Scene/ECS/Entity.hpp"
 #include <PCH/BeEnginePCH.hpp>
 
 namespace BeEngine {
@@ -115,12 +116,27 @@ Entity Scene::CreateEntity(const std::string &name) {
 
 Entity Scene::CreateEntityWithUUID(uint64_t uuid, const std::string &name) {
   EntityID id = EntityID::FromID(uuid);
+  uint32_t index = id.GetIndex();
 
   // Ensure we have enough slots
-  uint32_t index = id.GetIndex();
   while (m_EntityGenerations.size() <= index) {
     m_EntityGenerations.push_back(0);
     m_EntityActive.push_back(false);
+  }
+
+  // Check if slot is already in use
+  if (m_EntityActive[index]) {
+    BE_CORE_WARN("CreateEntityWithUUID: Slot {} already in use, creating new "
+                 "entity instead",
+                 index);
+    return CreateEntity(name); // Fall back to normal creation
+  }
+
+  // Remove from free list if present
+  auto it = std::ranges::find(m_FreeEntitySlots.begin(),
+                              m_FreeEntitySlots.end(), index);
+  if (it != m_FreeEntitySlots.end()) {
+    m_FreeEntitySlots.erase(it);
   }
 
   m_EntityGenerations[index] = id.GetGeneration();
@@ -128,7 +144,6 @@ Entity Scene::CreateEntityWithUUID(uint64_t uuid, const std::string &name) {
   m_EntityCount++;
 
   Entity entity(id, this);
-
   AddComponent<TagComponent>(id, name);
   AddComponent<TransformComponent>(id);
 
@@ -160,8 +175,8 @@ void Scene::DestroyEntity(EntityID id) {
   if (HasComponent<TransformComponent>(id)) {
     auto &transform = GetComponent<TransformComponent>(id);
 
-    // Reparent children to this entity's parent
-    for (EntityID childId : transform.Children) {
+    std::vector<EntityID> childrenCopy = transform.Children;
+    for (EntityID childId : childrenCopy) {
       if (IsEntityValid(childId)) {
         auto &childTransform = GetComponent<TransformComponent>(childId);
         childTransform.Parent = transform.Parent;
@@ -211,9 +226,17 @@ bool Scene::IsEntityValid(EntityID id) const {
 
 Entity Scene::GetEntity(EntityID id) {
   if (IsEntityValid(id)) {
-    return {id, this};
+    return {Entity(id, this)};
   }
-  return {};
+  return {Entity()};
+}
+
+Entity Scene::GetEntityByUUID(uint64_t uuid) {
+  EntityID id = EntityID::FromID(uuid);
+  if (IsEntityValid(id)) {
+    return {Entity(id, this)};
+  }
+  return {Entity()};
 }
 
 Entity Scene::FindEntityByName(const std::string &name) {
@@ -267,6 +290,64 @@ std::vector<Entity> Scene::GetAllEntities() {
     }
   }
   return result;
+}
+
+Entity Scene::DuplicateEntity(Entity entity) {
+  if (!entity.IsValid()) {
+    return {Entity()};
+  }
+
+  auto &srcTag = entity.GetComponent<TagComponent>();
+  Entity newEntity = CreateEntity(srcTag.Tag + " (Copy)");
+
+  // Copy transform
+  auto &srcTransform = entity.GetComponent<TransformComponent>();
+  auto &dstTransform = newEntity.GetComponent<TransformComponent>();
+  dstTransform.SetPosition(srcTransform.GetPosition());
+  dstTransform.SetRotation(srcTransform.GetRotation());
+  dstTransform.SetScale(srcTransform.GetScale());
+
+  // Copy other components
+  if (entity.HasComponent<CameraComponent>()) {
+    auto &src = entity.GetComponent<CameraComponent>();
+    auto &dst = newEntity.AddComponent<CameraComponent>();
+    dst = src;
+    dst.Primary = false; // Don't duplicate primary status
+  }
+
+  if (entity.HasComponent<MeshRendererComponent>()) {
+    auto &src = entity.GetComponent<MeshRendererComponent>();
+    auto &dst = newEntity.AddComponent<MeshRendererComponent>();
+    dst = src;
+  }
+
+  if (entity.HasComponent<ModelRendererComponent>()) {
+    auto &src = entity.GetComponent<ModelRendererComponent>();
+    auto &dst = newEntity.AddComponent<ModelRendererComponent>();
+    dst = src;
+  }
+
+  if (entity.HasComponent<DirectionalLightComponent>()) {
+    auto &src = entity.GetComponent<DirectionalLightComponent>();
+    newEntity.AddComponent<DirectionalLightComponent>() = src;
+  }
+
+  if (entity.HasComponent<PointLightComponent>()) {
+    auto &src = entity.GetComponent<PointLightComponent>();
+    newEntity.AddComponent<PointLightComponent>() = src;
+  }
+
+  if (entity.HasComponent<SpotLightComponent>()) {
+    auto &src = entity.GetComponent<SpotLightComponent>();
+    newEntity.AddComponent<SpotLightComponent>() = src;
+  }
+
+  // Note: Don't copy NativeScriptComponent as callbacks won't work
+  // Note: Children are NOT duplicated (would need recursive call)
+
+  BE_CORE_TRACE("Duplicated entity '{}' -> '{}'", srcTag.Tag,
+                newEntity.GetComponent<TagComponent>().Tag);
+  return newEntity;
 }
 
 // ============================================================================
@@ -467,6 +548,25 @@ void Scene::SetPrimaryCamera(Entity entity) {
   if (entity.IsValid() && entity.HasComponent<CameraComponent>()) {
     entity.GetComponent<CameraComponent>().Primary = true;
   }
+}
+
+void Scene::Clear() {
+  // Destroy all entities
+  auto entities = GetAllEntities();
+  for (Entity entity : entities) {
+    DestroyEntity(entity);
+  }
+
+  // Clear all pools
+  m_ComponentPools.clear();
+
+  // Reset entity tracking
+  m_EntityGenerations.clear();
+  m_FreeEntitySlots.clear();
+  m_EntityActive.clear();
+  m_EntityCount = 0;
+
+  BE_CORE_TRACE("Scene '{}' cleared", m_Name);
 }
 
 } // namespace BeEngine

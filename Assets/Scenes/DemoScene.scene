@@ -1,0 +1,332 @@
+{
+  "entities": [
+    {
+      "camera": {
+        "farClip": 1000.0,
+        "fixedAspectRatio": false,
+        "fov": 60.0,
+        "nearClip": 0.10000000149011612,
+        "orthographicSize": 10.0,
+        "primary": true,
+        "projection": "perspective"
+      },
+      "enabled": true,
+      "tag": "Main Camera",
+      "transform": {
+        "position": [
+          0.0,
+          3.0,
+          10.0
+        ],
+        "rotation": [
+          -0.08715573698282242,
+          0.0,
+          0.0,
+          0.9961947202682495
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "uuid": 4294967296
+    },
+    {
+      "directionalLight": {
+        "castShadows": true,
+        "color": [
+          1.0,
+          0.9800000190734863,
+          0.949999988079071
+        ],
+        "intensity": 1.2000000476837158
+      },
+      "enabled": true,
+      "tag": "Sun",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation": [
+          -0.4082179069519043,
+          0.23456971347332,
+          0.10938165336847305,
+          0.8754260540008545
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "uuid": 4294967297
+    },
+    {
+      "enabled": true,
+      "pointLight": {
+        "castShadows": false,
+        "color": [
+          1.0,
+          0.6000000238418579,
+          0.30000001192092896
+        ],
+        "intensity": 4.0,
+        "range": 15.0
+      },
+      "tag": "Point Light",
+      "transform": {
+        "position": [
+          3.0,
+          2.0,
+          2.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "uuid": 4294967298
+    },
+    {
+      "enabled": true,
+      "meshRenderer": {
+        "castShadows": true,
+        "receiveShadows": true,
+        "visible": true
+      },
+      "tag": "Ground",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          20.0,
+          1.0,
+          20.0
+        ]
+      },
+      "uuid": 4294967299
+    },
+    {
+      "enabled": true,
+      "meshRenderer": {
+        "castShadows": true,
+        "receiveShadows": true,
+        "visible": true
+      },
+      "tag": "Red Cube",
+      "transform": {
+        "position": [
+          -2.0,
+          0.5,
+          0.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "uuid": 4294967300
+    },
+    {
+      "enabled": true,
+      "meshRenderer": {
+        "castShadows": true,
+        "receiveShadows": true,
+        "visible": true
+      },
+      "tag": "Green Sphere",
+      "transform": {
+        "position": [
+          0.0,
+          0.5,
+          0.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "uuid": 4294967301
+    },
+    {
+      "enabled": true,
+      "meshRenderer": {
+        "castShadows": true,
+        "receiveShadows": true,
+        "visible": true
+      },
+      "tag": "Blue Cube",
+      "transform": {
+        "position": [
+          2.0,
+          0.5,
+          0.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "uuid": 4294967302
+    },
+    {
+      "enabled": true,
+      "modelRenderer": {
+        "modelPath": "BeEngine/Assets/DamagedHelmet.glb",
+        "visible": true
+      },
+      "tag": "Damaged Helmet",
+      "transform": {
+        "position": [
+          0.0,
+          1.5,
+          -3.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "scale": [
+          0.800000011920929,
+          0.800000011920929,
+          0.800000011920929
+        ]
+      },
+      "uuid": 4294967303
+    },
+    {
+      "children": [
+        {
+          "enabled": true,
+          "meshRenderer": {
+            "castShadows": true,
+            "receiveShadows": true,
+            "visible": true
+          },
+          "tag": "Orbiting Sphere 1",
+          "transform": {
+            "position": [
+              -1.5,
+              1.0,
+              0.0
+            ],
+            "rotation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              0.30000001192092896,
+              0.30000001192092896,
+              0.30000001192092896
+            ]
+          },
+          "uuid": 4294967305
+        },
+        {
+          "enabled": true,
+          "meshRenderer": {
+            "castShadows": true,
+            "receiveShadows": true,
+            "visible": true
+          },
+          "tag": "Orbiting Sphere 2",
+          "transform": {
+            "position": [
+              1.5,
+              1.0,
+              0.0
+            ],
+            "rotation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              0.30000001192092896,
+              0.30000001192092896,
+              0.30000001192092896
+            ]
+          },
+          "uuid": 4294967306
+        }
+      ],
+      "enabled": true,
+      "meshRenderer": {
+        "castShadows": true,
+        "receiveShadows": true,
+        "visible": true
+      },
+      "tag": "Rotating Platform",
+      "transform": {
+        "position": [
+          -5.0,
+          0.5,
+          -3.0
+        ],
+        "rotation": [
+          1.7619683490011084e-10,
+          0.7082727551460266,
+          1.7620532810624923e-10,
+          0.7059388756752014
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "uuid": 4294967304
+    }
+  ],
+  "metadata": {
+    "entityCount": 11,
+    "timestamp": 1768299245711432
+  },
+  "scene": "Demo Scene",
+  "schemaVersion": 1
+}

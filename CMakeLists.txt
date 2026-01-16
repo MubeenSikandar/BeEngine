@@ -131,6 +131,11 @@ set(BEENGINE_SOURCES
     BeEngine/src/Scene/SceneRenderer.cpp
     BeEngine/src/Scene/SceneSerializer.cpp
     BeEngine/src/Scene/SceneSerializerDeserializer.cpp
+    BeEngine/src/Scripting/API/ScriptAPI.cpp
+    BeEngine/src/Scripting/Core/ScriptInstance.cpp
+    BeEngine/src/Scripting/Core/ScriptRegistry.cpp
+    BeEngine/src/Scripting/Core/ScriptEngineManager.cpp
+    BeEngine/src/Scripting/Core/HotReloadManager.cpp
 )
 
 if(BE_BUILD_SHARED)

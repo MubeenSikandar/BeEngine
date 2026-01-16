@@ -1,4 +1,5 @@
 #include <PCH/BeEnginePCH.hpp>
+#include <ranges>
 
 namespace BeEngine {
 LayerStack::~LayerStack() {

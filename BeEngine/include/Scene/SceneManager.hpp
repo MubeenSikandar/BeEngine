@@ -120,9 +120,32 @@ public:
     m_SceneChangeCallbacks.push_back(std::move(callback));
   }
 
+  // Async scene loading (important for large scenes)
+  void LoadSceneAsync(const std::string &filepath,
+                      std::function<void(Scene *)> onComplete);
+
+  // Additive scene loading (load without replacing active)
+  Scene *LoadSceneAdditive(const std::string &filepath);
+
+  // Scene state
+  NODISCARD bool IsLoading() const { return m_IsLoading; }
+
+private:
+  struct PendingSceneLoad {
+    Scope<Scene> LoadedScene;
+    std::function<void(Scene *)> Callback;
+  };
+  std::mutex m_PendingMutex;
+  std::vector<PendingSceneLoad> m_PendingLoads;
+
+public:
+  // Call this from main thread each frame
+  void ProcessPendingLoads();
+
 private:
   std::unordered_map<std::string, Scope<Scene>> m_Scenes;
-  Scene *m_ActiveScene = nullptr;
+  Scene *m_ActiveScene{nullptr};
   std::vector<SceneChangeCallback> m_SceneChangeCallbacks;
+  bool m_IsLoading{false};
 };
 } // namespace BeEngine

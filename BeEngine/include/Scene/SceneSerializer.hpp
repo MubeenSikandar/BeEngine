@@ -1,3 +1,4 @@
+// SceneSerializer.hpp
 #pragma once
 
 #include <Core.hpp>
@@ -123,6 +124,17 @@ public:
     return m_AssetBasePath;
   }
 
+  // Validation
+  NODISCARD bool ValidateJson(const nlohmann::json &json) const;
+
+  // Migration for old schema versions
+  bool MigrateSchema(nlohmann::json &json, uint32_t fromVersion);
+
+  // Progress callback for large scenes
+  using ProgressCallback =
+      std::function<void(float progress, const std::string &status)>;
+  void SetProgressCallback(ProgressCallback callback);
+
 private:
   // ===== Entity Serialization =====
   nlohmann::json SerializeEntity(Entity entity);
@@ -185,5 +197,7 @@ private:
 
   Scene &m_Scene;
   std::string m_AssetBasePath = "Assets/";
+
+  ProgressCallback m_ProgressCallback;
 };
 } // namespace BeEngine

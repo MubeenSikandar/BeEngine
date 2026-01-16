@@ -1,3 +1,4 @@
+// Scene.hpp
 #pragma once
 
 #include <Core.hpp>
@@ -90,6 +91,15 @@ public:
    * @brief Get the number of active entities
    */
   NODISCARD size_t GetEntityCount() const { return m_EntityCount; }
+
+  // Get entity by UUID (for scripting/serialization)
+  NODISCARD Entity GetEntityByUUID(uint64_t uuid);
+
+  // Duplicate an entity (useful for editor)
+  Entity DuplicateEntity(Entity entity);
+
+  // Clear all entities
+  void Clear();
 
   // ===== Component Management =====
 

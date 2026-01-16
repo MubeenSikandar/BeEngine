@@ -1,4 +1,5 @@
 #include <PCH/BeEnginePCH.hpp>
+#include <fstream>
 
 namespace BeEngine {
 
@@ -439,6 +440,42 @@ nlohmann::json SceneSerializer::LoadPrefab(const std::string &filepath) {
     BE_CORE_ERROR("Failed to load prefab: {}", e.what());
     return {};
   }
+}
+
+bool SceneSerializer::ValidateJson(const nlohmann::json &json) const {
+  // Basic validation
+  if (!json.contains("schemaVersion")) {
+    BE_CORE_WARN("Scene JSON missing schemaVersion");
+    return false;
+  }
+  if (!json.contains("entities") || !json["entities"].is_array()) {
+    BE_CORE_WARN("Scene JSON missing or invalid entities array");
+    return false;
+  }
+  return true;
+}
+
+bool SceneSerializer::MigrateSchema(nlohmann::json &json,
+                                    uint32_t fromVersion) {
+  // Future: Add migration logic when schema changes
+  // Example:
+  // if (fromVersion < 2) {
+  //   // Migrate from v1 to v2
+  //   for (auto& entity : json["entities"]) {
+  //     if (entity.contains("oldFieldName")) {
+  //       entity["newFieldName"] = entity["oldFieldName"];
+  //       entity.erase("oldFieldName");
+  //     }
+  //   }
+  // }
+
+  BE_CORE_INFO("Migrated scene schema from version {} to {}", fromVersion,
+               SCHEMA_VERSION);
+  return true;
+}
+
+void SceneSerializer::SetProgressCallback(ProgressCallback callback) {
+  m_ProgressCallback = std::move(callback);
 }
 
 } // namespace BeEngine

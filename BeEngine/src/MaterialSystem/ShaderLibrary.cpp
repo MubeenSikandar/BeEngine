@@ -1,4 +1,5 @@
 #include <PCH/BeEnginePCH.hpp>
+#include <fstream>
 
 namespace BeEngine {
 
