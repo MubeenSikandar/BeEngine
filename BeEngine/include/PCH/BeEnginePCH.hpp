@@ -78,6 +78,14 @@
 #include <Scripting/Core/ScriptInstance.hpp>
 #include <Scripting/Core/ScriptRegistry.hpp>
 #include <Scripting/Core/ScriptTypes.hpp>
+#include <Scripting/Lua/LuaBindings.hpp>
+#include <Scripting/Lua/LuaClassSystem.hpp>
+#include <Scripting/Lua/LuaCoroutine.hpp>
+#include <Scripting/Lua/LuaDebugger.hpp>
+#include <Scripting/Lua/LuaEngine.hpp>
+#include <Scripting/Lua/LuaInstance.hpp>
+#include <Scripting/Lua/LuaSandbox.hpp>
+#include <Scripting/Lua/LuaTypeDefinitions.hpp>
 #include <Time/Time.hpp>
 #include <Time/Timestep.hpp>
 #include <Window.hpp>

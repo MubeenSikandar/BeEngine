@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Core.hpp>
+#include <vector>
 
 namespace BeEngine {
 // Forward declarations
@@ -15,6 +16,7 @@ class EntityRegistry;
  * - 32 bits: Index (which slot in the entity array)
  * - 32 bits: Generation (version to detect stale handles)
  */
+
 class EntityID {
 public:
   using IndexType = uint32_t;
@@ -136,6 +138,26 @@ private:
   Scene *m_Scene = nullptr;
 
   friend class Scene;
+};
+
+// NameComponent.hpp
+struct NameComponent {
+  std::string name;
+  NameComponent() = default;
+  NameComponent(const std::string &n) : name(n) {}
+};
+
+// ActiveComponent.hpp
+struct ActiveComponent {
+  bool active = true;
+  ActiveComponent() = default;
+  ActiveComponent(bool a) : active(a) {}
+};
+
+// HierarchyComponent.hpp
+struct HierarchyComponent {
+  EntityID parent;
+  std::vector<EntityID> children;
 };
 
 // Null entity constant

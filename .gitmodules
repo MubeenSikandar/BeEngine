@@ -23,3 +23,6 @@
 [submodule "BeEngine/vendor/nlohmann_json"]
 	path = BeEngine/vendor/nlohmann_json
 	url = https://github.com/nlohmann/json.git
+[submodule "BeEngine/vendor/LuaJIT"]
+	path = BeEngine/vendor/LuaJIT
+	url = https://github.com/LuaJIT/LuaJIT.git

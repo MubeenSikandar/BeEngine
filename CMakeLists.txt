@@ -71,6 +71,7 @@ add_subdirectory(BeEngine/vendor/imgui)
 add_subdirectory(BeEngine/vendor/STB)
 add_subdirectory(BeEngine/vendor/tinygltf)
 add_subdirectory(BeEngine/vendor/nlohmann_json)
+add_subdirectory(BeEngine/vendor/LuaJIT)
 
 
 # ============================================
@@ -136,6 +137,7 @@ set(BEENGINE_SOURCES
     BeEngine/src/Scripting/Core/ScriptRegistry.cpp
     BeEngine/src/Scripting/Core/ScriptEngineManager.cpp
     BeEngine/src/Scripting/Core/HotReloadManager.cpp
+    BeEngine/src/Scripting/Lua/LuaTypeDefinitions.cpp
 )
 
 if(BE_BUILD_SHARED)
@@ -175,6 +177,7 @@ target_link_libraries(BeEngine
         stb
         tinygltf
         nlohmann_json
+        luajit C
 )
 
 
